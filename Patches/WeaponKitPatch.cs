@@ -4,6 +4,7 @@ using SPTarkov.Server.Core.Generators;
 using SPTarkov.Server.Core.Helpers;
 using SPTarkov.Server.Core.Models.Common;
 using SPTarkov.Server.Core.Models.Eft.Common.Tables;
+using SPTarkov.Server.Core.Models.Spt.Config;
 using SPTarkov.Server.Core.Models.Utils;
 using WeekendDrops;
 
@@ -47,9 +48,13 @@ public static class WeaponKitPatch
         _applied = true;
     }
 
-    private static void Postfix(List<List<Item>> __result)
+    private static void Postfix(RewardDetails __0, List<List<Item>> __result)
     {
         if (_itemHelper is null || __result is null) return;
+
+        // Only kit weapons from OUR crates - this generator runs for every vanilla /
+        // third-party RandomLootContainer too.
+        if (!WdCrateRegistry.IsOurs(__0)) return;
 
         foreach (var group in __result)
         {

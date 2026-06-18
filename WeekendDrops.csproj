@@ -39,7 +39,7 @@
     <EmbeddedResource Remove="Tarkov-1.0-Backport\**" />
   </ItemGroup>
 
-  <!-- deploy to SPT on build — copies DLL + content config files automatically.
+  <!-- deploy to SPT on build - copies DLL + content config files automatically.
        config.json is the user-tunable settings file (debugMode etc.); it is NOT in
        the blanket copy so a rebuild never clobbers the deployed settings. It's only
        seeded when missing (fresh install). -->

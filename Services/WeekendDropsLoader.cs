@@ -8,7 +8,12 @@ using WeekendDrops.Services;
 
 namespace WeekendDrops;
 
-[Injectable(TypePriority = OnLoadOrder.PostDBModLoader + 1)]
+// Must run AFTER content-adding mods (e.g. WTT-ContentBackport registers its
+// items at PostDBModLoader + 2/3). IOnLoad runs ascending by TypePriority, so a
+// larger offset means we fold those items into the drop pools only once they're
+// actually in the DB. Still well inside the PostDBModLoader band (next phase is
+// +100000), so this stays before trader/ragfair registration.
+[Injectable(TypePriority = OnLoadOrder.PostDBModLoader + 1000)]
 public class WeekendDropsLoader(
     WeekendChallengeService weekendChallengeService,
     DailyChallengeService dailyChallengeService,

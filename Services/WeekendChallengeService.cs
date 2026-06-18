@@ -158,12 +158,14 @@ public class WeekendChallengeService(
 
             foreach (var crateTpl in tier.Pools.SelectMany(p => p.ItemIds).Distinct())
             {
-                inventory.RandomLootContainers[new MongoId(crateTpl)] = new RewardDetails
+                var details = new RewardDetails
                 {
                     RewardCount = poolDef.RewardCount,
                     FoundInRaid = _cratePools.FoundInRaid,
                     RewardTplPool = rewardTplPool,
                 };
+                inventory.RandomLootContainers[new MongoId(crateTpl)] = details;
+                Patches.WdCrateRegistry.Register(details);   // scope the loot postfixes to our crates
             }
         }
 
@@ -199,12 +201,14 @@ public class WeekendChallengeService(
             }
             if (rewardTplPool.Count == 0) continue;
 
-            inventory.RandomLootContainers[new MongoId(crateTpl)] = new RewardDetails
+            var details = new RewardDetails
             {
                 RewardCount = poolDef.RewardCount,
                 FoundInRaid = _arenaPools.FoundInRaid,
                 RewardTplPool = rewardTplPool,
             };
+            inventory.RandomLootContainers[new MongoId(crateTpl)] = details;
+            Patches.WdCrateRegistry.Register(details);   // scope the loot postfixes to our crates
             registered++;
         }
 
