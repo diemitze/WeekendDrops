@@ -1,0 +1,272 @@
+[
+  {
+    "id": "shop_grenade_case",
+    "name": "Grenade Case",
+    "description": "Holds grenades and throwables",
+    "templateId": "5e2af55f86f7746d4159f07c",
+    "gpCost": 200,
+    "stock": -1,
+    "count": 1
+  },
+  {
+    "id": "shop_mag_case",
+    "name": "Mag Case",
+    "description": "Compact magazine organizer",
+    "templateId": "5c127c4486f7745625356c13",
+    "gpCost": 200,
+    "stock": -1,
+    "count": 1
+  },
+  {
+    "id": "shop_ammo_case",
+    "name": "Ammo Case",
+    "description": "Organized ammo storage",
+    "templateId": "5aafbde786f774389d0cbc0f",
+    "gpCost": 350,
+    "stock": -1,
+    "count": 1
+  },
+  {
+    "id": "shop_medicine_case",
+    "name": "Medicine Case",
+    "description": "Dedicated medical supply container",
+    "templateId": "5aafbcd986f7745e590fff23",
+    "gpCost": 350,
+    "stock": -1,
+    "count": 1
+  },
+  {
+    "id": "shop_injector_case",
+    "name": "Injector Case",
+    "description": "Secure storage for stims and injectors",
+    "templateId": "619cbf7d23893217ec30b689",
+    "gpCost": 400,
+    "stock": -1,
+    "count": 1
+  },
+  {
+    "id": "shop_physical_bitcoin",
+    "name": "Physical Bitcoin",
+    "description": "High-value barter item",
+    "templateId": "59faff1d86f7746c51718c9c",
+    "gpCost": 4000,
+    "stock": -1,
+    "count": 1
+  },
+  {
+    "id": "shop_keybar",
+    "name": "Keybar",
+    "description": "Compact key organizer for your rig",
+    "templateId": "59fafd4b86f7745ca07e1232",
+    "gpCost": 200,
+    "stock": 5,
+    "count": 1
+  },
+  {
+    "id": "shop_junkbox",
+    "name": "Lucky Scav Junkbox",
+    "description": "78-slot loose item storage",
+    "templateId": "5b7c710788a4506dec015957",
+    "gpCost": 600,
+    "stock": -1,
+    "count": 1
+  },
+  {
+    "id": "shop_docs_case",
+    "name": "Docs Case",
+    "description": "Documents and barter organizer",
+    "templateId": "590c60fc86f77412b13fddcf",
+    "gpCost": 400,
+    "stock": 3,
+    "count": 1
+  },
+  {
+    "id": "shop_plates_case",
+    "name": "Plates Case",
+    "description": "Armor plate storage and transport",
+    "templateId": "67600929bd0a0549d70993f6",
+    "gpCost": 350,
+    "stock": -1,
+    "count": 1
+  },
+  {
+    "id": "shop_lo_pouch",
+    "name": "LO-Pouch",
+    "description": "Secure small item container",
+    "templateId": "5d235bb686f77443f4331278",
+    "gpCost": 700,
+    "stock": 3,
+    "count": 1
+  },
+  {
+    "id": "shop_keys_case",
+    "name": "Keys Case",
+    "description": "Large key organizer case",
+    "templateId": "67d3ed3271c17ff82e0a5b0b",
+    "gpCost": 350,
+    "stock": 3,
+    "count": 1
+  },
+  {
+    "id": "shop_weapon_case",
+    "name": "Weapon Case",
+    "description": "Secure rifle and gear storage",
+    "templateId": "59fb023c86f7746d0d4b423c",
+    "gpCost": 600,
+    "stock": 2,
+    "count": 1
+  },
+  {
+    "id": "shop_thicc_weapon_case",
+    "name": "THICC Weapon Case",
+    "description": "Premium large weapon container",
+    "templateId": "5b6d9ce188a4501afc1b2b25",
+    "gpCost": 1200,
+    "stock": 1,
+    "count": 1
+  },
+  {
+    "id": "shop_thicc_items",
+    "name": "THICC Items Case",
+    "description": "Premium high-capacity container",
+    "templateId": "5c0a840b86f7742ffa4f2482",
+    "gpCost": 1800,
+    "stock": 1,
+    "count": 1
+  },
+  {
+    "id": "shop_arena_equipment_common",
+    "name": "Arena Equipment Crate (Common)",
+    "description": "Unlocked Arena equipment crate",
+    "templateId": "6658876e146af22739040fad",
+    "gpCost": 150,
+    "stock": -1,
+    "count": 1
+  },
+  {
+    "id": "shop_arena_weapon_common",
+    "name": "Arena Weapon Crate (Common)",
+    "description": "Unlocked Arena weapon crate",
+    "templateId": "665888282c4a1b73af576b77",
+    "gpCost": 450,
+    "stock": -1,
+    "count": 1
+  },
+  {
+    "id": "shop_arena_supply_common",
+    "name": "Arena Supply Crate (Common)",
+    "description": "Unlocked Arena supply crate",
+    "templateId": "6658892e6e007c6f33662002",
+    "gpCost": 200,
+    "stock": -1,
+    "count": 1
+  },
+  {
+    "id": "shop_arena_valuables_common",
+    "name": "Arena Valuables Crate (Common)",
+    "description": "Unlocked Arena valuables crate",
+    "templateId": "665886abdaadd1069736c539",
+    "gpCost": 400,
+    "stock": -1,
+    "count": 1
+  },
+  {
+    "id": "shop_arena_equipment_rare",
+    "name": "Arena Equipment Crate (Rare)",
+    "description": "Unlocked Arena equipment crate",
+    "templateId": "665730fa4de4820934746c48",
+    "gpCost": 800,
+    "stock": -1,
+    "count": 1
+  },
+  {
+    "id": "shop_arena_weapon_rare",
+    "name": "Arena Weapon Crate (Rare)",
+    "description": "Unlocked Arena weapon crate",
+    "templateId": "665732e7ac60f009f270d1ef",
+    "gpCost": 1200,
+    "stock": -1,
+    "count": 1
+  },
+  {
+    "id": "shop_arena_supply_rare",
+    "name": "Arena Supply Crate (Rare)",
+    "description": "Unlocked Arena supply crate",
+    "templateId": "665732f4464c4b4ba4670fa9",
+    "gpCost": 550,
+    "stock": -1,
+    "count": 1
+  },
+  {
+    "id": "shop_arena_valuables_rare",
+    "name": "Arena Valuables Crate (Rare)",
+    "description": "Unlocked Arena valuables crate",
+    "templateId": "66573310a1657263d816a139",
+    "gpCost": 2400,
+    "stock": -1,
+    "count": 1
+  },
+  {
+    "id": "shop_arena_equipment_epic",
+    "name": "Arena Equipment Crate (Epic)",
+    "description": "Unlocked Arena equipment crate",
+    "templateId": "6658291eefd94e2d665b14a4",
+    "gpCost": 3750,
+    "stock": -1,
+    "count": 1
+  },
+  {
+    "id": "shop_arena_weapon_epic",
+    "name": "Arena Weapon Crate (Epic)",
+    "description": "Unlocked Arena weapon crate",
+    "templateId": "665829424de4820934746ce6",
+    "gpCost": 3000,
+    "stock": -1,
+    "count": 1
+  },
+  {
+    "id": "shop_arena_supply_epic",
+    "name": "Arena Supply Crate (Epic)",
+    "description": "Unlocked Arena supply crate",
+    "templateId": "66582972ac60f009f270d2aa",
+    "gpCost": 1550,
+    "stock": -1,
+    "count": 1
+  },
+  {
+    "id": "shop_arena_valuables_epic",
+    "name": "Arena Valuables Crate (Epic)",
+    "description": "Unlocked Arena valuables crate",
+    "templateId": "665829a6efd94e2d665b14a8",
+    "gpCost": 6500,
+    "stock": -1,
+    "count": 1
+  },
+  {
+    "id": "shop_bundle_storage_starter",
+    "name": "Storage Starter Bundle",
+    "description": "Bundle: buying delivers the 4 cases below, not the icon container",
+    "templateId": "5c0a840b86f7742ffa4f2482",
+    "gpCost": 900,
+    "stock": -1,
+    "count": 1,
+    "contents": [
+      {
+        "templateId": "5e2af55f86f7746d4159f07c",
+        "count": 1
+      },
+      {
+        "templateId": "5c127c4486f7745625356c13",
+        "count": 1
+      },
+      {
+        "templateId": "5aafbde786f774389d0cbc0f",
+        "count": 1
+      },
+      {
+        "templateId": "5aafbcd986f7745e590fff23",
+        "count": 1
+      }
+    ]
+  }
+]

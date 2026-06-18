@@ -1,0 +1,57 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <OutputType>Library</OutputType>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <RootNamespace>WeekendDrops</RootNamespace>
+    <AssemblyName>WeekendDrops</AssemblyName>
+    <Version>1.0.0</Version>
+    <Authors>20fpsguy</Authors>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="SPTarkov.Common" Version="4.0.13" />
+    <PackageReference Include="SPTarkov.DI" Version="4.0.13" />
+    <PackageReference Include="SPTarkov.Server.Core" Version="4.0.13" />
+  </ItemGroup>
+
+  <!-- Use the server's own Harmony (Private=false: don't copy, avoid version clash) -->
+  <ItemGroup>
+    <Reference Include="0Harmony">
+      <HintPath>D:\SPT dev\SPT\0Harmony.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="config\**">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <!-- The cloned WTT-ContentBackport repo lives in-tree for reference only; never compile it. -->
+  <ItemGroup>
+    <Compile Remove="Tarkov-1.0-Backport\**\*.cs" />
+    <Content Remove="Tarkov-1.0-Backport\**" />
+    <None Remove="Tarkov-1.0-Backport\**" />
+    <EmbeddedResource Remove="Tarkov-1.0-Backport\**" />
+  </ItemGroup>
+
+  <!-- deploy to SPT on build — copies DLL + content config files automatically.
+       config.json is the user-tunable settings file (debugMode etc.); it is NOT in
+       the blanket copy so a rebuild never clobbers the deployed settings. It's only
+       seeded when missing (fresh install). -->
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <MakeDir Directories="D:\SPT dev\SPT\user\mods\WeekendDrops\config" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="D:\SPT dev\SPT\user\mods\WeekendDrops" />
+    <ItemGroup>
+      <_ConfigFiles Include="$(ProjectDir)config\*.*" Exclude="$(ProjectDir)config\config.json" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_ConfigFiles)" DestinationFolder="D:\SPT dev\SPT\user\mods\WeekendDrops\config" />
+    <Copy SourceFiles="$(ProjectDir)config\config.json"
+          DestinationFolder="D:\SPT dev\SPT\user\mods\WeekendDrops\config"
+          Condition="!Exists('D:\SPT dev\SPT\user\mods\WeekendDrops\config\config.json')" />
+  </Target>
+</Project>

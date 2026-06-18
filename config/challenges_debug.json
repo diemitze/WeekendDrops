@@ -1,0 +1,915 @@
+[
+  {
+    "id": "kill_scavs_15",
+    "type": "KillScavs",
+    "description": "Kill 15 Scavs",
+    "target": 15,
+    "difficulty": 1
+  },
+  {
+    "id": "kill_scavs_30",
+    "type": "KillScavs",
+    "description": "Kill 30 Scavs",
+    "target": 30,
+    "difficulty": 2
+  },
+  {
+    "id": "kill_scavs_50",
+    "type": "KillScavs",
+    "description": "Kill 50 Scavs",
+    "target": 50,
+    "difficulty": 3
+  },
+  {
+    "id": "scav_spree_10",
+    "type": "KillScavsSingleRaid",
+    "description": "Kill 10 Scavs in a single raid",
+    "target": 10,
+    "difficulty": 2
+  },
+  {
+    "id": "kill_pmcs_2",
+    "type": "KillPMCs",
+    "description": "Kill 2 PMCs",
+    "target": 2,
+    "difficulty": 1
+  },
+  {
+    "id": "kill_pmcs_3",
+    "type": "KillPMCs",
+    "description": "Kill 3 PMCs",
+    "target": 3,
+    "difficulty": 2
+  },
+  {
+    "id": "kill_pmcs_5",
+    "type": "KillPMCs",
+    "description": "Kill 5 PMCs",
+    "target": 5,
+    "difficulty": 2
+  },
+  {
+    "id": "kill_pmcs_8",
+    "type": "KillPMCs",
+    "description": "Kill 8 PMCs",
+    "target": 8,
+    "difficulty": 3
+  },
+  {
+    "id": "kill_pmcs_12",
+    "type": "KillPMCs",
+    "description": "Kill 12 PMCs",
+    "target": 12,
+    "difficulty": 3
+  },
+  {
+    "id": "pmc_double_raid",
+    "type": "KillPMCsSingleRaid",
+    "description": "Kill 2 PMCs in a single raid",
+    "target": 2,
+    "difficulty": 2
+  },
+  {
+    "id": "pmc_triple_raid",
+    "type": "KillPMCsSingleRaid",
+    "description": "Kill 3 PMCs in a single raid",
+    "target": 3,
+    "difficulty": 3
+  },
+  {
+    "id": "pmc_quad_raid",
+    "type": "KillPMCsSingleRaid",
+    "description": "Kill 4 PMCs in a single raid",
+    "target": 4,
+    "difficulty": 3
+  },
+  {
+    "id": "headshot_5",
+    "type": "KillHeadshots",
+    "description": "Get 5 headshot kills",
+    "target": 5,
+    "difficulty": 1
+  },
+  {
+    "id": "headshot_15",
+    "type": "KillHeadshots",
+    "description": "Get 15 headshot kills",
+    "target": 15,
+    "difficulty": 2
+  },
+  {
+    "id": "survive_10min",
+    "type": "SurviveTimeCumulative",
+    "description": "Survive 10 minutes total in-raid (resets on death)",
+    "target": 600,
+    "difficulty": 1
+  },
+  {
+    "id": "survive_20min",
+    "type": "SurviveTimeCumulative",
+    "description": "Survive 20 minutes total in-raid (resets on death)",
+    "target": 1200,
+    "difficulty": 2
+  },
+  {
+    "id": "survive_30min",
+    "type": "SurviveTimeCumulative",
+    "description": "Survive 30 minutes total in-raid (resets on death)",
+    "target": 1800,
+    "difficulty": 3
+  },
+  {
+    "id": "extract_3",
+    "type": "ExtractSuccessfully",
+    "description": "Extract successfully 3 times",
+    "target": 3,
+    "difficulty": 1
+  },
+  {
+    "id": "extract_5",
+    "type": "ExtractSuccessfully",
+    "description": "Extract successfully 5 times",
+    "target": 5,
+    "difficulty": 2
+  },
+  {
+    "id": "kill_any_boss",
+    "type": "KillBoss",
+    "description": "Kill any boss",
+    "target": 1,
+    "difficulty": 3
+  },
+  {
+    "id": "scav_raids_3",
+    "type": "ScavRaidsDone",
+    "description": "Complete 3 Scav raids",
+    "target": 3,
+    "difficulty": 1
+  },
+  {
+    "id": "scav_raids_5",
+    "type": "ScavRaidsDone",
+    "description": "Complete 5 Scav raids",
+    "target": 5,
+    "difficulty": 1
+  },
+  {
+    "id": "scav_raids_10",
+    "type": "ScavRaidsDone",
+    "description": "Complete 10 Scav raids",
+    "target": 10,
+    "difficulty": 3
+  },
+  {
+    "id": "scav_extract_2",
+    "type": "ScavExtract",
+    "description": "Extract as a Scav 2 times",
+    "target": 2,
+    "difficulty": 1
+  },
+  {
+    "id": "scav_extract_3",
+    "type": "ScavExtract",
+    "description": "Extract as a Scav 3 times",
+    "target": 3,
+    "difficulty": 2
+  },
+  {
+    "id": "scav_extract_5",
+    "type": "ScavExtract",
+    "description": "Extract as a Scav 5 times",
+    "target": 5,
+    "difficulty": 3
+  },
+  {
+    "id": "scav_kills_15",
+    "type": "ScavKills",
+    "description": "Get 15 kills across Scav raids",
+    "target": 15,
+    "difficulty": 2
+  },
+  {
+    "id": "scav_kills_25",
+    "type": "ScavKills",
+    "description": "Get 25 kills across Scav raids",
+    "target": 25,
+    "difficulty": 2
+  },
+  {
+    "id": "scav_kills_40",
+    "type": "ScavKills",
+    "description": "Get 40 kills across Scav raids",
+    "target": 40,
+    "difficulty": 3
+  },
+  {
+    "id": "kill_scavs_20",
+    "type": "KillScavs",
+    "description": "Kill 20 Scavs",
+    "target": 20,
+    "difficulty": 1
+  },
+  {
+    "id": "kill_scavs_75",
+    "type": "KillScavs",
+    "description": "Kill 75 Scavs",
+    "target": 75,
+    "difficulty": 3
+  },
+  {
+    "id": "scav_spree_15",
+    "type": "KillScavsSingleRaid",
+    "description": "Kill 15 Scavs in a single raid",
+    "target": 15,
+    "difficulty": 3
+  },
+  {
+    "id": "kill_pmcs_20",
+    "type": "KillPMCs",
+    "description": "Kill 20 PMCs",
+    "target": 20,
+    "difficulty": 3
+  },
+  {
+    "id": "pmc_penta_raid",
+    "type": "KillPMCsSingleRaid",
+    "description": "Kill 5 PMCs in a single raid",
+    "target": 5,
+    "difficulty": 3
+  },
+  {
+    "id": "headshot_10",
+    "type": "KillHeadshots",
+    "description": "Get 10 headshot kills",
+    "target": 10,
+    "difficulty": 2
+  },
+  {
+    "id": "headshot_25",
+    "type": "KillHeadshots",
+    "description": "Get 25 headshot kills",
+    "target": 25,
+    "difficulty": 3
+  },
+  {
+    "id": "survive_45min",
+    "type": "SurviveTimeCumulative",
+    "description": "Survive 45 minutes total in-raid (resets on death)",
+    "target": 2700,
+    "difficulty": 3
+  },
+  {
+    "id": "survive_60min",
+    "type": "SurviveTimeCumulative",
+    "description": "Survive 60 minutes total in-raid (resets on death)",
+    "target": 3600,
+    "difficulty": 3
+  },
+  {
+    "id": "extract_8",
+    "type": "ExtractSuccessfully",
+    "description": "Extract successfully 8 times",
+    "target": 8,
+    "difficulty": 2
+  },
+  {
+    "id": "extract_12",
+    "type": "ExtractSuccessfully",
+    "description": "Extract successfully 12 times",
+    "target": 12,
+    "difficulty": 3
+  },
+  {
+    "id": "kill_bosses_3",
+    "type": "KillBoss",
+    "description": "Kill 3 bosses",
+    "target": 3,
+    "difficulty": 3
+  },
+  {
+    "id": "scav_kills_60",
+    "type": "ScavKills",
+    "description": "Get 60 kills across Scav raids",
+    "target": 60,
+    "difficulty": 3
+  },
+  {
+    "id": "scav_raids_7",
+    "type": "ScavRaidsDone",
+    "description": "Complete 7 Scav raids",
+    "target": 7,
+    "difficulty": 2
+  },
+  {
+    "id": "scav_extract_8",
+    "type": "ScavExtract",
+    "description": "Extract as a Scav 8 times",
+    "target": 8,
+    "difficulty": 3
+  },
+  {
+    "id": "extract_customs_3",
+    "type": "ExtractFromLocation",
+    "description": "Extract from Customs 3 times",
+    "target": 3,
+    "targetLocation": "bigmap",
+    "difficulty": 2
+  },
+  {
+    "id": "extract_woods_3",
+    "type": "ExtractFromLocation",
+    "description": "Extract from Woods 3 times",
+    "target": 3,
+    "targetLocation": "Woods",
+    "difficulty": 2
+  },
+  {
+    "id": "extract_shoreline_3",
+    "type": "ExtractFromLocation",
+    "description": "Extract from Shoreline 3 times",
+    "target": 3,
+    "targetLocation": "Shoreline",
+    "difficulty": 2
+  },
+  {
+    "id": "extract_interchange_2",
+    "type": "ExtractFromLocation",
+    "description": "Extract from Interchange 2 times",
+    "target": 2,
+    "targetLocation": "Interchange",
+    "difficulty": 2
+  },
+  {
+    "id": "extract_factory_5",
+    "type": "ExtractFromLocation",
+    "description": "Extract from Factory 5 times",
+    "target": 5,
+    "targetLocation": "factory4_day",
+    "difficulty": 2
+  },
+  {
+    "id": "extract_reserve_3",
+    "type": "ExtractFromLocation",
+    "description": "Extract from Reserve 3 times",
+    "target": 3,
+    "targetLocation": "RezervBase",
+    "difficulty": 3
+  },
+  {
+    "id": "extract_lighthouse_3",
+    "type": "ExtractFromLocation",
+    "description": "Extract from Lighthouse 3 times",
+    "target": 3,
+    "targetLocation": "Lighthouse",
+    "difficulty": 3
+  },
+  {
+    "id": "extract_streets_3",
+    "type": "ExtractFromLocation",
+    "description": "Extract from Streets of Tarkov 3 times",
+    "target": 3,
+    "targetLocation": "TarkovStreets",
+    "difficulty": 3
+  },
+  {
+    "id": "grenade_kills_5",
+    "type": "GrenadeKills",
+    "description": "Kill 5 enemies with grenades",
+    "target": 5,
+    "difficulty": 2
+  },
+  {
+    "id": "grenade_kills_10",
+    "type": "GrenadeKills",
+    "description": "Kill 10 enemies with grenades",
+    "target": 10,
+    "difficulty": 3
+  },
+  {
+    "id": "kill_pmcs_4",
+    "type": "KillPMCs",
+    "description": "Kill 4 PMCs",
+    "target": 4,
+    "difficulty": 2
+  },
+  {
+    "id": "kill_scavs_40",
+    "type": "KillScavs",
+    "description": "Kill 40 Scavs",
+    "target": 40,
+    "difficulty": 2
+  },
+  {
+    "id": "pmc_hexa_raid",
+    "type": "KillPMCsSingleRaid",
+    "description": "Kill 6 PMCs in a single raid",
+    "target": 6,
+    "difficulty": 3
+  },
+  {
+    "id": "scav_spree_20",
+    "type": "KillScavsSingleRaid",
+    "description": "Kill 20 Scavs in a single raid",
+    "target": 20,
+    "difficulty": 3
+  },
+  {
+    "id": "loot_extract_300k",
+    "type": "ExtractWithLootValue",
+    "description": "Extract with ₽300,000 of loot in one raid",
+    "target": 300000,
+    "difficulty": 2,
+    "requiresLootNet": true
+  },
+  {
+    "id": "loot_extract_600k",
+    "type": "ExtractWithLootValue",
+    "description": "Extract with ₽600,000 of loot in one raid",
+    "target": 600000,
+    "difficulty": 3,
+    "requiresLootNet": true
+  },
+  {
+    "id": "loot_haul_2m",
+    "type": "LootValueCumulative",
+    "description": "Haul out ₽2,000,000 of loot this weekend",
+    "target": 2000000,
+    "difficulty": 3,
+    "requiresLootNet": true
+  },
+  {
+    "id": "kill_pmcs_6",
+    "type": "KillPMCs",
+    "description": "Kill 6 PMCs",
+    "target": 6,
+    "difficulty": 3
+  },
+  {
+    "id": "kill_pmcs_10",
+    "type": "KillPMCs",
+    "description": "Kill 10 PMCs",
+    "target": 10,
+    "difficulty": 3
+  },
+  {
+    "id": "kill_pmcs_15",
+    "type": "KillPMCs",
+    "description": "Kill 15 PMCs",
+    "target": 15,
+    "difficulty": 3
+  },
+  {
+    "id": "kill_pmcs_25",
+    "type": "KillPMCs",
+    "description": "Kill 25 PMCs",
+    "target": 25,
+    "difficulty": 3
+  },
+  {
+    "id": "kill_pmcs_30",
+    "type": "KillPMCs",
+    "description": "Kill 30 PMCs",
+    "target": 30,
+    "difficulty": 3
+  },
+  {
+    "id": "pmc_spree_7_raid",
+    "type": "KillPMCsSingleRaid",
+    "description": "Kill 7 PMCs in a single raid",
+    "target": 7,
+    "difficulty": 3
+  },
+  {
+    "id": "pmc_spree_8_raid",
+    "type": "KillPMCsSingleRaid",
+    "description": "Kill 8 PMCs in a single raid",
+    "target": 8,
+    "difficulty": 3
+  },
+  {
+    "id": "kill_scavs_25",
+    "type": "KillScavs",
+    "description": "Kill 25 Scavs",
+    "target": 25,
+    "difficulty": 2
+  },
+  {
+    "id": "kill_scavs_60",
+    "type": "KillScavs",
+    "description": "Kill 60 Scavs",
+    "target": 60,
+    "difficulty": 3
+  },
+  {
+    "id": "kill_scavs_100",
+    "type": "KillScavs",
+    "description": "Kill 100 Scavs",
+    "target": 100,
+    "difficulty": 3
+  },
+  {
+    "id": "scav_spree_8",
+    "type": "KillScavsSingleRaid",
+    "description": "Kill 8 Scavs in a single raid",
+    "target": 8,
+    "difficulty": 2
+  },
+  {
+    "id": "scav_spree_12",
+    "type": "KillScavsSingleRaid",
+    "description": "Kill 12 Scavs in a single raid",
+    "target": 12,
+    "difficulty": 2
+  },
+  {
+    "id": "scav_spree_25",
+    "type": "KillScavsSingleRaid",
+    "description": "Kill 25 Scavs in a single raid",
+    "target": 25,
+    "difficulty": 3
+  },
+  {
+    "id": "headshot_8",
+    "type": "KillHeadshots",
+    "description": "Get 8 headshot kills",
+    "target": 8,
+    "difficulty": 2
+  },
+  {
+    "id": "headshot_20",
+    "type": "KillHeadshots",
+    "description": "Get 20 headshot kills",
+    "target": 20,
+    "difficulty": 3
+  },
+  {
+    "id": "headshot_30",
+    "type": "KillHeadshots",
+    "description": "Get 30 headshot kills",
+    "target": 30,
+    "difficulty": 3
+  },
+  {
+    "id": "headshot_40",
+    "type": "KillHeadshots",
+    "description": "Get 40 headshot kills",
+    "target": 40,
+    "difficulty": 3
+  },
+  {
+    "id": "grenade_kills_3",
+    "type": "GrenadeKills",
+    "description": "Kill 3 enemies with grenades",
+    "target": 3,
+    "difficulty": 2
+  },
+  {
+    "id": "grenade_kills_15",
+    "type": "GrenadeKills",
+    "description": "Kill 15 enemies with grenades",
+    "target": 15,
+    "difficulty": 3
+  },
+  {
+    "id": "grenade_kills_20",
+    "type": "GrenadeKills",
+    "description": "Kill 20 enemies with grenades",
+    "target": 20,
+    "difficulty": 3
+  },
+  {
+    "id": "survive_15min",
+    "type": "SurviveTimeCumulative",
+    "description": "Survive 15 minutes total in-raid (resets on death)",
+    "target": 900,
+    "difficulty": 1
+  },
+  {
+    "id": "survive_90min",
+    "type": "SurviveTimeCumulative",
+    "description": "Survive 90 minutes total in-raid (resets on death)",
+    "target": 5400,
+    "difficulty": 3
+  },
+  {
+    "id": "survive_120min",
+    "type": "SurviveTimeCumulative",
+    "description": "Survive 120 minutes total in-raid (resets on death)",
+    "target": 7200,
+    "difficulty": 3
+  },
+  {
+    "id": "extract_2",
+    "type": "ExtractSuccessfully",
+    "description": "Extract successfully 2 times",
+    "target": 2,
+    "difficulty": 1
+  },
+  {
+    "id": "extract_10",
+    "type": "ExtractSuccessfully",
+    "description": "Extract successfully 10 times",
+    "target": 10,
+    "difficulty": 3
+  },
+  {
+    "id": "extract_15",
+    "type": "ExtractSuccessfully",
+    "description": "Extract successfully 15 times",
+    "target": 15,
+    "difficulty": 3
+  },
+  {
+    "id": "extract_20",
+    "type": "ExtractSuccessfully",
+    "description": "Extract successfully 20 times",
+    "target": 20,
+    "difficulty": 3
+  },
+  {
+    "id": "kill_bosses_2",
+    "type": "KillBoss",
+    "description": "Kill 2 bosses",
+    "target": 2,
+    "difficulty": 3
+  },
+  {
+    "id": "kill_bosses_5",
+    "type": "KillBoss",
+    "description": "Kill 5 bosses",
+    "target": 5,
+    "difficulty": 3
+  },
+  {
+    "id": "scav_raids_15",
+    "type": "ScavRaidsDone",
+    "description": "Complete 15 Scav raids",
+    "target": 15,
+    "difficulty": 3
+  },
+  {
+    "id": "scav_raids_20",
+    "type": "ScavRaidsDone",
+    "description": "Complete 20 Scav raids",
+    "target": 20,
+    "difficulty": 3
+  },
+  {
+    "id": "scav_extract_10",
+    "type": "ScavExtract",
+    "description": "Extract as a Scav 10 times",
+    "target": 10,
+    "difficulty": 3
+  },
+  {
+    "id": "scav_extract_12",
+    "type": "ScavExtract",
+    "description": "Extract as a Scav 12 times",
+    "target": 12,
+    "difficulty": 3
+  },
+  {
+    "id": "scav_kills_30",
+    "type": "ScavKills",
+    "description": "Get 30 kills across Scav raids",
+    "target": 30,
+    "difficulty": 2
+  },
+  {
+    "id": "scav_kills_50",
+    "type": "ScavKills",
+    "description": "Get 50 kills across Scav raids",
+    "target": 50,
+    "difficulty": 3
+  },
+  {
+    "id": "scav_kills_80",
+    "type": "ScavKills",
+    "description": "Get 80 kills across Scav raids",
+    "target": 80,
+    "difficulty": 3
+  },
+  {
+    "id": "scav_kills_100",
+    "type": "ScavKills",
+    "description": "Get 100 kills across Scav raids",
+    "target": 100,
+    "difficulty": 3
+  },
+  {
+    "id": "extract_customs_3w",
+    "type": "ExtractFromLocation",
+    "description": "Extract from Customs 3 times",
+    "target": 3,
+    "targetLocation": "customs",
+    "difficulty": 2
+  },
+  {
+    "id": "extract_customs_5w",
+    "type": "ExtractFromLocation",
+    "description": "Extract from Customs 5 times",
+    "target": 5,
+    "targetLocation": "customs",
+    "difficulty": 3
+  },
+  {
+    "id": "extract_factory_3w",
+    "type": "ExtractFromLocation",
+    "description": "Extract from Factory 3 times",
+    "target": 3,
+    "targetLocation": "factory",
+    "difficulty": 2
+  },
+  {
+    "id": "extract_factory_5w",
+    "type": "ExtractFromLocation",
+    "description": "Extract from Factory 5 times",
+    "target": 5,
+    "targetLocation": "factory",
+    "difficulty": 3
+  },
+  {
+    "id": "extract_woods_3w",
+    "type": "ExtractFromLocation",
+    "description": "Extract from Woods 3 times",
+    "target": 3,
+    "targetLocation": "woods",
+    "difficulty": 2
+  },
+  {
+    "id": "extract_woods_5w",
+    "type": "ExtractFromLocation",
+    "description": "Extract from Woods 5 times",
+    "target": 5,
+    "targetLocation": "woods",
+    "difficulty": 3
+  },
+  {
+    "id": "extract_shoreline_3w",
+    "type": "ExtractFromLocation",
+    "description": "Extract from Shoreline 3 times",
+    "target": 3,
+    "targetLocation": "shoreline",
+    "difficulty": 2
+  },
+  {
+    "id": "extract_shoreline_5w",
+    "type": "ExtractFromLocation",
+    "description": "Extract from Shoreline 5 times",
+    "target": 5,
+    "targetLocation": "shoreline",
+    "difficulty": 3
+  },
+  {
+    "id": "extract_interchange_3w",
+    "type": "ExtractFromLocation",
+    "description": "Extract from Interchange 3 times",
+    "target": 3,
+    "targetLocation": "interchange",
+    "difficulty": 2
+  },
+  {
+    "id": "extract_interchange_5w",
+    "type": "ExtractFromLocation",
+    "description": "Extract from Interchange 5 times",
+    "target": 5,
+    "targetLocation": "interchange",
+    "difficulty": 3
+  },
+  {
+    "id": "extract_reserve_3w",
+    "type": "ExtractFromLocation",
+    "description": "Extract from Reserve 3 times",
+    "target": 3,
+    "targetLocation": "reserve",
+    "difficulty": 2
+  },
+  {
+    "id": "extract_reserve_5w",
+    "type": "ExtractFromLocation",
+    "description": "Extract from Reserve 5 times",
+    "target": 5,
+    "targetLocation": "reserve",
+    "difficulty": 3
+  },
+  {
+    "id": "extract_lighthouse_3w",
+    "type": "ExtractFromLocation",
+    "description": "Extract from Lighthouse 3 times",
+    "target": 3,
+    "targetLocation": "lighthouse",
+    "difficulty": 2
+  },
+  {
+    "id": "extract_lighthouse_5w",
+    "type": "ExtractFromLocation",
+    "description": "Extract from Lighthouse 5 times",
+    "target": 5,
+    "targetLocation": "lighthouse",
+    "difficulty": 3
+  },
+  {
+    "id": "extract_streets_3w",
+    "type": "ExtractFromLocation",
+    "description": "Extract from Streets of Tarkov 3 times",
+    "target": 3,
+    "targetLocation": "streets",
+    "difficulty": 2
+  },
+  {
+    "id": "extract_streets_5w",
+    "type": "ExtractFromLocation",
+    "description": "Extract from Streets of Tarkov 5 times",
+    "target": 5,
+    "targetLocation": "streets",
+    "difficulty": 3
+  },
+  {
+    "id": "extract_groundzero_3w",
+    "type": "ExtractFromLocation",
+    "description": "Extract from Ground Zero 3 times",
+    "target": 3,
+    "targetLocation": "groundzero",
+    "difficulty": 2
+  },
+  {
+    "id": "extract_groundzero_5w",
+    "type": "ExtractFromLocation",
+    "description": "Extract from Ground Zero 5 times",
+    "target": 5,
+    "targetLocation": "groundzero",
+    "difficulty": 3
+  },
+  {
+    "id": "scav_extract_customs_2w",
+    "type": "ScavExtractFromLocation",
+    "description": "Extract from Customs as a Scav 2 times",
+    "target": 2,
+    "targetLocation": "customs",
+    "difficulty": 2
+  },
+  {
+    "id": "scav_extract_factory_2w",
+    "type": "ScavExtractFromLocation",
+    "description": "Extract from Factory as a Scav 2 times",
+    "target": 2,
+    "targetLocation": "factory",
+    "difficulty": 2
+  },
+  {
+    "id": "scav_extract_woods_2w",
+    "type": "ScavExtractFromLocation",
+    "description": "Extract from Woods as a Scav 2 times",
+    "target": 2,
+    "targetLocation": "woods",
+    "difficulty": 2
+  },
+  {
+    "id": "scav_extract_shoreline_2w",
+    "type": "ScavExtractFromLocation",
+    "description": "Extract from Shoreline as a Scav 2 times",
+    "target": 2,
+    "targetLocation": "shoreline",
+    "difficulty": 2
+  },
+  {
+    "id": "scav_extract_interchange_2w",
+    "type": "ScavExtractFromLocation",
+    "description": "Extract from Interchange as a Scav 2 times",
+    "target": 2,
+    "targetLocation": "interchange",
+    "difficulty": 2
+  },
+  {
+    "id": "scav_extract_reserve_2w",
+    "type": "ScavExtractFromLocation",
+    "description": "Extract from Reserve as a Scav 2 times",
+    "target": 2,
+    "targetLocation": "reserve",
+    "difficulty": 2
+  },
+  {
+    "id": "scav_extract_lighthouse_2w",
+    "type": "ScavExtractFromLocation",
+    "description": "Extract from Lighthouse as a Scav 2 times",
+    "target": 2,
+    "targetLocation": "lighthouse",
+    "difficulty": 2
+  },
+  {
+    "id": "scav_extract_streets_2w",
+    "type": "ScavExtractFromLocation",
+    "description": "Extract from Streets of Tarkov as a Scav 2 times",
+    "target": 2,
+    "targetLocation": "streets",
+    "difficulty": 2
+  },
+  {
+    "id": "scav_extract_groundzero_2w",
+    "type": "ScavExtractFromLocation",
+    "description": "Extract from Ground Zero as a Scav 2 times",
+    "target": 2,
+    "targetLocation": "groundzero",
+    "difficulty": 2
+  }
+]

@@ -1,0 +1,20 @@
+{
+  "enabled": true,
+
+  "weekendStartDay": 5,
+  "weekendStartHour": 18,
+  "weekendEndDay": 1,
+  "weekendEndHour": 4,
+
+  "challengesPerWeekend": 8,
+  "weekendDifficultyBudget": 18,
+  "dropExpiryHours": 72,
+
+  "shopRestockHours": 6,
+  "shopGlobalRestockHours": 24,
+
+  "kitWeaponDrops": true,
+
+  "debugMode": false,
+  "debugUseRealChallenges": false
+}

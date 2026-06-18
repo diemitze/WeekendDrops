@@ -1,0 +1,807 @@
+[
+  {
+    "id": "daily_kill_scavs_5",
+    "type": "KillScavs",
+    "description": "Kill 5 Scavs",
+    "target": 5,
+    "gpReward": 45,
+    "difficulty": 1
+  },
+  {
+    "id": "daily_kill_scavs_10",
+    "type": "KillScavs",
+    "description": "Kill 10 Scavs",
+    "target": 10,
+    "gpReward": 85,
+    "difficulty": 2
+  },
+  {
+    "id": "daily_kill_scavs_15",
+    "type": "KillScavs",
+    "description": "Kill 15 Scavs",
+    "target": 15,
+    "gpReward": 95,
+    "difficulty": 2
+  },
+  {
+    "id": "daily_kill_scavs_20",
+    "type": "KillScavs",
+    "description": "Kill 20 Scavs",
+    "target": 20,
+    "gpReward": 150,
+    "difficulty": 3
+  },
+  {
+    "id": "daily_scav_spree_8",
+    "type": "KillScavsSingleRaid",
+    "description": "Kill 8 Scavs in a single raid",
+    "target": 8,
+    "gpReward": 90,
+    "difficulty": 2
+  },
+  {
+    "id": "daily_kill_pmcs_2",
+    "type": "KillPMCs",
+    "description": "Kill 2 PMCs",
+    "target": 2,
+    "gpReward": 95,
+    "difficulty": 2
+  },
+  {
+    "id": "daily_kill_pmcs_3",
+    "type": "KillPMCs",
+    "description": "Kill 3 PMCs",
+    "target": 3,
+    "gpReward": 160,
+    "difficulty": 3
+  },
+  {
+    "id": "daily_kill_pmcs_5",
+    "type": "KillPMCs",
+    "description": "Kill 5 PMCs",
+    "target": 5,
+    "gpReward": 175,
+    "difficulty": 3
+  },
+  {
+    "id": "daily_pmc_double_raid",
+    "type": "KillPMCsSingleRaid",
+    "description": "Kill 2 PMCs in a single raid",
+    "target": 2,
+    "gpReward": 160,
+    "difficulty": 3
+  },
+  {
+    "id": "daily_pmc_triple_raid",
+    "type": "KillPMCsSingleRaid",
+    "description": "Kill 3 PMCs in a single raid",
+    "target": 3,
+    "gpReward": 190,
+    "difficulty": 3
+  },
+  {
+    "id": "daily_headshots_3",
+    "type": "KillHeadshots",
+    "description": "Kill 3 enemies with headshots",
+    "target": 3,
+    "gpReward": 90,
+    "difficulty": 2
+  },
+  {
+    "id": "daily_extract_once",
+    "type": "ExtractSuccessfully",
+    "description": "Extract successfully from any map",
+    "target": 1,
+    "gpReward": 40,
+    "difficulty": 1
+  },
+  {
+    "id": "daily_extract_3",
+    "type": "ExtractSuccessfully",
+    "description": "Extract successfully 3 times",
+    "target": 3,
+    "gpReward": 85,
+    "difficulty": 2
+  },
+  {
+    "id": "daily_survive_15min",
+    "type": "SurviveTimeCumulative",
+    "description": "Survive 15 minutes total (resets on death)",
+    "target": 900,
+    "gpReward": 45,
+    "difficulty": 1
+  },
+  {
+    "id": "daily_survive_30min",
+    "type": "SurviveTimeCumulative",
+    "description": "Survive 30 minutes total (resets on death)",
+    "target": 1800,
+    "gpReward": 85,
+    "difficulty": 2
+  },
+  {
+    "id": "daily_kill_boss",
+    "type": "KillBoss",
+    "description": "Eliminate a boss",
+    "target": 1,
+    "gpReward": 175,
+    "difficulty": 3
+  },
+  {
+    "id": "daily_scav_raids_3",
+    "type": "ScavRaidsDone",
+    "description": "Complete 3 Scav raids",
+    "target": 3,
+    "gpReward": 50,
+    "difficulty": 1
+  },
+  {
+    "id": "daily_scav_raids_5",
+    "type": "ScavRaidsDone",
+    "description": "Complete 5 Scav raids",
+    "target": 5,
+    "gpReward": 90,
+    "difficulty": 2
+  },
+  {
+    "id": "daily_scav_extract",
+    "type": "ScavExtract",
+    "description": "Extract once as a Scav",
+    "target": 1,
+    "gpReward": 45,
+    "difficulty": 1
+  },
+  {
+    "id": "daily_scav_extract_2",
+    "type": "ScavExtract",
+    "description": "Extract as a Scav 2 times",
+    "target": 2,
+    "gpReward": 90,
+    "difficulty": 2
+  },
+  {
+    "id": "daily_scav_kills_8",
+    "type": "ScavKills",
+    "description": "Get 8 kills across Scav raids",
+    "target": 8,
+    "gpReward": 85,
+    "difficulty": 2
+  },
+  {
+    "id": "daily_scav_kills_12",
+    "type": "ScavKills",
+    "description": "Get 12 kills across Scav raids",
+    "target": 12,
+    "gpReward": 100,
+    "difficulty": 2
+  },
+  {
+    "id": "daily_scav_kills_20",
+    "type": "ScavKills",
+    "description": "Get 20 kills across Scav raids",
+    "target": 20,
+    "gpReward": 155,
+    "difficulty": 3
+  },
+  {
+    "id": "daily_extract_customs",
+    "type": "ExtractFromLocation",
+    "description": "Extract from Customs",
+    "target": 1,
+    "targetLocation": "bigmap",
+    "gpReward": 50,
+    "difficulty": 1
+  },
+  {
+    "id": "daily_extract_woods",
+    "type": "ExtractFromLocation",
+    "description": "Extract from Woods",
+    "target": 1,
+    "targetLocation": "Woods",
+    "gpReward": 50,
+    "difficulty": 1
+  },
+  {
+    "id": "daily_extract_shoreline",
+    "type": "ExtractFromLocation",
+    "description": "Extract from Shoreline",
+    "target": 1,
+    "targetLocation": "Shoreline",
+    "gpReward": 55,
+    "difficulty": 1
+  },
+  {
+    "id": "daily_extract_interchange",
+    "type": "ExtractFromLocation",
+    "description": "Extract from Interchange",
+    "target": 1,
+    "targetLocation": "Interchange",
+    "gpReward": 85,
+    "difficulty": 2
+  },
+  {
+    "id": "daily_extract_streets",
+    "type": "ExtractFromLocation",
+    "description": "Extract from Streets of Tarkov",
+    "target": 1,
+    "targetLocation": "TarkovStreets",
+    "gpReward": 90,
+    "difficulty": 2
+  },
+  {
+    "id": "daily_kill_scavs_8",
+    "type": "KillScavs",
+    "description": "Kill 8 Scavs",
+    "target": 8,
+    "gpReward": 80,
+    "difficulty": 2
+  },
+  {
+    "id": "daily_scav_spree_12",
+    "type": "KillScavsSingleRaid",
+    "description": "Kill 12 Scavs in a single raid",
+    "target": 12,
+    "gpReward": 150,
+    "difficulty": 3
+  },
+  {
+    "id": "daily_kill_pmc_1",
+    "type": "KillPMCs",
+    "description": "Kill a PMC",
+    "target": 1,
+    "gpReward": 50,
+    "difficulty": 1
+  },
+  {
+    "id": "daily_headshots_2",
+    "type": "KillHeadshots",
+    "description": "Kill 2 enemies with headshots",
+    "target": 2,
+    "gpReward": 50,
+    "difficulty": 1
+  },
+  {
+    "id": "daily_headshots_5",
+    "type": "KillHeadshots",
+    "description": "Kill 5 enemies with headshots",
+    "target": 5,
+    "gpReward": 155,
+    "difficulty": 3
+  },
+  {
+    "id": "daily_survive_45min",
+    "type": "SurviveTimeCumulative",
+    "description": "Survive 45 minutes total (resets on death)",
+    "target": 2700,
+    "gpReward": 150,
+    "difficulty": 3
+  },
+  {
+    "id": "daily_extract_5",
+    "type": "ExtractSuccessfully",
+    "description": "Extract successfully 5 times",
+    "target": 5,
+    "gpReward": 150,
+    "difficulty": 3
+  },
+  {
+    "id": "daily_extract_factory",
+    "type": "ExtractFromLocation",
+    "description": "Extract from Factory",
+    "target": 1,
+    "targetLocation": "factory",
+    "gpReward": 45,
+    "difficulty": 1
+  },
+  {
+    "id": "daily_extract_groundzero",
+    "type": "ExtractFromLocation",
+    "description": "Extract from Ground Zero",
+    "target": 1,
+    "targetLocation": "groundzero",
+    "gpReward": 50,
+    "difficulty": 1
+  },
+  {
+    "id": "daily_extract_reserve",
+    "type": "ExtractFromLocation",
+    "description": "Extract from Reserve",
+    "target": 1,
+    "targetLocation": "reserve",
+    "gpReward": 85,
+    "difficulty": 2
+  },
+  {
+    "id": "daily_extract_lighthouse",
+    "type": "ExtractFromLocation",
+    "description": "Extract from Lighthouse",
+    "target": 1,
+    "targetLocation": "lighthouse",
+    "gpReward": 90,
+    "difficulty": 2
+  },
+  {
+    "id": "daily_scav_raids_2",
+    "type": "ScavRaidsDone",
+    "description": "Complete 2 Scav raids",
+    "target": 2,
+    "gpReward": 40,
+    "difficulty": 1
+  },
+  {
+    "id": "daily_scav_kills_5",
+    "type": "ScavKills",
+    "description": "Get 5 kills across Scav raids",
+    "target": 5,
+    "gpReward": 50,
+    "difficulty": 1
+  },
+  {
+    "id": "daily_scav_extract_3",
+    "type": "ScavExtract",
+    "description": "Extract as a Scav 3 times",
+    "target": 3,
+    "gpReward": 150,
+    "difficulty": 3
+  },
+  {
+    "id": "daily_grenade_kill_1",
+    "type": "GrenadeKills",
+    "description": "Kill an enemy with a grenade",
+    "target": 1,
+    "gpReward": 50,
+    "difficulty": 1
+  },
+  {
+    "id": "daily_grenade_kills_3",
+    "type": "GrenadeKills",
+    "description": "Kill 3 enemies with grenades",
+    "target": 3,
+    "gpReward": 95,
+    "difficulty": 2
+  },
+  {
+    "id": "daily_grenade_kills_5",
+    "type": "GrenadeKills",
+    "description": "Kill 5 enemies with grenades",
+    "target": 5,
+    "gpReward": 160,
+    "difficulty": 3
+  },
+  {
+    "id": "daily_kill_scavs_12",
+    "type": "KillScavs",
+    "description": "Kill 12 Scavs",
+    "target": 12,
+    "gpReward": 90,
+    "difficulty": 2
+  },
+  {
+    "id": "daily_kill_pmcs_4",
+    "type": "KillPMCs",
+    "description": "Kill 4 PMCs",
+    "target": 4,
+    "gpReward": 170,
+    "difficulty": 3
+  },
+  {
+    "id": "daily_scav_spree_10",
+    "type": "KillScavsSingleRaid",
+    "description": "Kill 10 Scavs in a single raid",
+    "target": 10,
+    "gpReward": 100,
+    "difficulty": 2
+  },
+  {
+    "id": "daily_loot_extract_150k",
+    "type": "ExtractWithLootValue",
+    "description": "Extract with ₽150,000 of loot in one raid",
+    "target": 150000,
+    "gpReward": 90,
+    "difficulty": 2,
+    "requiresLootNet": true
+  },
+  {
+    "id": "daily_loot_extract_400k",
+    "type": "ExtractWithLootValue",
+    "description": "Extract with ₽400,000 of loot in one raid",
+    "target": 400000,
+    "gpReward": 160,
+    "difficulty": 3,
+    "requiresLootNet": true
+  },
+  {
+    "id": "daily_kill_pmcs_6",
+    "type": "KillPMCs",
+    "description": "Kill 6 PMCs",
+    "target": 6,
+    "gpReward": 165,
+    "difficulty": 3
+  },
+  {
+    "id": "daily_kill_pmcs_8",
+    "type": "KillPMCs",
+    "description": "Kill 8 PMCs",
+    "target": 8,
+    "gpReward": 165,
+    "difficulty": 3
+  },
+  {
+    "id": "daily_pmc_spree_4_raid",
+    "type": "KillPMCsSingleRaid",
+    "description": "Kill 4 PMCs in a single raid",
+    "target": 4,
+    "gpReward": 165,
+    "difficulty": 3
+  },
+  {
+    "id": "daily_pmc_spree_5_raid",
+    "type": "KillPMCsSingleRaid",
+    "description": "Kill 5 PMCs in a single raid",
+    "target": 5,
+    "gpReward": 165,
+    "difficulty": 3
+  },
+  {
+    "id": "daily_kill_scavs_25",
+    "type": "KillScavs",
+    "description": "Kill 25 Scavs",
+    "target": 25,
+    "gpReward": 165,
+    "difficulty": 3
+  },
+  {
+    "id": "daily_kill_scavs_30",
+    "type": "KillScavs",
+    "description": "Kill 30 Scavs",
+    "target": 30,
+    "gpReward": 165,
+    "difficulty": 3
+  },
+  {
+    "id": "daily_scav_spree_6",
+    "type": "KillScavsSingleRaid",
+    "description": "Kill 6 Scavs in a single raid",
+    "target": 6,
+    "gpReward": 90,
+    "difficulty": 2
+  },
+  {
+    "id": "daily_scav_spree_15",
+    "type": "KillScavsSingleRaid",
+    "description": "Kill 15 Scavs in a single raid",
+    "target": 15,
+    "gpReward": 165,
+    "difficulty": 3
+  },
+  {
+    "id": "daily_scav_spree_20",
+    "type": "KillScavsSingleRaid",
+    "description": "Kill 20 Scavs in a single raid",
+    "target": 20,
+    "gpReward": 165,
+    "difficulty": 3
+  },
+  {
+    "id": "daily_headshots_4",
+    "type": "KillHeadshots",
+    "description": "Kill 4 enemies with headshots",
+    "target": 4,
+    "gpReward": 90,
+    "difficulty": 2
+  },
+  {
+    "id": "daily_headshots_8",
+    "type": "KillHeadshots",
+    "description": "Kill 8 enemies with headshots",
+    "target": 8,
+    "gpReward": 165,
+    "difficulty": 3
+  },
+  {
+    "id": "daily_headshots_10",
+    "type": "KillHeadshots",
+    "description": "Kill 10 enemies with headshots",
+    "target": 10,
+    "gpReward": 165,
+    "difficulty": 3
+  },
+  {
+    "id": "daily_grenade_kills_2",
+    "type": "GrenadeKills",
+    "description": "Kill 2 enemies with grenades",
+    "target": 2,
+    "gpReward": 90,
+    "difficulty": 2
+  },
+  {
+    "id": "daily_grenade_kills_4",
+    "type": "GrenadeKills",
+    "description": "Kill 4 enemies with grenades",
+    "target": 4,
+    "gpReward": 165,
+    "difficulty": 3
+  },
+  {
+    "id": "daily_survive_10min",
+    "type": "SurviveTimeCumulative",
+    "description": "Survive 10 minutes total (resets on death)",
+    "target": 600,
+    "gpReward": 50,
+    "difficulty": 1
+  },
+  {
+    "id": "daily_survive_20min",
+    "type": "SurviveTimeCumulative",
+    "description": "Survive 20 minutes total (resets on death)",
+    "target": 1200,
+    "gpReward": 90,
+    "difficulty": 2
+  },
+  {
+    "id": "daily_survive_60min",
+    "type": "SurviveTimeCumulative",
+    "description": "Survive 60 minutes total (resets on death)",
+    "target": 3600,
+    "gpReward": 165,
+    "difficulty": 3
+  },
+  {
+    "id": "daily_extract_2x",
+    "type": "ExtractSuccessfully",
+    "description": "Extract successfully 2 times",
+    "target": 2,
+    "gpReward": 50,
+    "difficulty": 1
+  },
+  {
+    "id": "daily_extract_4x",
+    "type": "ExtractSuccessfully",
+    "description": "Extract successfully 4 times",
+    "target": 4,
+    "gpReward": 90,
+    "difficulty": 2
+  },
+  {
+    "id": "daily_extract_8x",
+    "type": "ExtractSuccessfully",
+    "description": "Extract successfully 8 times",
+    "target": 8,
+    "gpReward": 165,
+    "difficulty": 3
+  },
+  {
+    "id": "daily_kill_bosses_2",
+    "type": "KillBoss",
+    "description": "Eliminate 2 bosses",
+    "target": 2,
+    "gpReward": 165,
+    "difficulty": 3
+  },
+  {
+    "id": "daily_scav_raids_4",
+    "type": "ScavRaidsDone",
+    "description": "Complete 4 Scav raids",
+    "target": 4,
+    "gpReward": 90,
+    "difficulty": 2
+  },
+  {
+    "id": "daily_scav_raids_7",
+    "type": "ScavRaidsDone",
+    "description": "Complete 7 Scav raids",
+    "target": 7,
+    "gpReward": 165,
+    "difficulty": 3
+  },
+  {
+    "id": "daily_scav_raids_10",
+    "type": "ScavRaidsDone",
+    "description": "Complete 10 Scav raids",
+    "target": 10,
+    "gpReward": 165,
+    "difficulty": 3
+  },
+  {
+    "id": "daily_scav_extract_4",
+    "type": "ScavExtract",
+    "description": "Extract as a Scav 4 times",
+    "target": 4,
+    "gpReward": 165,
+    "difficulty": 3
+  },
+  {
+    "id": "daily_scav_extract_5",
+    "type": "ScavExtract",
+    "description": "Extract as a Scav 5 times",
+    "target": 5,
+    "gpReward": 165,
+    "difficulty": 3
+  },
+  {
+    "id": "daily_scav_kills_15",
+    "type": "ScavKills",
+    "description": "Get 15 kills across Scav raids",
+    "target": 15,
+    "gpReward": 165,
+    "difficulty": 3
+  },
+  {
+    "id": "daily_scav_kills_25",
+    "type": "ScavKills",
+    "description": "Get 25 kills across Scav raids",
+    "target": 25,
+    "gpReward": 165,
+    "difficulty": 3
+  },
+  {
+    "id": "daily_extract_customs_2",
+    "type": "ExtractFromLocation",
+    "description": "Extract from Customs 2 times",
+    "target": 2,
+    "targetLocation": "customs",
+    "gpReward": 95,
+    "difficulty": 2
+  },
+  {
+    "id": "daily_extract_factory_2",
+    "type": "ExtractFromLocation",
+    "description": "Extract from Factory 2 times",
+    "target": 2,
+    "targetLocation": "factory",
+    "gpReward": 95,
+    "difficulty": 2
+  },
+  {
+    "id": "daily_extract_woods_2",
+    "type": "ExtractFromLocation",
+    "description": "Extract from Woods 2 times",
+    "target": 2,
+    "targetLocation": "woods",
+    "gpReward": 95,
+    "difficulty": 2
+  },
+  {
+    "id": "daily_extract_shoreline_2",
+    "type": "ExtractFromLocation",
+    "description": "Extract from Shoreline 2 times",
+    "target": 2,
+    "targetLocation": "shoreline",
+    "gpReward": 95,
+    "difficulty": 2
+  },
+  {
+    "id": "daily_extract_interchange_2",
+    "type": "ExtractFromLocation",
+    "description": "Extract from Interchange 2 times",
+    "target": 2,
+    "targetLocation": "interchange",
+    "gpReward": 95,
+    "difficulty": 2
+  },
+  {
+    "id": "daily_extract_reserve_2",
+    "type": "ExtractFromLocation",
+    "description": "Extract from Reserve 2 times",
+    "target": 2,
+    "targetLocation": "reserve",
+    "gpReward": 95,
+    "difficulty": 2
+  },
+  {
+    "id": "daily_extract_lighthouse_2",
+    "type": "ExtractFromLocation",
+    "description": "Extract from Lighthouse 2 times",
+    "target": 2,
+    "targetLocation": "lighthouse",
+    "gpReward": 95,
+    "difficulty": 2
+  },
+  {
+    "id": "daily_extract_streets_2",
+    "type": "ExtractFromLocation",
+    "description": "Extract from Streets of Tarkov 2 times",
+    "target": 2,
+    "targetLocation": "streets",
+    "gpReward": 95,
+    "difficulty": 2
+  },
+  {
+    "id": "daily_extract_groundzero_2",
+    "type": "ExtractFromLocation",
+    "description": "Extract from Ground Zero 2 times",
+    "target": 2,
+    "targetLocation": "groundzero",
+    "gpReward": 95,
+    "difficulty": 2
+  },
+  {
+    "id": "daily_scav_kills_30",
+    "type": "ScavKills",
+    "description": "Get 30 kills across Scav raids",
+    "target": 30,
+    "gpReward": 175,
+    "difficulty": 3
+  },
+  {
+    "id": "daily_scav_extract_customs",
+    "type": "ScavExtractFromLocation",
+    "description": "Extract from Customs as a Scav",
+    "target": 1,
+    "targetLocation": "customs",
+    "gpReward": 50,
+    "difficulty": 1
+  },
+  {
+    "id": "daily_scav_extract_factory",
+    "type": "ScavExtractFromLocation",
+    "description": "Extract from Factory as a Scav",
+    "target": 1,
+    "targetLocation": "factory",
+    "gpReward": 50,
+    "difficulty": 1
+  },
+  {
+    "id": "daily_scav_extract_woods",
+    "type": "ScavExtractFromLocation",
+    "description": "Extract from Woods as a Scav",
+    "target": 1,
+    "targetLocation": "woods",
+    "gpReward": 50,
+    "difficulty": 1
+  },
+  {
+    "id": "daily_scav_extract_shoreline",
+    "type": "ScavExtractFromLocation",
+    "description": "Extract from Shoreline as a Scav",
+    "target": 1,
+    "targetLocation": "shoreline",
+    "gpReward": 50,
+    "difficulty": 1
+  },
+  {
+    "id": "daily_scav_extract_interchange",
+    "type": "ScavExtractFromLocation",
+    "description": "Extract from Interchange as a Scav",
+    "target": 1,
+    "targetLocation": "interchange",
+    "gpReward": 90,
+    "difficulty": 2
+  },
+  {
+    "id": "daily_scav_extract_reserve",
+    "type": "ScavExtractFromLocation",
+    "description": "Extract from Reserve as a Scav",
+    "target": 1,
+    "targetLocation": "reserve",
+    "gpReward": 90,
+    "difficulty": 2
+  },
+  {
+    "id": "daily_scav_extract_lighthouse",
+    "type": "ScavExtractFromLocation",
+    "description": "Extract from Lighthouse as a Scav",
+    "target": 1,
+    "targetLocation": "lighthouse",
+    "gpReward": 90,
+    "difficulty": 2
+  },
+  {
+    "id": "daily_scav_extract_streets",
+    "type": "ScavExtractFromLocation",
+    "description": "Extract from Streets of Tarkov as a Scav",
+    "target": 1,
+    "targetLocation": "streets",
+    "gpReward": 90,
+    "difficulty": 2
+  },
+  {
+    "id": "daily_scav_extract_groundzero",
+    "type": "ScavExtractFromLocation",
+    "description": "Extract from Ground Zero as a Scav",
+    "target": 1,
+    "targetLocation": "groundzero",
+    "gpReward": 50,
+    "difficulty": 1
+  }
+]

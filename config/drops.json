@@ -1,0 +1,73 @@
+{
+  "tiers": [
+    {
+      "requiredChallenges": 6,
+      "tierName": "Common Drop",
+      "pools": [
+        {
+          "itemIds": [
+            "6694f4101ae1778e310f4f8e",
+            "66a3896972c8e72507028806",
+            "66a3896de45f71bf1009e45a",
+            "676a93c51888885b4e008b18",
+            "676a95041888885b4e008b36",
+            "676a98d7b4ba2f4afa04c704",
+            "676a9a5c744595610f0ed501",
+            "676a9b15b4ba2f4afa04c7ad",
+            "676a9b1afe1fc45172014d32",
+            "676a9bc6744595610f0ed52e",
+            "67b70e43f753cf9f7a0a07a6"
+          ],
+          "count": 1
+        }
+      ],
+      "gpReward": 150
+    },
+    {
+      "requiredChallenges": 11,
+      "tierName": "Rare Drop",
+      "pools": [
+        {
+          "itemIds": [
+            "6694f418c74d8a180f0f78c0",
+            "66a3898c1df2a447cc0d3c35",
+            "66a3898f0982fc7e4c091c4d",
+            "676a9da81888885b4e008c51",
+            "676a9e46744595610f0ed53f",
+            "676a9f03744595610f0ed55f",
+            "676a9fc7a65670a58c084c9e",
+            "676aa016744595610f0ed563",
+            "676aa025fe1fc45172014d9f",
+            "676aa0f11888885b4e008c8b",
+            "67b72271e5673725070b0456"
+          ],
+          "count": 1
+        }
+      ],
+      "gpReward": 300
+    },
+    {
+      "requiredChallenges": 16,
+      "tierName": "Epic Drop",
+      "pools": [
+        {
+          "itemIds": [
+            "6694f423909d2322a8073151",
+            "66a389c0705adefa710cdeaa",
+            "66a389c60982fc7e4c091c51",
+            "676aa104fe1fc45172014da3",
+            "676aa29243000db5340061b5",
+            "676aa30ffe1fc45172014dce",
+            "676aa37ff90b6f429601afb5",
+            "676aa3cf7a232aa5c70bda8d",
+            "676aa3fc20a7cc6f4309e078",
+            "676aa450fe1fc45172014df2",
+            "67b72c64f753cf9f7a0a07aa"
+          ],
+          "count": 1
+        }
+      ],
+      "gpReward": 500
+    }
+  ]
+}

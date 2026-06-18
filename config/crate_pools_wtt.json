@@ -1,0 +1,55 @@
+{
+  "_comment": "OPTIONAL add-on pools for the WTT-ContentBackport mod (1.0 content). These tpls are merged into the matching base tier pool at load ONLY IF (a) config.json includeWttBackport is true AND (b) the item actually exists in the DB (i.e. the WTT mod is installed). If WTT is not installed these are silently skipped - no errors. Keyed by requiredChallenges, same as crate_pools.json. Weights aligned to the rebalanced base pools so WTT items add variety without dominating; WTT guns kept low (treat) per gear-first design.",
+  "tiers": {
+    "6": {
+      "_name": "Common WTT - M16s & basic 1.0 armor/rigs (rescaled to base bands)",
+      "pool": {
+        "68a639748e1fe612970728e9": 8,
+        "68a6399922b1e0bd360afe56": 8,
+        "67c6de3ce39861860909e8e5": 7,
+        "68a89146212dbbeead0d5636": 18,
+        "68a89942431252e29a02dbf6": 17,
+        "68948a95d8f2b85fb705e2a6": 18,
+        "68a9b3ca0a9c4f9398032c46": 14,
+        "68a9beecbba00932ed0bc256": 13,
+        "68a85ab8ef22d08bf401fa68": 16,
+        "689479a4a733b1602007e2eb": 16,
+        "689479cb47e5acd1e10be986": 15,
+        "68948ad72c87773b9f06d73f": 15
+      }
+    },
+    "11": {
+      "_name": "Rare WTT - 1.0 armor/helmets/rigs; NL545/Radian/SR-25 as gun treats",
+      "pool": {
+        "68c16b9ab6b75a8a480520a6": 8,
+        "68c2940aecc41cc5490bd40e": 8,
+        "6895bb82c4519957df062f82": 8,
+        "6932abeb5403890d0c09c926": 7,
+        "68a97093431252e29a02dc06": 22,
+        "68a986ca5c0073fa2d0d8cb8": 17,
+        "68bee2ccd6da72c13f03db95": 15,
+        "68bee28f79c8186398098e6f": 14,
+        "68a986615db8a4a66404ff9a": 18,
+        "68a85ac615a5769d50029cd9": 17,
+        "68bee2b431902bb4d90c3a2a": 16,
+        "68948b118c57a8a52301d7ae": 17,
+        "68a9b6c8d3a061d8b6058346": 13
+      }
+    },
+    "16": {
+      "_name": "Epic WTT - 1.0 carriers/packs/helmets; AK-308/AS VAL/TKPD as gun treats",
+      "pool": {
+        "689166b6c2d6fa42e7044756": 10,
+        "6871284e9a353bb50606f3ed": 8,
+        "68aee763130c00663d08aea8": 8,
+        "68947ab5a733b1602007e2fe": 16,
+        "68947a8ce4bf255d1b0ca759": 13,
+        "693fd1200ec97e98040bd3f9": 15,
+        "693fd0e9deee848f70054999": 14,
+        "68a9b601863d2a71fa0494ae": 13,
+        "68a9bf7d9f4c45817b0d83b6": 12,
+        "68947ad3e4bf255d1b0ca75c": 14
+      }
+    }
+  }
+}
