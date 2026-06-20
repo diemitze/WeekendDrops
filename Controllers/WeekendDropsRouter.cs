@@ -27,6 +27,10 @@ public class WeekendDropsRouter(JsonUtil jsonUtil, WeekendDropsCallback callback
             async (url, info, sessionId, output) => await callback.ClaimDailyReward(sessionId, info.Id)
         ),
         new RouteAction<StringIdRequest>(
+            "/weekenddrops/claimdailybonus",
+            async (url, info, sessionId, output) => await callback.ClaimDailyBonus(sessionId)
+        ),
+        new RouteAction<StringIdRequest>(
             "/weekenddrops/buyitem",
             async (url, info, sessionId, output) => await callback.BuyShopItem(sessionId, info.Id)
         ),
@@ -61,16 +65,29 @@ public class WeekendDropsCallback(
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     };
 
-    private void DetectLootNetBridge(string url)
+    // Client signals carried on state-request URLs (the server can't see client
+    // BepInEx DLLs or settings on its own): the LootNET bridge and the F12
+    // "disable Scav challenges" toggle. Both flip sticky flags for the server run.
+    private void DetectClientSignals(string url)
     {
-        if (url == null || !url.Contains("lootnet=1")) return;
-        challengeService.SetLootNetActive();
-        dailyService.SetLootNetActive();
+        if (url == null) return;
+
+        if (url.Contains("lootnet=1"))
+        {
+            challengeService.SetLootNetActive();
+            dailyService.SetLootNetActive();
+        }
+
+        if (url.Contains("noscav=1"))
+        {
+            challengeService.SetScavChallengesDisabled();
+            dailyService.SetScavChallengesDisabled();
+        }
     }
 
     public ValueTask<string> GetState(MongoId sessionId, string url)
     {
-        DetectLootNetBridge(url);
+        DetectClientSignals(url);
         var state = challengeService.GetClientState(sessionId);
         var json = JsonSerializer.Serialize(state, JsonOptions);
         return new ValueTask<string>(httpResponseUtil.GetBody(json));
@@ -78,7 +95,7 @@ public class WeekendDropsCallback(
 
     public ValueTask<string> GetDailyState(MongoId sessionId, string url)
     {
-        DetectLootNetBridge(url);
+        DetectClientSignals(url);
         var state = dailyService.GetDailyState(sessionId);
         var json = JsonSerializer.Serialize(state, JsonOptions);
         return new ValueTask<string>(httpResponseUtil.GetBody(json));
@@ -87,6 +104,13 @@ public class WeekendDropsCallback(
     public ValueTask<string> ClaimDailyReward(MongoId sessionId, string challengeId)
     {
         var result = dailyService.ClaimDailyReward(sessionId, challengeId);
+        var json = JsonSerializer.Serialize(new { result }, JsonOptions);
+        return new ValueTask<string>(httpResponseUtil.GetBody(json));
+    }
+
+    public ValueTask<string> ClaimDailyBonus(MongoId sessionId)
+    {
+        var result = dailyService.ClaimDailyBonus(sessionId);
         var json = JsonSerializer.Serialize(new { result }, JsonOptions);
         return new ValueTask<string>(httpResponseUtil.GetBody(json));
     }

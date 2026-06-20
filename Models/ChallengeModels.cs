@@ -46,6 +46,16 @@ public static class ChallengeMetrics
         ChallengeType.ExtractWithLootValue or ChallengeType.LootValueCumulative => "loot",
         _                                                                  => t.ToString(),
     };
+
+    // Challenges that can only be progressed while running as a Scav. Excluded
+    // from the pools when the player has Scav raids disabled (config flag), so the
+    // sets never hand out a quest they can't complete.
+    public static bool IsScavOnly(ChallengeType t) => t switch
+    {
+        ChallengeType.ScavExtract or ChallengeType.ScavKills
+            or ChallengeType.ScavRaidsDone or ChallengeType.ScavExtractFromLocation => true,
+        _ => false,
+    };
 }
 
 public class ChallengeDefinition
@@ -161,6 +171,11 @@ public class ModConfig
   
     [JsonPropertyName("includeLootNet")]
     public bool IncludeLootNet { get; set; }
+
+    // When false, Scav-run challenges (extract/kills/raids as a Scav) are dropped
+    // from both the weekend and daily pools - for players who run Scav raids off.
+    [JsonPropertyName("enableScavChallenges")]
+    public bool EnableScavChallenges { get; set; } = true;
 }
 
 public class DropPool

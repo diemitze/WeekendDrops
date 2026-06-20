@@ -15,6 +15,8 @@
 
   "kitWeaponDrops": true,
 
+  "enableScavChallenges": true,
+
   "debugMode": false,
   "debugUseRealChallenges": false
 }

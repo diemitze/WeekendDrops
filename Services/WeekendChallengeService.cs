@@ -40,6 +40,7 @@ public class WeekendChallengeService(
     private List<ChallengeDefinition> _challengePool = [];   // effective pool (loot-value quests in/out)
     private List<ChallengeDefinition> _allChallenges = [];   // full pool as loaded
     private bool _lootNetActive;                             // LootNET bridge present (client-signalled)
+    private bool _scavDisabled;                              // client F12 toggle: drop Scav-run challenges
     private DropsConfig _dropsConfig = new();
     private CratePoolsConfig _cratePools = new();
     private CratePoolsConfig _wttPools = new();
@@ -89,11 +90,17 @@ public class WeekendChallengeService(
     }
 
     // Effective pool = all challenges, minus loot-value ones unless the LootNET bridge
-    // is active (so non-LootNET players never get an unprogressable quest).
+    // is active (so non-LootNET players never get an unprogressable quest), and minus
+    // Scav-run challenges when the player has Scav challenges disabled in config.
     private void ApplyChallengePool() =>
-        _challengePool = _lootNetActive
-            ? [.. _allChallenges]
-            : _allChallenges.Where(c => !c.RequiresLootNet).ToList();
+        _challengePool = _allChallenges
+            .Where(c => _lootNetActive || !c.RequiresLootNet)
+            .Where(c => ScavEnabled || !ChallengeMetrics.IsScavOnly(c.Type))
+            .ToList();
+
+    // Scav-run challenges are in the pool only when enabled in config AND the client
+    // hasn't toggled them off (F12). Either source can suppress them.
+    private bool ScavEnabled => _config.EnableScavChallenges && !_scavDisabled;
 
     // Called when a client state request carries the LootNET bridge tag. Sticky: once
     // on for this server run, stays on (avoids churn). Rebuilds the effective pool so
@@ -104,6 +111,71 @@ public class WeekendChallengeService(
         _lootNetActive = true;
         ApplyChallengePool();
         logger.Info("[WeekendDrops] LootNET bridge detected - loot-value challenges enabled.");
+    }
+
+    // Called when a client state request carries the no-Scav toggle tag. Sticky for
+    // the server run (takes full effect on restart), mirroring the LootNET bridge.
+    public void SetScavChallengesDisabled()
+    {
+        if (_scavDisabled) return;
+        _scavDisabled = true;
+        ApplyChallengePool();
+        logger.Info("[WeekendDrops] Client toggle: Scav-run challenges disabled for this run.");
+    }
+
+    // Replace every Scav-run challenge in the set with another quest of the same
+    // difficulty (so the weekend point budget holds), in place. The replacement comes
+    // from a group not already in the set, preferring a PMC quest when the PMC slot is
+    // free, matching the one-per-group variety of a fresh set. Other challenges and
+    // their progress are untouched; the replacement starts fresh at 0/target, so a
+    // previously-completed Scav challenge is genuinely re-tasked. Returns true if
+    // anything was swapped.
+    private bool ReplaceScavChallenges(PlayerWeekendState state)
+    {
+        if (!_scavDisabled) return false;
+
+        var rng     = new Random();
+        var usedIds = state.Challenges.Select(c => c.DefinitionId).ToHashSet();
+        var usedGroups = state.Challenges
+            .Select(c => _allChallenges.FirstOrDefault(d => d.Id == c.DefinitionId))
+            .Where(d => d is not null && !ChallengeMetrics.IsScavOnly(d.Type))
+            .Select(d => ChallengeMetrics.Group(d!.Type))
+            .ToHashSet();
+
+        bool changed = false;
+
+        foreach (var cp in state.Challenges)
+        {
+            var def = _allChallenges.FirstOrDefault(d => d.Id == cp.DefinitionId);
+            if (def is null || !ChallengeMetrics.IsScavOnly(def.Type)) continue;
+
+            // Same difficulty keeps the budget; group not already used keeps variety;
+            // prefer PMC when its slot is free.
+            var sameDiff = _challengePool.Where(d => d.Difficulty == def.Difficulty
+                                                  && !usedIds.Contains(d.Id)
+                                                  && !usedGroups.Contains(ChallengeMetrics.Group(d.Type))).ToList();
+            var pmc      = sameDiff.Where(d => ChallengeMetrics.Group(d.Type) == "pmc").ToList();
+            var pickPool = pmc.Count > 0 ? pmc : sameDiff;
+            // Fall back to any same-difficulty quest not already in the set, so the
+            // budget still balances even if every fresh group is taken.
+            if (pickPool.Count == 0)
+                pickPool = _challengePool.Where(d => d.Difficulty == def.Difficulty
+                                                  && !usedIds.Contains(d.Id)).ToList();
+            if (pickPool.Count == 0) continue;   // leave it; the stale check will reassign
+
+            var pick = pickPool[rng.Next(pickPool.Count)];
+
+            usedIds.Remove(cp.DefinitionId);
+            cp.DefinitionId = pick.Id;
+            cp.Target       = pick.Target;
+            cp.Current      = 0;
+            cp.Definition   = pick;
+            usedIds.Add(pick.Id);
+            usedGroups.Add(ChallengeMetrics.Group(pick.Type));
+            changed = true;
+        }
+
+        return changed;
     }
 
     // The drop crates handed out as rewards are vanilla "RandomLootContainer" items
@@ -356,7 +428,15 @@ public class WeekendChallengeService(
 
         var currentWeekendId = GetCurrentWeekendId();
 
-    
+        // Scav disabled: swap any Scav-run challenges in the current set for PMC quests
+        // of the same difficulty (so the budget holds), in place. Runs before the
+        // staleness check so it doesn't trigger a full reassign of the whole set.
+        if (state is not null && state.WeekendId == currentWeekendId && ReplaceScavChallenges(state))
+        {
+            SaveState(sessionId, state);
+            logger.Info($"[WeekendDrops] Weekend Scav challenges replaced for {sessionId} (Scav challenges disabled)");
+        }
+
         bool stale = false;
         if (state is not null && state.WeekendId == currentWeekendId)
         {
@@ -702,10 +782,20 @@ public class WeekendChallengeService(
 
     // ── JSON helpers ──────────────────────────────────────────────────────────
 
-    private static T? LoadJson<T>(string path)
+    // Tolerant load: a malformed or half-written file (bad manual edit, or a save
+    // truncated by a crash mid-write) falls back to default with a named log line
+    // instead of throwing - so one bad file can't brick the whole mod at startup.
+    private T? LoadJson<T>(string path)
     {
         if (!File.Exists(path)) return default;
-        var json = File.ReadAllText(path);
-        return JsonSerializer.Deserialize<T>(json, JsonOptions);
+        try
+        {
+            return JsonSerializer.Deserialize<T>(File.ReadAllText(path), JsonOptions);
+        }
+        catch (Exception ex)
+        {
+            logger.Error($"[WeekendDrops] Could not read {SysPath.GetFileName(path)}: {ex.Message}. Ignoring this file (using defaults).");
+            return default;
+        }
     }
 }

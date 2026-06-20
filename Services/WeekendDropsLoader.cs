@@ -39,6 +39,10 @@ public class WeekendDropsLoader(
         // Make crate ammo drop as a full stack instead of a single round / empty box.
         LootContainerAmmoStackPatch.Apply(itemHelper, logger);
 
+        // Cap bulky wearables (backpack / armor / rig / headwear) to one per crate so
+        // an Equipment crate can't hand out 3 backpacks at once.
+        CrateCategoryCapPatch.Apply(itemHelper, logger);
+
         // Bolt compatible attachments onto weapons pulled from crates so they arrive
         // kitted instead of as the bare default preset.
         if (weekendChallengeService.Config.KitWeaponDrops)

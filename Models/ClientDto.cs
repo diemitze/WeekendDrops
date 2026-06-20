@@ -149,6 +149,15 @@ public class DailyStateDto
     // Seconds until the next global shop stock refill (0 = disabled).
     [JsonPropertyName("globalRestockSeconds")]
     public double GlobalRestockSeconds { get; set; }
+
+    // GP paid for clearing the whole daily set (50% of the set's total GP).
+    [JsonPropertyName("dailyBonusGp")]
+    public int DailyBonusGp { get; set; }
+
+    // True once the complete-all bonus has been collected today. Authoritative -
+    // the client renders the button state from this so it survives a restart.
+    [JsonPropertyName("dailyBonusClaimed")]
+    public bool DailyBonusClaimed { get; set; }
 }
 
 public class StringIdRequest : IRequestData

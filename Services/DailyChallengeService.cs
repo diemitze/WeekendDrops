@@ -32,6 +32,7 @@ public class DailyChallengeService(
     private List<DailyChallengeDefinition> _pool = [];        // effective pool
     private List<DailyChallengeDefinition> _allDaily = [];    // full pool as loaded
     private bool _lootNetActive;                              // LootNET bridge present
+    private bool _scavDisabled;                               // client F12 toggle: drop Scav-run dailies
     private List<ShopItemDefinition> _shopItems = [];
 
     // itemId -> UTC time it becomes buyable again (in-memory; single-player).
@@ -82,17 +83,32 @@ public class DailyChallengeService(
             logger.Warning($"[WeekendDrops] Daily DEBUG MODE - using {dailyFile}");
     }
 
-    // Effective daily pool, dropping loot-value dailies unless the LootNET bridge is active.
+    // Effective daily pool: drop loot-value dailies unless the LootNET bridge is
+    // active, and drop Scav-run dailies when the player has Scav challenges off.
     private void ApplyDailyPool() =>
-        _pool = _lootNetActive
-            ? [.. _allDaily]
-            : _allDaily.Where(c => !c.RequiresLootNet).ToList();
+        _pool = _allDaily
+            .Where(c => _lootNetActive || !c.RequiresLootNet)
+            .Where(c => ScavEnabled || !ChallengeMetrics.IsScavOnly(c.Type))
+            .ToList();
+
+    // Scav-run dailies are in the pool only when enabled in config AND the client
+    // hasn't toggled them off (F12). Either source can suppress them.
+    private bool ScavEnabled => _config.EnableScavChallenges && !_scavDisabled;
 
     // Flipped on (sticky) when a client state request carries the LootNET bridge tag.
     public void SetLootNetActive()
     {
         if (_lootNetActive) return;
         _lootNetActive = true;
+        ApplyDailyPool();
+    }
+
+    // Flipped on (sticky) when a client state request carries the no-Scav toggle tag.
+    // Takes full effect on restart, mirroring the LootNET bridge.
+    public void SetScavChallengesDisabled()
+    {
+        if (_scavDisabled) return;
+        _scavDisabled = true;
         ApplyDailyPool();
     }
 
@@ -173,11 +189,13 @@ public class DailyChallengeService(
         var profile = profileHelper.GetPmcProfile(sessionId);
 
         List<DailyChallengeProgress> challenges = [];
+        bool bonusClaimed = false;
         if (profile != null)
         {
             var state = GetOrCreateDailyState(sessionId, profile);
             WireDefinitions(state);
             challenges = state.Challenges;
+            bonusClaimed = state.BonusClaimed;
         }
 
         return new DailyStateDto
@@ -213,8 +231,41 @@ public class DailyChallengeService(
             NextResetSeconds = SecondsUntilMidnight(),
             GlobalRestockSeconds = _nextGlobalRestock > DateTime.UtcNow
                 ? (_nextGlobalRestock - DateTime.UtcNow).TotalSeconds
-                : 0
+                : 0,
+            DailyBonusGp = BonusGp(challenges),
+            DailyBonusClaimed = bonusClaimed
         };
+    }
+
+    // Complete-all bonus = 50% of the day's total GP, rounded. Must match the
+    // value the client shows on the bonus card.
+    private static int BonusGp(IEnumerable<DailyChallengeProgress> challenges) =>
+        (int)Math.Round(challenges.Sum(c => c.Definition?.GpReward ?? 0) * 0.5,
+            MidpointRounding.AwayFromZero);
+
+    // ── Claim complete-all daily bonus ────────────────────────────────────────
+
+    public string ClaimDailyBonus(MongoId sessionId)
+    {
+        var profile = profileHelper.GetPmcProfile(sessionId);
+        if (profile is null) return "profile_not_found";
+
+        var state = GetOrCreateDailyState(sessionId, profile);
+        WireDefinitions(state);
+
+        if (state.Challenges.Count == 0)            return "no_challenges";
+        if (!state.Challenges.All(c => c.Completed)) return "not_completed";
+        if (state.BonusClaimed)                      return "already_claimed";
+
+        int reward = BonusGp(state.Challenges);
+        if (reward <= 0) return "no_reward";
+
+        gpBalance.Add(sessionId.ToString(), reward);
+        state.BonusClaimed = true;
+        SaveDailyState(sessionId, state);
+
+        logger.Info($"[WeekendDrops] Daily complete-all bonus: +{reward} GP credited for {sessionId} (balance {gpBalance.Get(sessionId.ToString())})");
+        return "ok";
     }
 
     // ── Claim daily GP reward ─────────────────────────────────────────────────
@@ -296,6 +347,15 @@ public class DailyChallengeService(
 
         var todayId = GetCurrentDailyId();
 
+        // Scav disabled: swap any Scav-run dailies in the current set for PMC quests
+        // in place (even completed ones), keeping the rest of the set and its progress.
+        // Runs before the staleness check so it doesn't trigger a full reassign.
+        if (state is not null && state.DailyId == todayId && ReplaceScavChallenges(state))
+        {
+            SaveDailyState(sessionId, state);
+            logger.Info($"[WeekendDrops] Daily Scav challenges replaced for {sessionId} (Scav challenges disabled)");
+        }
+
         bool stale = state is not null
             && state.Challenges.Any(c => _pool.All(d => d.Id != c.DefinitionId));
 
@@ -308,6 +368,58 @@ public class DailyChallengeService(
         }
 
         return state;
+    }
+
+    // Replace every Scav-run challenge in the set with another quest, in place. The
+    // replacement comes from a group not already in the set (preferring a PMC quest
+    // when the PMC slot is free), keeping the one-per-group variety of a fresh set.
+    // Other challenges and their progress are untouched; the replacement starts fresh
+    // at 0/target, so a previously-completed Scav challenge is genuinely re-tasked.
+    // Returns true if anything was swapped.
+    private bool ReplaceScavChallenges(PlayerDailyState state)
+    {
+        if (!_scavDisabled) return false;
+
+        var rng     = new Random();
+        var usedIds = state.Challenges.Select(c => c.DefinitionId).ToHashSet();
+        // Groups occupied by the non-Scav challenges we're keeping.
+        var usedGroups = state.Challenges
+            .Select(c => _allDaily.FirstOrDefault(d => d.Id == c.DefinitionId))
+            .Where(d => d is not null && !ChallengeMetrics.IsScavOnly(d.Type))
+            .Select(d => ChallengeMetrics.Group(d!.Type))
+            .ToHashSet();
+
+        bool changed = false;
+
+        foreach (var cp in state.Challenges)
+        {
+            var def = _allDaily.FirstOrDefault(d => d.Id == cp.DefinitionId);
+            if (def is null || !ChallengeMetrics.IsScavOnly(def.Type)) continue;
+
+            // Candidates sit in a group not already used. Prefer PMC; otherwise any
+            // unused group. Fall back to any unused id only if the pool is too small.
+            var fresh = _pool.Where(d => !usedIds.Contains(d.Id)
+                                      && !usedGroups.Contains(ChallengeMetrics.Group(d.Type))).ToList();
+            var pmc   = fresh.Where(d => ChallengeMetrics.Group(d.Type) == "pmc").ToList();
+            var pickPool = pmc.Count > 0 ? pmc : fresh;
+            if (pickPool.Count == 0)
+                pickPool = _pool.Where(d => !usedIds.Contains(d.Id)).ToList();
+            if (pickPool.Count == 0) continue;   // can't replace cleanly; stale check reassigns
+
+            var pick = pickPool[rng.Next(pickPool.Count)];
+
+            usedIds.Remove(cp.DefinitionId);
+            cp.DefinitionId  = pick.Id;
+            cp.Target        = pick.Target;
+            cp.Current       = 0;
+            cp.RewardClaimed = false;
+            cp.Definition    = pick;
+            usedIds.Add(pick.Id);
+            usedGroups.Add(ChallengeMetrics.Group(pick.Type));
+            changed = true;
+        }
+
+        return changed;
     }
 
     private void SaveDailyState(MongoId sessionId, PlayerDailyState state)
@@ -375,10 +487,12 @@ public class DailyChallengeService(
             case "resetprogress":
                 foreach (var c in state.Challenges) { c.Current = 0; c.RewardClaimed = false; }
                 state.SurvivalTimeBank = 0;
+                state.BonusClaimed = false;
                 break;
             case "reroll":
                 AssignDailyChallenges(state);   // fresh random pick; Current defaults to 0
                 state.SurvivalTimeBank = 0;
+                state.BonusClaimed = false;
                 break;
             default:
                 logger.Warning($"[WeekendDrops] Unknown daily debug action '{action}'");
@@ -407,6 +521,7 @@ public class DailyChallengeService(
             c.RewardClaimed = false;
         }
         state.SurvivalTimeBank = 0;
+        state.BonusClaimed = false;
         SaveDailyState(sessionId, state);
         logger.Info($"[WeekendDrops] Debug: daily progress reset for {sessionId}");
     }
@@ -420,6 +535,7 @@ public class DailyChallengeService(
         var state = GetOrCreateDailyState(sessionId, profile);
         AssignDailyChallenges(state);
         state.SurvivalTimeBank = 0;
+        state.BonusClaimed = false;
         SaveDailyState(sessionId, state);
         logger.Info($"[WeekendDrops] Debug: daily set rerolled for {sessionId}");
     }
@@ -460,10 +576,21 @@ public class DailyChallengeService(
         return (now.Date.AddDays(1) - now).TotalSeconds;
     }
 
-    private static T? LoadJson<T>(string path)
+    // Tolerant load: a malformed or half-written file (bad manual edit, or a save
+    // truncated by a crash mid-write) falls back to default with a named log line
+    // instead of throwing - so one bad file can't brick the whole mod at startup.
+    private T? LoadJson<T>(string path)
     {
         if (!File.Exists(path)) return default;
-        return JsonSerializer.Deserialize<T>(File.ReadAllText(path), JsonOptions);
+        try
+        {
+            return JsonSerializer.Deserialize<T>(File.ReadAllText(path), JsonOptions);
+        }
+        catch (Exception ex)
+        {
+            logger.Error($"[WeekendDrops] Could not read {SysPath.GetFileName(path)}: {ex.Message}. Ignoring this file (using defaults).");
+            return default;
+        }
     }
 
     // ── Restock cooldown persistence ───────────────────────────────────────────

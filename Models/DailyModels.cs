@@ -49,7 +49,11 @@ public class PlayerDailyState
     public string DailyId { get; set; } = "";
     public List<DailyChallengeProgress> Challenges { get; set; } = [];
 
-    
+    // True once the complete-all daily bonus has been collected for this DailyId.
+    // Persisted so the bonus can't be re-claimed after a game/server restart.
+    public bool BonusClaimed { get; set; }
+
+
     public string LastRaidId { get; set; } = "";
 
     public float SurvivalTimeBank { get; set; }
