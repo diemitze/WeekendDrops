@@ -16,7 +16,6 @@ public static class WeaponKitPatch
     private static bool _applied;
     private static readonly Random Rng = new();
 
-
     private static readonly (string Prefix, double Chance)[] TargetSlots =
     {
         ("mod_scope",    0.55), // optic - the biggest visual/feel upgrade
@@ -112,7 +111,6 @@ public static class WeaponKitPatch
             }
         }
     }
-
 
     private static MongoId? PickModForSlot(Slot slot, string prefix)
     {

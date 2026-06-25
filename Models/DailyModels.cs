@@ -16,7 +16,6 @@ public class DailyChallengeDefinition
     [JsonPropertyName("target")]
     public int Target { get; set; }
 
-
     [JsonPropertyName("targetLocation")]
     public string? TargetLocation { get; set; }
 
@@ -25,7 +24,6 @@ public class DailyChallengeDefinition
 
     [JsonPropertyName("difficulty")]
     public int Difficulty { get; set; } = 1;
-
 
     [JsonPropertyName("requiresLootNet")]
     public bool RequiresLootNet { get; set; }
@@ -45,14 +43,13 @@ public class DailyChallengeProgress
 
 public class PlayerDailyState
 {
-   
+
     public string DailyId { get; set; } = "";
     public List<DailyChallengeProgress> Challenges { get; set; } = [];
 
     // True once the complete-all daily bonus has been collected for this DailyId.
     // Persisted so the bonus can't be re-claimed after a game/server restart.
     public bool BonusClaimed { get; set; }
-
 
     public string LastRaidId { get; set; } = "";
 
@@ -70,7 +67,6 @@ public class ShopItemDefinition
     [JsonPropertyName("description")]
     public string Description { get; set; } = "";
 
-
     [JsonPropertyName("templateId")]
     public string TemplateId { get; set; } = "";
 
@@ -84,10 +80,8 @@ public class ShopItemDefinition
     [JsonPropertyName("count")]
     public int Count { get; set; } = 1;
 
- 
     [JsonPropertyName("contents")]
     public List<ShopBundleEntry>? Contents { get; set; }
-
 
     [JsonPropertyName("restockHours")]
     public double? RestockHours { get; set; }

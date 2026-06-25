@@ -54,12 +54,11 @@ public class DailyChallengeService(
     {
         _config = LoadJson<ModConfig>(SysPath.Combine(_configDir, "config.json")) ?? new ModConfig();
 
-        // See WeekendChallengeService: debugUseRealChallenges keeps the debug
-        // conveniences but loads the real daily pool for balance-testing.
-        var useDebugPool = _config.DebugMode && !_config.DebugUseRealChallenges;
-        var dailyFile = useDebugPool ? "daily_challenges_debug.json" : "daily_challenges.json";
+        // Always the real daily pool. Debug used to swap in daily_challenges_debug.json for
+        // quick completes; the in-panel debug buttons (complete-one/all, reroll) cover that
+        // now, so the duplicate file is gone.
         _allDaily = LoadJson<List<DailyChallengeDefinition>>(
-            SysPath.Combine(_configDir, dailyFile)) ?? [];
+            SysPath.Combine(_configDir, "daily_challenges.json")) ?? [];
 
         // Loot-value dailies need the LootNET bridge; seed from config, flipped on at
         // runtime by the client signal via SetLootNetActive.
@@ -80,7 +79,7 @@ public class DailyChallengeService(
         LoadShopStock();
 
         if (_config.DebugMode)
-            logger.Warning($"[WeekendDrops] Daily DEBUG MODE - using {dailyFile}");
+            logger.Warning("[WeekendDrops] Daily DEBUG MODE active");
     }
 
     // Effective daily pool: drop loot-value dailies unless the LootNET bridge is
@@ -112,9 +111,8 @@ public class DailyChallengeService(
         ApplyDailyPool();
     }
 
-    // ── Raid end ──────────────────────────────────────────────────────────────
+    // Raid end
 
-   
     public int ApplyRaidResult(MongoId sessionId, RaidResultRequest r)
     {
         if (_pool.Count == 0) return 0;
@@ -170,7 +168,6 @@ public class DailyChallengeService(
                 case ChallengeType.LootValueCumulative:  if (r.Survived) cp.Current += r.LootValue; break;
             }
 
-
             if (cp.Completed) gpEarned += cp.Definition?.GpReward ?? 0;
         }
 
@@ -180,7 +177,7 @@ public class DailyChallengeService(
         return gpEarned;
     }
 
-    // ── Client state ──────────────────────────────────────────────────────────
+    // Client state
 
     public DailyStateDto GetDailyState(MongoId sessionId)
     {
@@ -216,7 +213,7 @@ public class DailyChallengeService(
                 Id          = s.Id,
                 Name        = s.Name,
                 Description = s.Description,
-                GpCost      = s.GpCost,
+                GpCost      = EffectiveCost(s),
                 Stock       = s.Stock,
                 TemplateId  = s.TemplateId,
                 Contents    = s.Contents?.Select(c => new ShopContentDto
@@ -243,7 +240,7 @@ public class DailyChallengeService(
         (int)Math.Round(challenges.Sum(c => c.Definition?.GpReward ?? 0) * 0.5,
             MidpointRounding.AwayFromZero);
 
-    // ── Claim complete-all daily bonus ────────────────────────────────────────
+    // Claim complete-all daily bonus
 
     public string ClaimDailyBonus(MongoId sessionId)
     {
@@ -268,7 +265,7 @@ public class DailyChallengeService(
         return "ok";
     }
 
-    // ── Claim daily GP reward ─────────────────────────────────────────────────
+    // Claim daily GP reward
 
     public string ClaimDailyReward(MongoId sessionId, string challengeId)
     {
@@ -296,7 +293,7 @@ public class DailyChallengeService(
         return "ok";
     }
 
-    // ── Buy shop item ─────────────────────────────────────────────────────────
+    // Buy shop item
 
     public string BuyShopItem(MongoId sessionId, string itemId)
     {
@@ -307,8 +304,8 @@ public class DailyChallengeService(
         if (_restockUntil.TryGetValue(itemId, out var until) && DateTime.UtcNow < until)
             return "restocking";
 
-
-        if (!gpBalance.TrySpend(sessionId.ToString(), shopItem.GpCost))
+        int cost = EffectiveCost(shopItem);
+        if (!gpBalance.TrySpend(sessionId.ToString(), cost))
             return "insufficient_gp";
 
         mailSendService.SendSystemMessageToPlayer(
@@ -327,13 +324,20 @@ public class DailyChallengeService(
             SaveRestockState();
         }
 
-        logger.Info($"[WeekendDrops] Shop purchase: {shopItem.Name} (-{shopItem.GpCost} GP, " +
+        logger.Info($"[WeekendDrops] Shop purchase: {shopItem.Name} (-{cost} GP, " +
                     $"balance {gpBalance.Get(sessionId.ToString())}). Restock in {restockHours}h");
         return "ok";
     }
 
-    // ── Daily state management ────────────────────────────────────────────────
+    // Shop price after the global multiplier (config.shopPriceMultiplier), rounded and
+    // never below 1. Used for both the displayed price and the amount charged so they match.
+    private int EffectiveCost(ShopItemDefinition item)
+    {
+        double mult = _config.ShopPriceMultiplier <= 0 ? 1.0 : _config.ShopPriceMultiplier;
+        return Math.Max(1, (int)Math.Round(item.GpCost * mult, MidpointRounding.AwayFromZero));
+    }
 
+    // Daily state management
 
     private readonly object _fileLock = new();
 
@@ -460,7 +464,7 @@ public class DailyChallengeService(
         }).ToList();
     }
 
-    // ── Debug actions for the daily set (gated by debugMode, like the weekend ones) ──
+    // Debug actions for the daily set (gated by debugMode, like the weekend ones)
     public bool DebugAction(MongoId sessionId, string action)
     {
         if (!_config.DebugMode)
@@ -504,8 +508,7 @@ public class DailyChallengeService(
         return true;
     }
 
-    // ── Debug: reset today's daily progress ───────────────────────────────────
-
+    // Debug: reset today's daily progress
 
     public void ResetDailyProgress(MongoId sessionId)
     {
@@ -526,7 +529,6 @@ public class DailyChallengeService(
         logger.Info($"[WeekendDrops] Debug: daily progress reset for {sessionId}");
     }
 
-
     public void RerollDaily(MongoId sessionId)
     {
         var profile = profileHelper.GetPmcProfile(sessionId);
@@ -540,7 +542,7 @@ public class DailyChallengeService(
         logger.Info($"[WeekendDrops] Debug: daily set rerolled for {sessionId}");
     }
 
-    // ── Reward builders ───────────────────────────────────────────────────────
+    // Reward builders
 
     private static List<Item> BuildShopRewardItems(ShopItemDefinition shop)
     {
@@ -566,7 +568,7 @@ public class DailyChallengeService(
         return [item];
     }
 
-    // ── Helpers ───────────────────────────────────────────────────────────────
+    // Helpers
 
     private static string GetCurrentDailyId() => DateTime.UtcNow.ToString("yyyy-MM-dd");
 
@@ -593,7 +595,7 @@ public class DailyChallengeService(
         }
     }
 
-    // ── Restock cooldown persistence ───────────────────────────────────────────
+    // Restock cooldown persistence
 
     private string RestockStatePath => SysPath.Combine(_dataDir, "shop_restock.json");
 
@@ -622,7 +624,7 @@ public class DailyChallengeService(
         }
     }
 
-    // ── Global restock (periodic stock refill) ─────────────────────────────────
+    // Global restock (periodic stock refill)
 
     private string GlobalRestockPath => SysPath.Combine(_dataDir, "shop_global_restock.json");
 
@@ -637,7 +639,7 @@ public class DailyChallengeService(
     {
         if (_config.ShopGlobalRestockHours <= 0) return;
 
-        // First run, or the scheduled time has passed → refill and reschedule.
+        // First run, or the scheduled time has passed: refill and reschedule.
         if (_nextGlobalRestock == DateTime.MinValue)
         {
             _nextGlobalRestock = DateTime.UtcNow.AddHours(_config.ShopGlobalRestockHours);
@@ -675,8 +677,7 @@ public class DailyChallengeService(
         public DateTime NextRestock { get; set; }
     }
 
-    // ── Live stock persistence ─────────────────────────────────────────────────
-
+    // Live stock persistence
 
     private string ShopStockPath => SysPath.Combine(_dataDir, "shop_stock.json");
 

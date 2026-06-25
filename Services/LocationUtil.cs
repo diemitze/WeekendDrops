@@ -1,9 +1,8 @@
 namespace WeekendDrops.Services;
 
-
 public static class LocationUtil
 {
-   
+
     private static string Canonical(string raw)
     {
         var s = (raw ?? "").Trim().ToLowerInvariant();
@@ -43,7 +42,6 @@ public static class LocationUtil
         }
     }
 
-   
     public static bool Matches(string reported, string? target)
     {
         if (string.IsNullOrEmpty(target)) return true;

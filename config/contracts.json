@@ -1,0 +1,348 @@
+{
+  "_comment": "Contracts: accept one in the menu, its groups are force-spawned on your next raid of the target map, and killing the objective count pays GP (plus an optional crate). One group = a boss + guards; several groups = a roaming clean-out event. bossName / escortType use EFT WildSpawnType names (e.g. bossBully, cursedAssault). The Cleanup Crew rides on the vanilla 'cursedAssault' type, whose bot definition we override in db/bots/types/cursedassault.json (no MoreBotsAPI / custom enum). objectiveRoles are the roles whose deaths count (match the WildSpawnType name, case-insensitive). map is matched via LocationUtil (bigmap = customs).",
+  "_boardComment": "Boards are NOT daily. After a contract is completed or abandoned, the next board of sealed offers appears a random whole number of UTC days later, in [boardMinDays, boardMaxDays]. Set both equal for a fixed gap. A dry stretch of a couple days is intended, not a bug.",
+  "boardMinDays": 2,
+  "boardMaxDays": 4,
+  "contracts": [
+    {
+      "id": "bounty_wdcrew_customs",
+      "name": "Bounty: Dropfall Crew",
+      "description": "A hardened crew calling themselves the Dropfall have dug into Customs. Wipe them out and take their kit.",
+      "map": "customs",
+      "groups": [
+        {
+          "bossName": "cursedAssault",
+          "bossDifficulty": "normal",
+          "escortType": "cursedAssault",
+          "escortAmount": "4",
+          "escortDifficulty": "normal",
+          "bossZone": "ZoneDormitory,ZoneCustoms,ZoneTankSquare",
+          "hostileToPlayer": true
+        }
+      ],
+      "objectiveRoles": [
+        "cursedAssault"
+      ],
+      "objectiveCount": 5,
+      "objectiveText": "Wipe out the Dropfall Crew",
+      "flavor": "The Cleanup Crew have been spotted on {map}.",
+      "bonusItems": [],
+      "gpReward": 1500,
+      "acceptDialog": "Fresh contract, fresh kit. We will be wearing yours by morning.",
+      "dialogSpeaker": "DROPFALL CREW",
+      "crateTemplateId": "",
+      "requireExtract": false,
+      "cooldownHours": 24
+    },
+    {
+      "id": "cleanout_rogues_woods",
+      "name": "Bounty: Dropfall Crew (Woods)",
+      "description": "The Dropfall crew set up in Woods. Wipe them out and take their kit.",
+      "map": "woods",
+      "groups": [
+        {
+          "bossName": "cursedAssault",
+          "bossDifficulty": "normal",
+          "escortType": "cursedAssault",
+          "escortAmount": "4",
+          "escortDifficulty": "normal",
+          "bossZone": "ZoneBrokenVill,ZoneUsecBase,ZoneRoad",
+          "hostileToPlayer": true
+        }
+      ],
+      "objectiveRoles": [
+        "cursedAssault"
+      ],
+      "objectiveCount": 5,
+      "objectiveText": "Wipe out the Dropfall Crew",
+      "flavor": "The Cleanup Crew have been spotted on {map}.",
+      "gpReward": 1200,
+      "acceptDialog": "You came to the Woods looking for us. Saves us dragging your body far.",
+      "dialogSpeaker": "DROPFALL CREW",
+      "crateTemplateId": "",
+      "requireExtract": false,
+      "cooldownHours": 24
+    },
+    {
+      "id": "bounty_boss_random",
+      "name": "Bounty: Wanted Target",
+      "description": "High-value target relocating between regions. Accept the bounty to get the target's identity and last-known location, then hunt them down.",
+      "map": "",
+      "groups": [],
+      "bossPool": [
+        {
+          "key": "reshala",
+          "displayName": "Reshala",
+          "bossName": "bossBully",
+          "escortType": "followerBully",
+          "escortAmount": "3",
+          "objectiveRole": "bossBully",
+          "acceptDialog": "Worth a bounty now, am I. {map} is mine. Come and die on it.",
+          "maps": [
+            {
+              "map": "customs",
+              "bossZone": "ZoneDormitory,ZoneGasStation,ZoneOldAZS"
+            },
+            {
+              "map": "reserve",
+              "bossZone": "ZoneBarrack,ZoneSubStorage"
+            },
+            {
+              "map": "woods",
+              "bossZone": "ZoneBrokenVill,ZoneClearVill,ZoneRedHouse"
+            }
+          ]
+        },
+        {
+          "key": "gluhar",
+          "displayName": "Gluhar",
+          "bossName": "bossGluhar",
+          "escortType": "followerGluharAssault",
+          "escortAmount": "4",
+          "objectiveRole": "bossGluhar",
+          "acceptDialog": "Hunting me on {map}? My boys will send you home in bags.",
+          "maps": [
+            {
+              "map": "reserve",
+              "bossZone": "ZoneRailStrorage,ZonePTOR2,ZoneBarrack,ZoneSubStorage"
+            },
+            {
+              "map": "customs",
+              "bossZone": "ZoneDormitory,ZoneTankSquare,ZoneFactoryCenter"
+            },
+            {
+              "map": "shoreline",
+              "bossZone": "ZoneSanatorium1,ZoneSanatorium2,ZonePort"
+            }
+          ]
+        },
+        {
+          "key": "sanitar",
+          "displayName": "Sanitar",
+          "bossName": "bossSanitar",
+          "escortType": "followerSanitar",
+          "escortAmount": "2",
+          "objectiveRole": "bossSanitar",
+          "acceptDialog": "Come to {map}, then. I will take you apart slow. No anesthetic.",
+          "maps": [
+            {
+              "map": "shoreline",
+              "bossZone": "ZoneGreenHouses,ZoneSanatorium1,ZoneSanatorium2"
+            },
+            {
+              "map": "woods",
+              "bossZone": "ZoneUsecBase,ZoneScavBase2,ZoneBigRocks"
+            },
+            {
+              "map": "customs",
+              "bossZone": "ZoneCrossRoad,ZoneCustoms,ZoneBlockPost"
+            }
+          ]
+        },
+        {
+          "key": "shturman",
+          "displayName": "Shturman",
+          "bossName": "bossKojaniy",
+          "escortType": "followerKojaniy",
+          "escortAmount": "2",
+          "objectiveRole": "bossKojaniy",
+          "acceptDialog": "I watch every road onto {map}. You will be in my scope before you hear me.",
+          "maps": [
+            {
+              "map": "woods",
+              "bossZone": "ZoneWoodCutter,ZoneBigRocks,ZoneScavBase2"
+            },
+            {
+              "map": "reserve",
+              "bossZone": "ZoneRailStrorage,ZonePTOR2,ZoneBarrack,ZoneSubStorage"
+            },
+            {
+              "map": "shoreline",
+              "bossZone": "ZoneForestSpawn,ZoneGreenHouses,ZonePort"
+            }
+          ]
+        }
+      ],
+      "objectiveRoles": [],
+      "objectiveCount": 1,
+      "objectiveText": "Eliminate the marked target",
+      "flavor": "Intel pending. Accept the bounty to reveal the target and their location.",
+      "bonusItems": [],
+      "gpReward": 2500,
+      "crateTemplateId": "",
+      "requireExtract": true,
+      "cooldownHours": 24
+    },
+    {
+      "id": "supplyrun_woods",
+      "name": "Supply Run: Woods",
+      "description": "Command flagged a supply drop inbound over Woods - and the Cleanup Crew are already moving to claim it. Wipe them out and secure the crate.",
+      "map": "woods",
+      "groups": [
+        {
+          "bossName": "cursedAssault",
+          "bossDifficulty": "normal",
+          "escortType": "cursedAssault",
+          "escortAmount": "4",
+          "escortDifficulty": "normal",
+          "bossZone": "ZoneBrokenVill",
+          "hostileToPlayer": true
+        }
+      ],
+      "objectiveRoles": [
+        "cursedAssault"
+      ],
+      "objectiveCount": 5,
+      "objectiveText": "Clear the crew and secure the drop",
+      "flavor": "A supply drop is inbound over {map}. The Cleanup Crew are converging on it.",
+      "triggerAirdrop": true,
+      "airdropPosition": {
+        "x": -174.91,
+        "y": 13.62,
+        "z": -649.87
+      },
+      "airdropSpots": [
+        {
+          "bossZone": "ZoneBrokenVill",
+          "x": -174.91,
+          "y": 13.62,
+          "z": -649.87
+        },
+        {
+          "bossZone": "ZoneClearVill",
+          "x": -416.2,
+          "y": 12.94,
+          "z": -468.8
+        },
+        {
+          "bossZone": "ZoneScavBase2",
+          "x": 179.0,
+          "y": 18.14,
+          "z": -771.42
+        }
+      ],
+      "gpReward": 1800,
+      "acceptDialog": "We already have eyes on the drop. Turn back, or feed the crows on {map}.",
+      "dialogSpeaker": "CLEANUP CREW",
+      "crateTemplateId": "",
+      "requireExtract": true,
+      "cooldownHours": 24
+    },
+    {
+      "id": "supplyrun_shoreline",
+      "name": "Supply Run: Shoreline",
+      "description": "A supply drop is inbound over Shoreline and the Cleanup Crew are first on the scene. Wipe them out and secure the crate.",
+      "map": "shoreline",
+      "groups": [
+        {
+          "bossName": "cursedAssault",
+          "bossDifficulty": "normal",
+          "escortType": "cursedAssault",
+          "escortAmount": "4",
+          "escortDifficulty": "normal",
+          "bossZone": "ZoneGreenHouses",
+          "hostileToPlayer": true
+        }
+      ],
+      "objectiveRoles": [
+        "cursedAssault"
+      ],
+      "objectiveCount": 5,
+      "objectiveText": "Clear the crew and secure the drop",
+      "flavor": "A supply drop is inbound over {map}. The Cleanup Crew are converging on it.",
+      "triggerAirdrop": true,
+      "airdropPosition": {
+        "x": 237.07,
+        "y": -52.77,
+        "z": 213.76
+      },
+      "airdropSpots": [
+        {
+          "bossZone": "ZoneGreenHouses",
+          "x": 237.1,
+          "y": -52.8,
+          "z": 213.8
+        },
+        {
+          "bossZone": "ZoneMeteoStation",
+          "x": -520.4,
+          "y": -25.7,
+          "z": 284.6
+        },
+        {
+          "bossZone": "ZonePowerStation",
+          "x": -248.7,
+          "y": -41.0,
+          "z": 158.9
+        },
+        {
+          "bossZone": "ZoneStartVillage",
+          "x": 459.4,
+          "y": -54.6,
+          "z": 181.9
+        }
+      ],
+      "gpReward": 1800,
+      "acceptDialog": "We already have eyes on the drop. Turn back, or feed the crows on {map}.",
+      "dialogSpeaker": "CLEANUP CREW",
+      "crateTemplateId": "",
+      "requireExtract": true,
+      "cooldownHours": 24
+    },
+    {
+      "id": "supplyrun_lighthouse",
+      "name": "Supply Run: Lighthouse",
+      "description": "A supply drop is inbound over Lighthouse and the Cleanup Crew are moving to claim it. Wipe them out and secure the crate.",
+      "map": "lighthouse",
+      "groups": [
+        {
+          "bossName": "cursedAssault",
+          "bossDifficulty": "normal",
+          "escortType": "cursedAssault",
+          "escortAmount": "4",
+          "escortDifficulty": "normal",
+          "bossZone": "Zone_Chalet",
+          "hostileToPlayer": true
+        }
+      ],
+      "objectiveRoles": [
+        "cursedAssault"
+      ],
+      "objectiveCount": 5,
+      "objectiveText": "Clear the crew and secure the drop",
+      "flavor": "A supply drop is inbound over {map}. The Cleanup Crew are converging on it.",
+      "triggerAirdrop": true,
+      "airdropPosition": {
+        "x": -84.91,
+        "y": 16.96,
+        "z": 20.15
+      },
+      "airdropSpots": [
+        {
+          "bossZone": "Zone_Chalet",
+          "x": -84.9,
+          "y": 17.0,
+          "z": 20.1
+        },
+        {
+          "bossZone": "Zone_Village",
+          "x": -122.3,
+          "y": 6.5,
+          "z": -270.4
+        },
+        {
+          "bossZone": "Zone_LongRoad",
+          "x": -10.6,
+          "y": 1.5,
+          "z": -119.5
+        }
+      ],
+      "gpReward": 1800,
+      "acceptDialog": "We already have eyes on the drop. Turn back, or feed the crows on {map}.",
+      "dialogSpeaker": "CLEANUP CREW",
+      "crateTemplateId": "",
+      "requireExtract": true,
+      "cooldownHours": 24
+    }
+  ]
+}

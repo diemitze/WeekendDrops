@@ -49,6 +49,26 @@ public class WeekendDropsRouter(JsonUtil jsonUtil, WeekendDropsCallback callback
         new RouteAction<RaidResultRequest>(
             "/weekenddrops/raidend",
             async (url, info, sessionId, output) => await callback.ReportRaidResult(sessionId, info)
+        ),
+        new RouteAction<EmptyRequestData>(
+            "/weekenddrops/contracts",
+            async (url, info, sessionId, output) => await callback.GetContractsState(sessionId)
+        ),
+        new RouteAction<StringIdRequest>(
+            "/weekenddrops/acceptcontract",
+            async (url, info, sessionId, output) => await callback.AcceptContract(sessionId, info.Id)
+        ),
+        new RouteAction<StringIdRequest>(
+            "/weekenddrops/abandoncontract",
+            async (url, info, sessionId, output) => await callback.AbandonContract(sessionId)
+        ),
+        new RouteAction<ContractResultRequest>(
+            "/weekenddrops/contractresult",
+            async (url, info, sessionId, output) => await callback.ReportContractResult(sessionId, info)
+        ),
+        new RouteAction<ClientFlagsRequest>(
+            "/weekenddrops/clientflags",
+            async (url, info, sessionId, output) => await callback.SetClientFlags(sessionId, info)
         )
     ])
 { }
@@ -58,6 +78,7 @@ public class WeekendDropsCallback(
     HttpResponseUtil httpResponseUtil,
     WeekendChallengeService challengeService,
     DailyChallengeService dailyService,
+    ContractService contractService,
     GpBalanceService gpBalance)
 {
     private static readonly JsonSerializerOptions JsonOptions = new()
@@ -65,29 +86,31 @@ public class WeekendDropsCallback(
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     };
 
-    // Client signals carried on state-request URLs (the server can't see client
-    // BepInEx DLLs or settings on its own): the LootNET bridge and the F12
-    // "disable Scav challenges" toggle. Both flip sticky flags for the server run.
-    private void DetectClientSignals(string url)
+    // The client pushes its BepInEx-side toggles (LootNET bridge, F12 "disable Scav
+    // challenges") to /weekenddrops/clientflags in the request body. They can't ride
+    // on the state-request URL: SPT's HttpRouter builds the handler url from
+    // request.Path.Value, which strips the query string, so a ?noscav=1 tag never
+    // reaches us. Both flags are sticky for the server run, mirroring the services.
+    public ValueTask<string> SetClientFlags(MongoId sessionId, ClientFlagsRequest info)
     {
-        if (url == null) return;
+        if (info is { NoScav: true })
+        {
+            challengeService.SetScavChallengesDisabled();
+            dailyService.SetScavChallengesDisabled();
+        }
 
-        if (url.Contains("lootnet=1"))
+        if (info is { LootNet: true })
         {
             challengeService.SetLootNetActive();
             dailyService.SetLootNetActive();
         }
 
-        if (url.Contains("noscav=1"))
-        {
-            challengeService.SetScavChallengesDisabled();
-            dailyService.SetScavChallengesDisabled();
-        }
+        var json = JsonSerializer.Serialize(new { result = true }, JsonOptions);
+        return new ValueTask<string>(httpResponseUtil.GetBody(json));
     }
 
     public ValueTask<string> GetState(MongoId sessionId, string url)
     {
-        DetectClientSignals(url);
         var state = challengeService.GetClientState(sessionId);
         var json = JsonSerializer.Serialize(state, JsonOptions);
         return new ValueTask<string>(httpResponseUtil.GetBody(json));
@@ -95,7 +118,6 @@ public class WeekendDropsCallback(
 
     public ValueTask<string> GetDailyState(MongoId sessionId, string url)
     {
-        DetectClientSignals(url);
         var state = dailyService.GetDailyState(sessionId);
         var json = JsonSerializer.Serialize(state, JsonOptions);
         return new ValueTask<string>(httpResponseUtil.GetBody(json));
@@ -130,7 +152,6 @@ public class WeekendDropsCallback(
         return new ValueTask<string>(httpResponseUtil.GetBody(json));
     }
 
-
     public ValueTask<string> DepositGp(MongoId sessionId, string countStr)
     {
         bool ok = int.TryParse(countStr, out int count) && count > 0;
@@ -146,6 +167,10 @@ public class WeekendDropsCallback(
         if (action != null && action.StartsWith("daily_", StringComparison.OrdinalIgnoreCase))
         {
             result = dailyService.DebugAction(sessionId, action.Substring("daily_".Length));
+        }
+        else if (action != null && action.StartsWith("contract_", StringComparison.OrdinalIgnoreCase))
+        {
+            result = contractService.DebugAction(sessionId, action.Substring("contract_".Length));
         }
         else
         {
@@ -167,6 +192,36 @@ public class WeekendDropsCallback(
         int gpEarned = challengeService.ApplyRaidResult(sessionId, info)
                      + dailyService.ApplyRaidResult(sessionId, info);
         var json = JsonSerializer.Serialize(new { result = true, gpEarned }, JsonOptions);
+        return new ValueTask<string>(httpResponseUtil.GetBody(json));
+    }
+
+    // Contracts
+
+    public ValueTask<string> GetContractsState(MongoId sessionId)
+    {
+        var state = contractService.GetContractsState(sessionId);
+        var json = JsonSerializer.Serialize(state, JsonOptions);
+        return new ValueTask<string>(httpResponseUtil.GetBody(json));
+    }
+
+    public ValueTask<string> AcceptContract(MongoId sessionId, string contractId)
+    {
+        var result = contractService.AcceptContract(sessionId, contractId);
+        var json = JsonSerializer.Serialize(new { result }, JsonOptions);
+        return new ValueTask<string>(httpResponseUtil.GetBody(json));
+    }
+
+    public ValueTask<string> AbandonContract(MongoId sessionId)
+    {
+        var result = contractService.AbandonContract(sessionId);
+        var json = JsonSerializer.Serialize(new { result }, JsonOptions);
+        return new ValueTask<string>(httpResponseUtil.GetBody(json));
+    }
+
+    public ValueTask<string> ReportContractResult(MongoId sessionId, ContractResultRequest info)
+    {
+        var result = contractService.CompleteContract(sessionId, info);
+        var json = JsonSerializer.Serialize(new { result }, JsonOptions);
         return new ValueTask<string>(httpResponseUtil.GetBody(json));
     }
 }

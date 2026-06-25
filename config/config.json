@@ -12,11 +12,11 @@
 
   "shopRestockHours": 6,
   "shopGlobalRestockHours": 24,
+  "shopPriceMultiplier": 1.0,
 
   "kitWeaponDrops": true,
 
   "enableScavChallenges": true,
 
-  "debugMode": false,
-  "debugUseRealChallenges": false
+  "debugMode": false
 }

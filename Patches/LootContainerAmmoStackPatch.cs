@@ -9,7 +9,6 @@ using WeekendDrops;
 
 namespace WeekendDrops.Patches;
 
-
 public static class LootContainerAmmoStackPatch
 {
     private const string AmmoParentId = "5485a8684bdc2da71d8b4567";

@@ -13,21 +13,17 @@ public enum ChallengeType
     ExtractSuccessfully,
     ExtractFromLocation,
 
-
     KillPMCsSingleRaid,
     KillScavsSingleRaid,
 
-    ScavExtract,   
-    ScavKills,     
-    ScavRaidsDone, 
-    ScavExtractFromLocation, 
-    
+    ScavExtract,
+    ScavKills,
+    ScavRaidsDone,
+    ScavExtractFromLocation,
 
-
-    ExtractWithLootValue,  
-    LootValueCumulative,   
+    ExtractWithLootValue,
+    LootValueCumulative,
 }
-
 
 public static class ChallengeMetrics
 {
@@ -85,7 +81,6 @@ public class ChallengeDefinition
     [JsonPropertyName("difficulty")]
     public int Difficulty { get; set; } = 1;
 
-
     [JsonPropertyName("requiresLootNet")]
     public bool RequiresLootNet { get; set; }
 }
@@ -106,16 +101,23 @@ public class PlayerWeekendState
     // ISO week string like "2026-W23" - used to detect when a new weekend starts
     public string WeekendId { get; set; } = "";
 
-
     public string LastRaidId { get; set; } = "";
 
     public List<ChallengeProgress> Challenges { get; set; } = [];
-
 
     public List<int> ClaimedTiers { get; set; } = [];
 
     // Survival time bank in seconds - resets to 0 on death
     public float SurvivalTimeBank { get; set; }
+
+    // The effective weekend plan this set was assigned under (challenge count and
+    // difficulty-point budget). The plan adapts to the usable challenge pool, which
+    // shifts when Scav/LootNET challenges are toggled. A mismatch on load means the
+    // plan changed and the set should reroll; matching it keeps the set stable even
+    // when the achievable total falls short of the configured budget (so progress is
+    // never wiped by an unreachable target). 0 on legacy states -> one-time reroll.
+    public int PlanCount { get; set; }
+    public int PlanBudget { get; set; }
 }
 
 public class ModConfig
@@ -140,7 +142,6 @@ public class ModConfig
     [JsonPropertyName("challengesPerWeekend")]
     public int ChallengesPerWeekend { get; set; } = 4;
 
-
     [JsonPropertyName("weekendDifficultyBudget")]
     public int WeekendDifficultyBudget { get; set; } = 8;
 
@@ -148,14 +149,10 @@ public class ModConfig
     [JsonPropertyName("dropExpiryHours")]
     public int DropExpiryHours { get; set; } = 72;
 
-    // When true: weekend is always active, uses challenges_debug.json instead of challenges.json
+    // When true: weekend is always active (for testing). Debug also offers all contracts
+    // with unlimited picks, and exposes the in-panel debug controls.
     [JsonPropertyName("debugMode")]
     public bool DebugMode { get; set; } = false;
-
-  
-    [JsonPropertyName("debugUseRealChallenges")]
-    public bool DebugUseRealChallenges { get; set; } = false;
-
 
     [JsonPropertyName("shopRestockHours")]
     public double ShopRestockHours { get; set; } = 6;
@@ -164,11 +161,15 @@ public class ModConfig
     [JsonPropertyName("shopGlobalRestockHours")]
     public double ShopGlobalRestockHours { get; set; } = 24;
 
-  
+    // Global multiplier on every GP shop price. 1.0 = config prices as-is; 2.0 = double,
+    // 0.5 = half. Applied to both the displayed price and the amount charged, so raise it
+    // to make the shop more expensive without editing every item in shop.json.
+    [JsonPropertyName("shopPriceMultiplier")]
+    public double ShopPriceMultiplier { get; set; } = 1.0;
+
     [JsonPropertyName("kitWeaponDrops")]
     public bool KitWeaponDrops { get; set; } = true;
 
-  
     [JsonPropertyName("includeLootNet")]
     public bool IncludeLootNet { get; set; }
 

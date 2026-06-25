@@ -57,10 +57,9 @@ public class WeekendChallengeService(
     {
         _config = LoadJson<ModConfig>(SysPath.Combine(_configDir, "config.json")) ?? new ModConfig();
 
-      
-        var useDebugPool = _config.DebugMode && !_config.DebugUseRealChallenges;
-        var challengesFile = useDebugPool ? "challenges_debug.json" : "challenges.json";
-        _allChallenges = LoadJson<List<ChallengeDefinition>>(SysPath.Combine(_configDir, challengesFile)) ?? [];
+        // Always the real weekend pool. Debug forces the weekend on; the in-panel debug
+        // buttons handle quick completes, so the old challenges_debug.json duplicate is gone.
+        _allChallenges = LoadJson<List<ChallengeDefinition>>(SysPath.Combine(_configDir, "challenges.json")) ?? [];
 
         // Loot-value challenges need the LootNET bridge addon (it signals the client,
         // which tags its state requests). Seed from config as an optional force; the
@@ -74,29 +73,61 @@ public class WeekendChallengeService(
         _arenaPools = LoadJson<CratePoolsConfig>(SysPath.Combine(_configDir, "arena_pools.json")) ?? new CratePoolsConfig();
 
         if (_config.DebugMode)
-            logger.Warning($"[WeekendDrops] DEBUG MODE active - weekend forced on, using {challengesFile}");
+            logger.Warning("[WeekendDrops] DEBUG MODE active - weekend forced on");
 
-        // Warn if the loaded pool can't produce a set summing exactly to the budget:
-        // AssignChallenges would then fall back to a weighted pick that totals less,
-        // leaving the top tier (= budget) permanently unreachable.
-        if (!CanMeetDifficultyBudget())
-            logger.Warning(
-                $"[WeekendDrops] '{challengesFile}' cannot produce {_config.ChallengesPerWeekend} challenges " +
-                $"summing to the {_config.WeekendDifficultyBudget}-point budget - weekend sets will fall back to a " +
-                $"weighted pick that totals less, so the top tier will be unreachable. Adjust the pool, " +
-                $"challengesPerWeekend, or weekendDifficultyBudget.");
-
+        // The effective weekend plan (count + budget) is clamped to what the pool can
+        // actually produce in ApplyChallengePool/RecomputeWeekendPlan, which logs when
+        // it has to clamp. No separate "unreachable budget" warning is needed.
         Directory.CreateDirectory(_dataDir);
     }
 
     // Effective pool = all challenges, minus loot-value ones unless the LootNET bridge
     // is active (so non-LootNET players never get an unprogressable quest), and minus
     // Scav-run challenges when the player has Scav challenges disabled in config.
-    private void ApplyChallengePool() =>
+    private void ApplyChallengePool()
+    {
         _challengePool = _allChallenges
             .Where(c => _lootNetActive || !c.RequiresLootNet)
             .Where(c => ScavEnabled || !ChallengeMetrics.IsScavOnly(c.Type))
             .ToList();
+        RecomputeWeekendPlan();
+    }
+
+    // Effective weekend plan: challenge count and difficulty-point budget, clamped to
+    // what the current pool can actually produce. The picker takes at most one
+    // challenge per group, so the count can't exceed the number of distinct groups,
+    // and the budget can't exceed the largest distinct-group total reachable at that
+    // count. Keeps the configured values as upper bounds and never invents an
+    // unreachable target (which is what drove the reassign-every-load reset loop).
+    private int _planCount;
+    private int _planBudget;
+
+    private void RecomputeWeekendPlan()
+    {
+        int desired = Math.Max(1, _config.ChallengesPerWeekend);
+        int groups = _challengePool.Select(c => ChallengeMetrics.Group(c.Type)).Distinct().Count();
+        _planCount = Math.Min(desired, Math.Max(1, groups));
+
+        var byDifficulty = _challengePool.GroupBy(c => c.Difficulty).ToDictionary(g => g.Key, g => g.ToList());
+        bool Feasible(int b) =>
+            DifficultyCompositions(_planCount, b).Any(comp => TryBuildComposition(comp, byDifficulty, _planCount, out _));
+
+        // Largest reachable budget not exceeding the configured one; the minimum
+        // possible total is _planCount (all easy). If even that floor is unreachable
+        // (sparse pool), walk up to the smallest reachable total instead.
+        int chosen = 0;
+        for (int b = Math.Max(_planCount, _config.WeekendDifficultyBudget); b >= _planCount; b--)
+            if (Feasible(b)) { chosen = b; break; }
+        if (chosen == 0)
+            for (int b = _planCount; b <= _planCount * 3; b++)
+                if (Feasible(b)) { chosen = b; break; }
+        _planBudget = chosen > 0 ? chosen : _config.WeekendDifficultyBudget;
+
+        if (_planCount != desired || _planBudget != _config.WeekendDifficultyBudget)
+            logger.Info(
+                $"[WeekendDrops] Weekend plan clamped to {_planCount} challenges / {_planBudget} points " +
+                $"(config asks {desired}/{_config.WeekendDifficultyBudget}) - limited by {groups} usable challenge groups.");
+    }
 
     // Scav-run challenges are in the pool only when enabled in config AND the client
     // hasn't toggled them off (F12). Either source can suppress them.
@@ -210,7 +241,7 @@ public class WeekendChallengeService(
                 kv => kv.Value);
 
             // Fold in WTT-ContentBackport items but only those actually present in
-            // the DB, so this auto-skips entirely when the mod isn't installed 
+            // the DB, so this auto-skips entirely when the mod isn't installed
             if (_wttPools.Tiers.TryGetValue(tierKey, out var wttDef))
             {
                 foreach (var (tpl, weight) in wttDef.Pool)
@@ -246,7 +277,6 @@ public class WeekendChallengeService(
         else if (wttSkipped > 0)
             logger.Info($"[WeekendDrops] WTT-ContentBackport not installed - {wttSkipped} optional item(s) skipped");
     }
-
 
     public void RegisterArenaShopPools()
     {
@@ -287,7 +317,6 @@ public class WeekendChallengeService(
         logger.Info($"[WeekendDrops] Registered loot for {registered} paid Arena crate(s)" +
             (skipped > 0 ? $" ({skipped} item(s) not in DB skipped)" : ""));
     }
-
 
     public int ApplyRaidResult(MongoId sessionId, RaidResultRequest r)
     {
@@ -337,7 +366,6 @@ public class WeekendChallengeService(
                 case ChallengeType.KillPMCsSingleRaid:   if (r.PmcKills  >= cp.Target) cp.Current = cp.Target; break;
                 case ChallengeType.KillScavsSingleRaid:  if (r.ScavKills >= cp.Target) cp.Current = cp.Target; break;
 
-               
                 case ChallengeType.ScavExtract:   if (r.IsScavRaid && r.Survived) cp.Current += 1; break;
                 case ChallengeType.ScavRaidsDone: if (r.IsScavRaid)               cp.Current += 1; break;
                 case ChallengeType.ScavKills:     if (r.IsScavRaid)               cp.Current += totalKills; break;
@@ -347,19 +375,18 @@ public class WeekendChallengeService(
                         cp.Current += 1;
                     break;
 
-                // ── Loot-value quests (LootNET) - you only keep loot you extract.
+                // Loot-value quests (LootNET) - you only keep loot you extract.
                 case ChallengeType.ExtractWithLootValue: if (r.Survived && r.LootValue >= cp.Target) cp.Current = cp.Target; break;
                 case ChallengeType.LootValueCumulative:  if (r.Survived) cp.Current += r.LootValue; break;
             }
         }
 
-       
         int pointsAfter = CompletedDifficultyPoints(state);
         int gpEarned = _dropsConfig.Tiers
             .Where(t => t.RequiredChallenges > pointsBefore && t.RequiredChallenges <= pointsAfter)
             .Sum(t => t.GpReward);
         if (gpEarned > 0)
-            logger.Info($"[WeekendDrops] Weekly tier GP earned this raid: +{gpEarned} (points {pointsBefore}→{pointsAfter})");
+            logger.Info($"[WeekendDrops] Weekly tier GP earned this raid: +{gpEarned} (points {pointsBefore} to {pointsAfter})");
 
         SaveState(sessionId, state);
 
@@ -369,16 +396,16 @@ public class WeekendChallengeService(
         return gpEarned;
     }
 
-    // ── Weekend window ────────────────────────────────────────────────────────
+    // Weekend window
 
-
-    // culture - e.g. "Fri 18:00 → Mon 04:00" (de-DE) or "Fri 6:00 PM → Mon 4:00 AM" (en-US).
+    // Localised to the current culture, e.g. "Fri 18:00 to Mon 04:00" (de-DE) or
+    // "Fri 6:00 PM to Mon 4:00 AM" (en-US).
     public string GetWeekendScheduleText()
     {
         var culture = CultureInfo.CurrentCulture;
         string Day(int d) => culture.DateTimeFormat.AbbreviatedDayNames[((d % 7) + 7) % 7];
         string Time(int h) => new TimeOnly(((h % 24) + 24) % 24, 0).ToString("t", culture);
-        return $"{Day(_config.WeekendStartDay)} {Time(_config.WeekendStartHour)} → " +
+        return $"{Day(_config.WeekendStartDay)} {Time(_config.WeekendStartHour)} to " +
                $"{Day(_config.WeekendEndDay)} {Time(_config.WeekendEndHour)}";
     }
 
@@ -390,20 +417,19 @@ public class WeekendChallengeService(
         var day = (int)now.DayOfWeek;
         var hour = now.Hour;
 
-        // Friday 18:00 → Monday 04:00
+        // Friday 18:00 to Monday 04:00
         bool afterStart = day > _config.WeekendStartDay
             || (day == _config.WeekendStartDay && hour >= _config.WeekendStartHour);
 
         bool beforeEnd = day < _config.WeekendEndDay
             || (day == _config.WeekendEndDay && hour < _config.WeekendEndHour);
 
-        // Handles Fri → Sun (no week boundary crossing) and Sun → Mon
+        // Handles Fri to Sun (no week boundary crossing) and Sun to Mon
         return afterStart && (day != 0 || beforeEnd)  // Sun is 0, needs special handling
                || (day == 0)                            // whole Sunday is active
                || (day == _config.WeekendEndDay && hour < _config.WeekendEndHour);
     }
 
- 
     // Uses local time to match IsWeekendActive.
     public string GetCurrentWeekendId()
     {
@@ -413,9 +439,8 @@ public class WeekendChallengeService(
         return anchor.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
     }
 
-    // ── State management ─────────────────────────────────────────────────────
+    // State management
 
-  
     private readonly object _fileLock = new();
 
     private PlayerWeekendState GetOrCreateState(MongoId sessionId, PmcData profile)
@@ -441,20 +466,23 @@ public class WeekendChallengeService(
         if (state is not null && state.WeekendId == currentWeekendId)
         {
             bool poolChanged = state.Challenges.Any(c => _challengePool.All(d => d.Id != c.DefinitionId));
-            int total = state.Challenges.Sum(c =>
-                _challengePool.FirstOrDefault(d => d.Id == c.DefinitionId)?.Difficulty ?? 0);
-            bool offBudget = total != _config.WeekendDifficultyBudget && CanMeetDifficultyBudget();
-            stale = poolChanged || offBudget;
+            // Reroll when the effective point budget changed (pool grew/shrank enough
+            // to shift it, or config edited). Compare against the budget the set was
+            // stamped with, not its raw total: a set keeps its stamp even if the picker
+            // ever fell short, so this can never reroll every load (the old bug), and a
+            // Scav-toggle salvage (ReplaceScavChallenges, same total) is left in place.
+            bool planChanged = state.PlanBudget != _planBudget;
+            stale = poolChanged || planChanged;
         }
 
         // New weekend (or stale set) - reset everything and pick fresh challenges
         if (state is null || state.WeekendId != currentWeekendId || stale)
         {
-            if (stale) logger.Info($"[WeekendDrops] Reassigning weekend for {sessionId} - cached set was stale (pool changed or off-budget)");
+            if (stale) logger.Info($"[WeekendDrops] Reassigning weekend for {sessionId} - cached set was stale (pool or weekend plan changed)");
             state = new PlayerWeekendState { WeekendId = currentWeekendId };
             AssignChallenges(state);
             logger.Info($"[WeekendDrops] New weekend started for {sessionId} - assigned {state.Challenges.Count} challenges");
-      
+
             SaveState(sessionId, state);
         }
 
@@ -475,15 +503,16 @@ public class WeekendChallengeService(
     private string StatePath(MongoId sessionId) =>
         SysPath.Combine(_dataDir, $"{sessionId}.json");
 
-    // ── Challenge selection ───────────────────────────────────────────────────
+    // Challenge selection
 
     private void AssignChallenges(PlayerWeekendState state)
     {
         var rng = new Random();
-        int n = Math.Max(1, _config.ChallengesPerWeekend);
-        int budget = _config.WeekendDifficultyBudget;
+        // Use the effective plan (clamped to what the pool can actually produce), not
+        // the raw config values, so the assigned set hits the budget and stays stable.
+        int n = _planCount;
+        int budget = _planBudget;
 
- 
         var chosen = PickByDifficultyBudget(rng, n, budget) ?? PickWeighted(rng, n);
 
         state.Challenges = chosen.Select(d => new ChallengeProgress
@@ -493,18 +522,13 @@ public class WeekendChallengeService(
             Definition = d
         }).ToList();
 
+        // Stamp the plan this set was built under so the staleness check can tell a
+        // genuine plan change from a set that simply couldn't reach the target.
+        state.PlanCount = _planCount;
+        state.PlanBudget = _planBudget;
+
         int total = chosen.Sum(c => c.Difficulty);
         logger.Info($"[WeekendDrops] Assigned {chosen.Count} challenges totalling {total} difficulty points (budget {budget})");
-    }
-
-    
-    private bool CanMeetDifficultyBudget()
-    {
-        int n = Math.Max(1, _config.ChallengesPerWeekend);
-        var counts = _challengePool.GroupBy(c => c.Difficulty)
-            .ToDictionary(g => g.Key, g => g.Count());
-        return DifficultyCompositions(n, _config.WeekendDifficultyBudget)
-            .Any(comp => comp.All(kv => counts.TryGetValue(kv.Key, out var have) && have >= kv.Value));
     }
 
     private List<ChallengeDefinition>? PickByDifficultyBudget(Random rng, int n, int budget)
@@ -515,33 +539,39 @@ public class WeekendChallengeService(
 
         foreach (var comp in DifficultyCompositions(n, budget).OrderBy(_ => rng.Next()))
         {
-            // comp[d] = how many challenges of difficulty d this composition needs.
-            if (!comp.All(kv => byDifficulty.TryGetValue(kv.Key, out var avail) && avail.Count >= kv.Value))
-                continue;
-
-       
-            var picked = new List<ChallengeDefinition>();
-            var usedGroups = new HashSet<string>();
-            bool ok = true;
-            foreach (var (diff, count) in comp)
-            {
-                int need = count;
-                foreach (var cand in byDifficulty[diff])
-                {
-                    if (need == 0) break;
-                    if (!usedGroups.Add(ChallengeMetrics.Group(cand.Type))) continue;  // group already taken
-                    picked.Add(cand);
-                    need--;
-                }
-                if (need > 0) { ok = false; break; }
-            }
-            if (ok && picked.Count == n)
+            if (TryBuildComposition(comp, byDifficulty, n, out var picked))
                 return picked.OrderBy(_ => rng.Next()).ToList();
         }
         return null;
     }
 
-   
+    // Greedily fill a difficulty composition with distinct-group challenges.
+    // Returns true only when a full n-challenge set was built, so a true result
+    // is a sound witness that the budget is genuinely reachable right now.
+    private static bool TryBuildComposition(
+        Dictionary<int, int> comp,
+        Dictionary<int, List<ChallengeDefinition>> byDifficulty,
+        int n,
+        out List<ChallengeDefinition> picked)
+    {
+        picked = new List<ChallengeDefinition>();
+        var usedGroups = new HashSet<string>();
+        foreach (var (diff, count) in comp)
+        {
+            if (!byDifficulty.TryGetValue(diff, out var avail)) return false;
+            int need = count;
+            foreach (var cand in avail)
+            {
+                if (need == 0) break;
+                if (!usedGroups.Add(ChallengeMetrics.Group(cand.Type))) continue;  // group already taken
+                picked.Add(cand);
+                need--;
+            }
+            if (need > 0) return false;
+        }
+        return picked.Count == n;
+    }
+
     private static IEnumerable<Dictionary<int, int>> DifficultyCompositions(int n, int budget)
     {
         for (int hard = 0; hard <= n; hard++)
@@ -558,7 +588,6 @@ public class WeekendChallengeService(
             }
     }
 
- 
     private List<ChallengeDefinition> PickWeighted(Random rng, int n) =>
         _challengePool
             .SelectMany(c => Enumerable.Repeat(c, Math.Max(1, 4 - c.Difficulty)))
@@ -568,7 +597,7 @@ public class WeekendChallengeService(
             .Take(n)
             .ToList();
 
-    // ── Drop delivery ─────────────────────────────────────────────────────────
+    // Drop delivery
 
     // Manually claim a single tier's reward. Returns true only when the tier
     // was actually earned, not yet claimed, and the reward was mailed.
@@ -620,10 +649,10 @@ public class WeekendChallengeService(
     private static int CompletedDifficultyPoints(PlayerWeekendState state) =>
         state.Challenges.Where(c => c.Completed).Sum(c => c.Definition?.Difficulty ?? 0);
 
-    // ── Debug helpers ──────────────────────────────────────────────────────
+    // Debug helpers
     // Lets the UI exercise the claim / tier-reached flow without grinding raids.
     // Always gated behind debugMode so it can't be hit in a real profile.
-    public bool DebugAction(MongoId sessionId, string action)
+    public bool DebugAction(MongoId sessionId, string? action)
     {
         if (!_config.DebugMode)
         {
@@ -690,29 +719,25 @@ public class WeekendChallengeService(
 
     private static List<Item> BuildRewardItems(string templateId, int count)
     {
-        var rootId = new MongoId();
-        var items = new List<Item>
+        var root = new Item
         {
-            new()
-            {
-                Id = rootId,
-                Template = new MongoId(templateId),
-                ParentId = null,
-                SlotId = "main",
-            }
+            Id = new MongoId(),
+            Template = new MongoId(templateId),
+            ParentId = null,
+            SlotId = "main",
         };
 
-        // If stackable, set stack count on the root item
+        // If stackable, set stack count on the root item.
         if (count > 1)
         {
-            items[0].Upd ??= new();
-            items[0].Upd.StackObjectsCount = count;
+            root.Upd ??= new();
+            root.Upd.StackObjectsCount = count;
         }
 
-        return items;
+        return [root];
     }
 
-    // ── Client state endpoint ─────────────────────────────────────────────────
+    // Client state endpoint
 
     public WeekendStateDto GetClientState(MongoId sessionId)
     {
@@ -732,7 +757,6 @@ public class WeekendChallengeService(
         var profile = profileHelper.GetPmcProfile(sessionId);
         if (profile is null) return dto;
 
-       
         dto.GpCoins = gpBalance.Get(sessionId.ToString());
 
         if (!active) return dto;
@@ -757,7 +781,6 @@ public class WeekendChallengeService(
         return dto;
     }
 
-
     private DateTime _debugWeekendEnd = DateTime.MinValue;
     private const double DebugWeekendHours = 48;
 
@@ -780,7 +803,7 @@ public class WeekendChallengeService(
         return (end - now).TotalSeconds;
     }
 
-    // ── JSON helpers ──────────────────────────────────────────────────────────
+    // JSON helpers
 
     // Tolerant load: a malformed or half-written file (bad manual edit, or a save
     // truncated by a crash mid-write) falls back to default with a named log line

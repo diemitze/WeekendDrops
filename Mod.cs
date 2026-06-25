@@ -13,6 +13,8 @@ public record ModMetadata : AbstractModMetadata
         new(typeof(ModMetadata).Assembly.GetName().Version!.ToString(3));
     public override SemanticVersioning.Range SptVersion { get; init; } = new("~4.0.0");
     public override List<string>? Incompatibilities { get; init; }
+    // No external mod dependencies: the contract crew rides on the vanilla 'cursedAssault'
+    // WildSpawnType, so contracts are fully standalone (no MoreBotsAPI / custom enum).
     public override Dictionary<string, SemanticVersioning.Range>? ModDependencies { get; init; }
     public override string? Url { get; init; } = "";
     public override bool? IsBundleMod { get; init; }
