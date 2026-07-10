@@ -10,10 +10,8 @@ using WeekendDrops.Services;
 
 namespace WeekendDrops.Patches;
 
-// Forces a contract's bonusItems onto every bot that contract spawns (matched by role).
-// Reuses the generator's own AddLootFromPool so placement, container space, and parenting
-// are handled exactly like normal bot loot. Scoped to the active contract's spawn roles,
-// so unrelated bots are untouched.
+// Forces a contract's bonusItems onto every bot it spawns (matched by role), via the generator's
+// own AddLootFromPool. Scoped to the active contract's roles, so unrelated bots are untouched.
 public static class ContractBotLootPatch
 {
     private static ContractService? _contracts;

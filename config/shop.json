@@ -67,7 +67,7 @@
     "name": "Lucky Scav Junkbox",
     "description": "78-slot loose item storage",
     "templateId": "5b7c710788a4506dec015957",
-    "gpCost": 600,
+    "gpCost": 1600,
     "stock": -1,
     "count": 1
   },
@@ -130,7 +130,7 @@
     "name": "THICC Items Case",
     "description": "Premium high-capacity container",
     "templateId": "5c0a840b86f7742ffa4f2482",
-    "gpCost": 1800,
+    "gpCost": 2600,
     "stock": 1,
     "count": 1
   },

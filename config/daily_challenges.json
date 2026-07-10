@@ -128,6 +128,214 @@
     "difficulty": 3
   },
   {
+    "id": "daily_kill_cultists_2",
+    "type": "KillCultists",
+    "description": "Kill 2 cultists",
+    "target": 2,
+    "gpReward": 85,
+    "difficulty": 2
+  },
+  {
+    "id": "daily_kill_cultists_3",
+    "type": "KillCultists",
+    "description": "Kill 3 cultists",
+    "target": 3,
+    "gpReward": 95,
+    "difficulty": 2
+  },
+  {
+    "id": "daily_kill_cultists_5",
+    "type": "KillCultists",
+    "description": "Kill 5 cultists",
+    "target": 5,
+    "gpReward": 160,
+    "difficulty": 3
+  },
+  {
+    "id": "daily_kill_priest",
+    "type": "KillPriest",
+    "description": "Kill the cultist Priest",
+    "target": 1,
+    "gpReward": 185,
+    "difficulty": 3
+  },
+  {
+    "id": "daily_kill_scavs_40",
+    "type": "KillScavs",
+    "description": "Kill 40 Scavs",
+    "target": 40,
+    "gpReward": 175,
+    "difficulty": 3
+  },
+  {
+    "id": "daily_kill_pmcs_10",
+    "type": "KillPMCs",
+    "description": "Kill 10 PMCs",
+    "target": 10,
+    "gpReward": 180,
+    "difficulty": 3
+  },
+  {
+    "id": "daily_kill_headshots_6",
+    "type": "KillHeadshots",
+    "description": "Get 6 headshot kills",
+    "target": 6,
+    "gpReward": 160,
+    "difficulty": 3
+  },
+  {
+    "id": "daily_kill_headshots_12",
+    "type": "KillHeadshots",
+    "description": "Get 12 headshot kills",
+    "target": 12,
+    "gpReward": 170,
+    "difficulty": 3
+  },
+  {
+    "id": "daily_grenade_kills_6",
+    "type": "GrenadeKills",
+    "description": "Kill 6 enemies with grenades",
+    "target": 6,
+    "gpReward": 165,
+    "difficulty": 3
+  },
+  {
+    "id": "daily_extract_success_6",
+    "type": "ExtractSuccessfully",
+    "description": "Extract successfully 6 times",
+    "target": 6,
+    "gpReward": 155,
+    "difficulty": 3
+  },
+  {
+    "id": "daily_extract_success_10",
+    "type": "ExtractSuccessfully",
+    "description": "Extract successfully 10 times",
+    "target": 10,
+    "gpReward": 170,
+    "difficulty": 3
+  },
+  {
+    "id": "daily_scav_kills_40",
+    "type": "ScavKills",
+    "description": "Get 40 kills across Scav raids",
+    "target": 40,
+    "gpReward": 175,
+    "difficulty": 3
+  },
+  {
+    "id": "daily_scav_raids_done_6",
+    "type": "ScavRaidsDone",
+    "description": "Complete 6 Scav raids",
+    "target": 6,
+    "gpReward": 95,
+    "difficulty": 2
+  },
+  {
+    "id": "daily_kill_scavs_singleraid_25",
+    "type": "KillScavsSingleRaid",
+    "description": "Kill 25 Scavs in a single raid",
+    "target": 25,
+    "gpReward": 170,
+    "difficulty": 3
+  },
+  {
+    "id": "daily_kill_bosses_3",
+    "type": "KillBoss",
+    "description": "Eliminate 3 bosses",
+    "target": 3,
+    "gpReward": 180,
+    "difficulty": 3
+  },
+  {
+    "id": "daily_kill_cultists_8",
+    "type": "KillCultists",
+    "description": "Kill 8 cultists",
+    "target": 8,
+    "gpReward": 170,
+    "difficulty": 3
+  },
+  {
+    "id": "daily_survive_4500",
+    "type": "SurviveTimeCumulative",
+    "description": "Survive 75 minutes total in-raid (resets on death)",
+    "target": 4500,
+    "gpReward": 165,
+    "difficulty": 3
+  },
+  {
+    "id": "daily_survive_5400",
+    "type": "SurviveTimeCumulative",
+    "description": "Survive 90 minutes total in-raid (resets on death)",
+    "target": 5400,
+    "gpReward": 175,
+    "difficulty": 3
+  },
+  {
+    "id": "daily_kill_raiders_2",
+    "type": "KillRaiders",
+    "description": "Kill 2 Raiders",
+    "target": 2,
+    "gpReward": 90,
+    "difficulty": 2
+  },
+  {
+    "id": "daily_kill_raiders_4",
+    "type": "KillRaiders",
+    "description": "Kill 4 Raiders",
+    "target": 4,
+    "gpReward": 165,
+    "difficulty": 3
+  },
+  {
+    "id": "daily_kill_rogues_2",
+    "type": "KillRogues",
+    "description": "Kill 2 Rogues",
+    "target": 2,
+    "gpReward": 95,
+    "difficulty": 2
+  },
+  {
+    "id": "daily_kill_rogues_4",
+    "type": "KillRogues",
+    "description": "Kill 4 Rogues",
+    "target": 4,
+    "gpReward": 165,
+    "difficulty": 3
+  },
+  {
+    "id": "daily_melee_kill_1",
+    "type": "MeleeKills",
+    "description": "Bring a knife to a gunfight: get 1 melee kill",
+    "target": 1,
+    "gpReward": 90,
+    "difficulty": 2
+  },
+  {
+    "id": "daily_kills_single_raid_10",
+    "type": "KillsSingleRaid",
+    "description": "Kill 10 enemies in a single raid",
+    "target": 10,
+    "gpReward": 95,
+    "difficulty": 2
+  },
+  {
+    "id": "daily_kills_single_raid_15",
+    "type": "KillsSingleRaid",
+    "description": "Kill 15 enemies in a single raid",
+    "target": 15,
+    "gpReward": 165,
+    "difficulty": 3
+  },
+  {
+    "id": "daily_survive_single_raid_15",
+    "type": "SurviveTimeSingleRaid",
+    "description": "Survive 15 minutes in a single raid",
+    "target": 900,
+    "gpReward": 90,
+    "difficulty": 2
+  },
+  {
     "id": "daily_scav_raids_3",
     "type": "ScavRaidsDone",
     "description": "Complete 3 Scav raids",

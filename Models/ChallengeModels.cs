@@ -7,6 +7,13 @@ public enum ChallengeType
     KillScavs,
     KillPMCs,
     KillBoss,
+    KillCultists, // cultists (Sektanty); credited from the client's per-raid cultist tally
+    KillPriest,   // the cultist boss (Sektant Priest) specifically
+    KillRaiders,  // Raiders (WildSpawnType pmcBot)
+    KillRogues,   // Rogues (WildSpawnType exUsec)
+    MeleeKills,   // kills whose lethal blow was a melee strike (rare joke challenge)
+    KillsSingleRaid, // combined kills of any type in one raid (spike)
+    SurviveTimeSingleRaid, // seconds survived in one raid (kept modest - raids are ~30 min)
     KillHeadshots,
     GrenadeKills, // kills whose lethal damage type is GrenadeFragment (frag-grenade shrapnel)
     SurviveTimeCumulative, // accumulated seconds across raids, resets fully on death
@@ -32,7 +39,13 @@ public static class ChallengeMetrics
         ChallengeType.KillPMCs or ChallengeType.KillPMCsSingleRaid          => "pmc",
         ChallengeType.KillScavs or ChallengeType.KillScavsSingleRaid
             or ChallengeType.ScavKills                                      => "scav",
-        ChallengeType.KillBoss                                             => "boss",
+        ChallengeType.KillBoss or ChallengeType.KillPriest                 => "boss",
+        ChallengeType.KillCultists                                         => "cultist",
+        ChallengeType.KillRaiders                                          => "raider",
+        ChallengeType.KillRogues                                           => "rogue",
+        ChallengeType.MeleeKills                                           => "melee",
+        ChallengeType.KillsSingleRaid                                      => "singleraid",
+        ChallengeType.SurviveTimeSingleRaid                                => "survive",
         ChallengeType.KillHeadshots                                        => "headshot",
         ChallengeType.GrenadeKills                                         => "grenade",
         ChallengeType.SurviveTimeCumulative                                => "survive",
@@ -43,9 +56,7 @@ public static class ChallengeMetrics
         _                                                                  => t.ToString(),
     };
 
-    // Challenges that can only be progressed while running as a Scav. Excluded
-    // from the pools when the player has Scav raids disabled (config flag), so the
-    // sets never hand out a quest they can't complete.
+    // Scav-run-only challenges. Dropped from the pools when Scav raids are disabled.
     public static bool IsScavOnly(ChallengeType t) => t switch
     {
         ChallengeType.ScavExtract or ChallengeType.ScavKills
@@ -110,12 +121,8 @@ public class PlayerWeekendState
     // Survival time bank in seconds - resets to 0 on death
     public float SurvivalTimeBank { get; set; }
 
-    // The effective weekend plan this set was assigned under (challenge count and
-    // difficulty-point budget). The plan adapts to the usable challenge pool, which
-    // shifts when Scav/LootNET challenges are toggled. A mismatch on load means the
-    // plan changed and the set should reroll; matching it keeps the set stable even
-    // when the achievable total falls short of the configured budget (so progress is
-    // never wiped by an unreachable target). 0 on legacy states -> one-time reroll.
+    // The plan (challenge count + point budget) this set was built under. A mismatch on
+    // load means the plan changed (Scav/LootNET toggled) and the set should reroll.
     public int PlanCount { get; set; }
     public int PlanBudget { get; set; }
 }
@@ -140,10 +147,10 @@ public class ModConfig
     public int WeekendEndHour { get; set; } = 4;
 
     [JsonPropertyName("challengesPerWeekend")]
-    public int ChallengesPerWeekend { get; set; } = 4;
+    public int ChallengesPerWeekend { get; set; } = 8;
 
     [JsonPropertyName("weekendDifficultyBudget")]
-    public int WeekendDifficultyBudget { get; set; } = 8;
+    public int WeekendDifficultyBudget { get; set; } = 18;
 
     // How long (hours) unclaimed drop mail stays before expiring
     [JsonPropertyName("dropExpiryHours")]
@@ -161,17 +168,17 @@ public class ModConfig
     [JsonPropertyName("shopGlobalRestockHours")]
     public double ShopGlobalRestockHours { get; set; } = 24;
 
-    // Global multiplier on every GP shop price. 1.0 = config prices as-is; 2.0 = double,
-    // 0.5 = half. Applied to both the displayed price and the amount charged, so raise it
-    // to make the shop more expensive without editing every item in shop.json.
+    // Multiplier on every GP shop price (1.0 = as-is). Scales the whole shop without
+    // editing each shop.json entry; applied to both display and charge.
     [JsonPropertyName("shopPriceMultiplier")]
     public double ShopPriceMultiplier { get; set; } = 1.0;
 
     [JsonPropertyName("kitWeaponDrops")]
     public bool KitWeaponDrops { get; set; } = true;
 
+    // Manual override to force LootNET loot-value challenges on (normally auto-detected).
     [JsonPropertyName("includeLootNet")]
-    public bool IncludeLootNet { get; set; }
+    public bool IncludeLootNet { get; set; } = false;
 
     // When false, Scav-run challenges (extract/kills/raids as a Scav) are dropped
     // from both the weekend and daily pools - for players who run Scav raids off.

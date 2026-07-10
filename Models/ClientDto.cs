@@ -65,6 +65,78 @@ public class WeekendStateDto
     // actions otherwise - so the buttons aren't dead when debugMode is off.
     [JsonPropertyName("debugMode")]
     public bool DebugMode { get; set; }
+
+    // GP gifts sent to this player since their last /state poll. Drained on read
+    // server-side, so each gift appears here exactly once; the client fires the
+    // "gift received" toast for each. The GP itself is already in GpCoins above.
+    [JsonPropertyName("pendingGifts")]
+    public List<ReceivedGiftDto> PendingGifts { get; set; } = [];
+}
+
+// A GP gift the player just received (drives the receive toast). The coins are already
+// reflected in the balance; this is only the announcement.
+public class ReceivedGiftDto
+{
+    [JsonPropertyName("fromNickname")]
+    public string FromNickname { get; set; } = "";
+
+    [JsonPropertyName("amount")]
+    public int Amount { get; set; }
+}
+
+// A profile the player can gift GP to (every other real profile on the server).
+public class GiftFriendDto
+{
+    [JsonPropertyName("id")]
+    public string Id { get; set; } = "";
+
+    [JsonPropertyName("nickname")]
+    public string Nickname { get; set; } = "";
+}
+
+public class FriendsStateDto
+{
+    [JsonPropertyName("friends")]
+    public List<GiftFriendDto> Friends { get; set; } = [];
+}
+
+// One row of the Fika squad rivalry board: a real profile on the server with its GP
+// standing this weekend. Balances/earnings are exposed here (unlike the gift picker).
+public class SquadRowDto
+{
+    [JsonPropertyName("nickname")]
+    public string Nickname { get; set; } = "";
+
+    [JsonPropertyName("gpBalance")]
+    public int GpBalance { get; set; }
+
+    [JsonPropertyName("gpEarnedWeekend")]
+    public int GpEarnedWeekend { get; set; }
+
+    [JsonPropertyName("weeklyDone")]
+    public int WeeklyDone { get; set; }
+
+    [JsonPropertyName("weeklyTotal")]
+    public int WeeklyTotal { get; set; }
+
+    [JsonPropertyName("isYou")]
+    public bool IsYou { get; set; }
+}
+
+public class SquadStateDto
+{
+    [JsonPropertyName("rows")]
+    public List<SquadRowDto> Rows { get; set; } = [];
+}
+
+// Client -> server: send `amount` GP to the profile `toId`.
+public class GiftRequest : IRequestData
+{
+    [JsonPropertyName("toId")]
+    public string ToId { get; set; } = "";
+
+    [JsonPropertyName("amount")]
+    public int Amount { get; set; }
 }
 
 public class DailyChallengeDto
@@ -164,11 +236,8 @@ public class StringIdRequest : IRequestData
     public string Id { get; set; } = "";
 }
 
-// Client pushes the F12 toggles the server can't infer on its own. These used to
-// ride on the state-request URL as a query string (?noscav=1), but SPT's HttpRouter
-// builds the handler url from request.Path.Value, which drops the query string - so
-// the flags never arrived. Carried in the request body instead, which handlers do
-// receive. Sticky server-side, mirroring SetScavChallengesDisabled / SetLootNetActive.
+// Client pushes the F12 toggles the server can't infer. Carried in the request body, not the
+// URL (SPT's router drops the query string). Sticky server-side.
 public class ClientFlagsRequest : IRequestData
 {
     [JsonPropertyName("noScav")]
@@ -200,6 +269,11 @@ public class ContractDto
     [JsonPropertyName("flavor")]
     public string Flavor { get; set; } = "";
 
+    // Effective spawn zone of the active contract's target (resolved BossZone, e.g. "ZoneScavBase").
+    // Populated on the accepted contract only; the client prettifies it for the intel toast.
+    [JsonPropertyName("zone")]
+    public string Zone { get; set; } = "";
+
     // WildSpawnType roles whose deaths count, and how many, so the client kill hook can
     // recognise the kills that complete the active contract.
     [JsonPropertyName("objectiveRoles")]
@@ -223,10 +297,8 @@ public class ContractDto
     [JsonPropertyName("active")]
     public bool Active { get; set; }
 
-    // True while the card is "sealed": the target and map are withheld until the player
-    // accepts it. GP reward and contract type (TriggerAirdrop) stay visible; everything
-    // identifying (name, map, objective, roles, airdrop coords) is redacted server-side so
-    // it can't be datamined from the board. Cleared on the accepted contract.
+    // True while the card is sealed: target and map withheld until accept. GP reward and type stay
+    // visible; identifying fields are redacted server-side so the board can't be datamined.
     [JsonPropertyName("sealed")]
     public bool Sealed { get; set; }
 
@@ -304,6 +376,21 @@ public class RaidResultRequest : IRequestData
 
     [JsonPropertyName("bossKills")]
     public int BossKills { get; set; }
+
+    [JsonPropertyName("cultistKills")]
+    public int CultistKills { get; set; }
+
+    [JsonPropertyName("priestKills")]
+    public int PriestKills { get; set; }
+
+    [JsonPropertyName("raiderKills")]
+    public int RaiderKills { get; set; }
+
+    [JsonPropertyName("rogueKills")]
+    public int RogueKills { get; set; }
+
+    [JsonPropertyName("meleeKills")]
+    public int MeleeKills { get; set; }
 
     [JsonPropertyName("headshots")]
     public int Headshots { get; set; }

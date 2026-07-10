@@ -2,11 +2,9 @@ using System.Text.Json.Serialization;
 
 namespace WeekendDrops.Models;
 
-// One spawn group: a leader (BossName) plus its escorts, dropped into a zone. A boss
-// contract has one group; an event ("clean-out") contract has several roaming groups.
-// Phase 1 uses existing EFT WildSpawnType ids (e.g. bossKnight, exUsec, pmcBot); Phase 2
-// swaps these for a custom type. Raiders (pmcBot) and Rogues (exUsec) spawn fine through
-// the boss pipeline and come geared, which is what the event style wants.
+// One spawn group: a leader (BossName) plus escorts, dropped into a zone. Boss contracts
+// have one group; event contracts several. Uses EFT WildSpawnType ids (bossKnight, exUsec,
+// pmcBot...); Raiders/Rogues spawn geared through the boss pipeline, which suits the event style.
 public class ContractGroup
 {
     [JsonPropertyName("bossName")]
@@ -28,11 +26,9 @@ public class ContractGroup
     [JsonPropertyName("bossZone")]
     public string BossZone { get; set; } = "";
 
-    // When true, the group's role is hostile to the player only and neutral to all AI
-    // (scavs, bosses, AI PMCs). This keeps the Cleanup Crew anchored to its spawn zone -
-    // it has nothing to chase across the map, so it holds position and only engages when
-    // the player shows up. Leave false for boss bounties (a boss keeps its vanilla
-    // relations to its own guards).
+    // When true the role is hostile to the player only, neutral to all AI. Keeps the Cleanup
+    // Crew anchored to its zone (nothing to chase) so it holds until the player shows. Leave
+    // false for boss bounties (a boss keeps its vanilla relations to its guards).
     [JsonPropertyName("hostileToPlayer")]
     public bool HostileToPlayer { get; set; }
 }
@@ -82,10 +78,8 @@ public class BossSpawnMap
     public string BossZone { get; set; } = "";
 }
 
-// One entry in a randomized boss contract's pool. On accept the service rolls one of
-// these AND one of its Maps, then locks both in for the duration of the contract, so the
-// forced spawn and the client-side kill objective always refer to the same boss on the
-// same map. Each boss carries its own map pool (incl. its lore home map).
+// One entry in a randomized boss contract's pool. On accept the service rolls one of these
+// plus one of its Maps and locks both in, so the spawn and the kill objective always agree.
 public class BossOption
 {
     // Stable id stored in the player's state once rolled (survives config reordering).
@@ -192,10 +186,8 @@ public class ContractDefinition
     [JsonPropertyName("requireExtract")]
     public bool RequireExtract { get; set; }
 
-    // Supply Run: when true the contract forces a guaranteed airdrop on its map and the
-    // client relocates the crate to AirdropPosition so the Cleanup Crew (spawned at the
-    // paired bossZone) guards the landing spot. Only valid on airdrop-capable maps
-    // (woods, shoreline, lighthouse, customs, interchange, reserve - NOT factory/labs).
+    // Supply Run: forces a guaranteed airdrop and the client relocates the crate to
+    // AirdropPosition (guarded by the Cleanup Crew). Airdrop-capable maps only (not factory/labs).
     [JsonPropertyName("triggerAirdrop")]
     public bool TriggerAirdrop { get; set; }
 
@@ -221,10 +213,8 @@ public class ContractsConfig
     [JsonPropertyName("contracts")]
     public List<ContractDefinition> Contracts { get; set; } = [];
 
-    // Contracts are NOT a daily thing. Once a board is used up (a contract completed or
-    // the pick abandoned), the next board appears a random number of WHOLE UTC days later,
-    // somewhere in [BoardMinDays, BoardMaxDays]. So the player goes a few dry days between
-    // offers - that quiet stretch is intended, not a bug. Set both equal for a fixed gap.
+    // Contracts are NOT daily. Once a board is spent, the next appears a random whole number
+    // of UTC days later in [BoardMinDays, BoardMaxDays]. Set both equal for a fixed gap.
     [JsonPropertyName("boardMinDays")]
     public int BoardMinDays { get; set; } = 2;
 
@@ -236,17 +226,14 @@ public class ContractsConfig
 // a time; CompletedAtUtc drives cooldowns.
 public class PlayerContractState
 {
-    // The contract "board": a fixed offer of a few contracts. The player may activate
-    // exactly ONE of them. Boards are NOT daily - a fresh one appears only once UtcNow has
-    // reached NextBoardAtUtc, which is pushed several days out whenever a board is spent.
-    // (BoardId is legacy from the old per-day cadence; kept so old state files still load.)
+    // The contract board: a fixed offer of a few contracts, of which the player picks ONE. Not
+    // daily. (BoardId is legacy from the old per-day cadence, kept so old state files load.)
     public string? BoardId { get; set; }
     public List<string> OfferedContractIds { get; set; } = [];
 
-    // When the next board may appear. Null = "evaluate now" (a brand-new player gets a
-    // board immediately). While a board is live and unspent this sits in the past; it's
-    // pushed to UtcNow + random(BoardMinDays..BoardMaxDays) days when the board is used up
-    // (contract completed or pick abandoned), so offers are irregular rather than daily.
+    // When the next board may appear. Null = evaluate now (new players get one immediately).
+    // Sits in the past while a board is live; pushed to UtcNow + random(BoardMin..Max) days
+    // when a board is spent, so offers are irregular rather than daily.
     public DateTime? NextBoardAtUtc { get; set; }
 
     // True once the player has spent their single pick this period - set on accept and

@@ -6,7 +6,9 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <RootNamespace>WeekendDrops</RootNamespace>
     <AssemblyName>WeekendDrops</AssemblyName>
-    <Version>1.0.2</Version>
+    <Version>1.0.3</Version>
+    <AssemblyVersion>1.0.3</AssemblyVersion>
+    <FileVersion>1.0.3</FileVersion>
     <Authors>20fpsguy</Authors>
     <Nullable>enable</Nullable>
   </PropertyGroup>
@@ -37,6 +39,14 @@
     <Content Remove="Tarkov-1.0-Backport\**" />
     <None Remove="Tarkov-1.0-Backport\**" />
     <EmbeddedResource Remove="Tarkov-1.0-Backport\**" />
+  </ItemGroup>
+
+  <!-- The cloned SPT-DynamicMaps repo lives in-tree for API reference only; never compile it. -->
+  <ItemGroup>
+    <Compile Remove="SPT-DynamicMaps\**\*.cs" />
+    <Content Remove="SPT-DynamicMaps\**" />
+    <None Remove="SPT-DynamicMaps\**" />
+    <EmbeddedResource Remove="SPT-DynamicMaps\**" />
   </ItemGroup>
 
   <!-- deploy to SPT on build - copies DLL + content config files automatically.

@@ -8,16 +8,20 @@ using WeekendDrops.Services;
 
 namespace WeekendDrops.Patches;
 
-// Injects a contract's boss spawn into a raid as it's generated. LocationLifecycleService.
-// GenerateLocationAndLoot(sessionId, name) builds the LocationBase whose BossLocationSpawn
-// list drives boss spawns, the same pipeline the Goons use. We add a forced spawn ONLY when
-// the requesting player has an active contract for that map - so it's per-raid and per-session,
-// never a global DB edit.
+// Injects a contract's boss spawn as the raid is generated. GenerateLocationAndLoot builds the
+// LocationBase whose BossLocationSpawn list drives boss spawns (the Goons pipeline). Forced spawn
+// only when the requesting player has an active contract for that map: per-raid, per-session.
 public static class ContractSpawnPatch
 {
     private static ContractService? _contracts;
     private static ISptLogger<WeekendDropsLoader>? _logger;
     private static bool _applied;
+
+    // Detect Fika once by the presence of its server mod. Only when Fika is installed do
+    // we allow the "any profile's contract" fallback below - so solo SPT with several save
+    // profiles never spawns a different profile's contract crew into an unrelated raid.
+    private static readonly bool _fikaPresent = Directory.Exists(
+        System.IO.Path.Combine(AppContext.BaseDirectory, "user", "mods", "fika-server"));
 
     public static void Apply(ContractService contracts, ISptLogger<WeekendDropsLoader> logger)
     {
@@ -49,6 +53,17 @@ public static class ContractSpawnPatch
         if (_contracts is null || __result is null) return;
 
         var def = _contracts.GetActiveContractForMap(__0, __1);
+
+        // Fika/headless: the session that GENERATES the raid is the headless/non-host client,
+        // which never accepts contracts, so its own lookup is empty. Fall back to any profile's
+        // active contract so the crew/airdrop still spawns.
+        if (def is null && _fikaPresent)
+        {
+            def = _contracts.GetAnyActiveContractForMap(__1);
+            if (def != null)
+                _logger?.Info($"[WeekendDrops] Fika fallback: raid session {__0} has no contract; spawning another profile's active contract '{def.Id}' for {__1}");
+        }
+
         if (def is null || def.Groups is null || def.Groups.Count == 0) return;
 
         __result.BossLocationSpawn ??= [];
@@ -113,15 +128,10 @@ public static class ContractSpawnPatch
         }
     }
 
-    // Prepare the Supply Run airdrop WITHOUT letting it self-fire on a timer. The client
-    // summons the plane on demand the moment the player wipes the crew (GameWorld.InitAirdrop),
-    // so the drop is the reward for the kill, not a coincident timed event.
-    //
-    // We keep the airdrop subsystem ENABLED (chance > 0, MinPlayers 1) so the map's
-    // AirdropPoints load and the manager initialises - InitAirdrop needs those points. But
-    // we push the auto-trigger window far beyond any raid length, so the native timer never
-    // elapses and never drops a crate on its own. The only drop that happens is the one the
-    // client calls in on crew-wipe. Per-raid only (we edit the generated LocationBase).
+    // Prepare the Supply Run airdrop WITHOUT a self-firing timer: the client summons the plane on
+    // crew-wipe (InitAirdrop), so the drop rewards the kill. Keep the subsystem enabled (chance>0,
+    // MinPlayers 1) so AirdropPoints load, but push the auto-trigger window past any raid length so
+    // the native timer never fires. Per-raid only (edits the generated LocationBase).
     private static void ForceAirdrop(LocationBase loc, string contractId)
     {
         loc.AirdropParameters ??= [];
@@ -140,11 +150,9 @@ public static class ContractSpawnPatch
         _logger?.Info($"[WeekendDrops] Contract '{contractId}' - airdrop armed for on-wipe summon (no auto-timer)");
     }
 
-    // Make the given role(s) hostile to the PLAYER only and neutral to all AI, per-raid,
-    // via the location's AdditionalHostilitySettings. AlwaysEnemies stays empty (no AI is
-    // a target -> nothing to chase, holds its zone); AlwaysFriends = own squad so it never
-    // shoots itself; the *PlayerBehaviour = AlwaysEnemies covers the human player (any
-    // side, so the bounty is winnable in PMC and Scav raids alike).
+    // Make the given role(s) hostile to the PLAYER only, neutral to all AI, per-raid via the
+    // location's AdditionalHostilitySettings. AlwaysEnemies empty (nothing to chase, holds its
+    // zone); AlwaysFriends = own squad; PlayerBehaviour = AlwaysEnemies so it's winnable in PMC and Scav.
     private static void ApplyPlayerHostility(LocationBase loc, params string[] ownRoles)
     {
         loc.BotLocationModifier ??= new BotLocationModifier();

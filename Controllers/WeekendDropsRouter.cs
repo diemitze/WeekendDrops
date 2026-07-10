@@ -69,6 +69,18 @@ public class WeekendDropsRouter(JsonUtil jsonUtil, WeekendDropsCallback callback
         new RouteAction<ClientFlagsRequest>(
             "/weekenddrops/clientflags",
             async (url, info, sessionId, output) => await callback.SetClientFlags(sessionId, info)
+        ),
+        new RouteAction<EmptyRequestData>(
+            "/weekenddrops/friends",
+            async (url, info, sessionId, output) => await callback.GetFriends(sessionId)
+        ),
+        new RouteAction<EmptyRequestData>(
+            "/weekenddrops/squad",
+            async (url, info, sessionId, output) => await callback.GetSquad(sessionId)
+        ),
+        new RouteAction<GiftRequest>(
+            "/weekenddrops/giftgp",
+            async (url, info, sessionId, output) => await callback.SendGift(sessionId, info)
         )
     ])
 { }
@@ -79,18 +91,18 @@ public class WeekendDropsCallback(
     WeekendChallengeService challengeService,
     DailyChallengeService dailyService,
     ContractService contractService,
-    GpBalanceService gpBalance)
+    GpBalanceService gpBalance,
+    GpGiftService giftService,
+    SquadService squadService)
 {
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     };
 
-    // The client pushes its BepInEx-side toggles (LootNET bridge, F12 "disable Scav
-    // challenges") to /weekenddrops/clientflags in the request body. They can't ride
-    // on the state-request URL: SPT's HttpRouter builds the handler url from
-    // request.Path.Value, which strips the query string, so a ?noscav=1 tag never
-    // reaches us. Both flags are sticky for the server run, mirroring the services.
+    // Client pushes its BepInEx-side toggles (LootNET bridge, F12 no-Scav) to
+    // /weekenddrops/clientflags in the body: SPT's router strips the query string, so a URL tag
+    // never arrives. Both sticky for the server run.
     public ValueTask<string> SetClientFlags(MongoId sessionId, ClientFlagsRequest info)
     {
         if (info is { NoScav: true })
@@ -157,6 +169,31 @@ public class WeekendDropsCallback(
         bool ok = int.TryParse(countStr, out int count) && count > 0;
         if (ok) gpBalance.Add(sessionId.ToString(), count);
         var json = JsonSerializer.Serialize(new { result = ok, deposited = ok ? count : 0 }, JsonOptions);
+        return new ValueTask<string>(httpResponseUtil.GetBody(json));
+    }
+
+    // The Fika squad rivalry board: every real profile on the server with its GP standing.
+    public ValueTask<string> GetSquad(MongoId sessionId)
+    {
+        var state = squadService.GetSquad(sessionId.ToString());
+        var json = JsonSerializer.Serialize(state, JsonOptions);
+        return new ValueTask<string>(httpResponseUtil.GetBody(json));
+    }
+
+    // The recipient picker: every other real profile on the server.
+    public ValueTask<string> GetFriends(MongoId sessionId)
+    {
+        var state = new FriendsStateDto { Friends = giftService.ListFriends(sessionId.ToString()) };
+        var json = JsonSerializer.Serialize(state, JsonOptions);
+        return new ValueTask<string>(httpResponseUtil.GetBody(json));
+    }
+
+    // Gift GP to another profile. Server validates the target and the sender's balance;
+    // returns an outcome code ("ok" / "bad_amount" / "bad_target" / "insufficient_gp").
+    public ValueTask<string> SendGift(MongoId sessionId, GiftRequest info)
+    {
+        var result = giftService.SendGift(sessionId.ToString(), info?.ToId ?? "", info?.Amount ?? 0);
+        var json = JsonSerializer.Serialize(new { result }, JsonOptions);
         return new ValueTask<string>(httpResponseUtil.GetBody(json));
     }
 

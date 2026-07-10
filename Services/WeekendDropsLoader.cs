@@ -12,11 +12,9 @@ using WeekendDrops.Services;
 
 namespace WeekendDrops;
 
-// Must run AFTER content-adding mods (e.g. WTT-ContentBackport registers its
-// items at PostDBModLoader + 2/3). IOnLoad runs ascending by TypePriority, so a
-// larger offset means we fold those items into the drop pools only once they're
-// actually in the DB. Still well inside the PostDBModLoader band (next phase is
-// +100000), so this stays before trader/ragfair registration.
+// Must run AFTER content-adding mods (WTT-ContentBackport registers items at PostDBModLoader+2/3).
+// IOnLoad runs ascending by TypePriority, so a larger offset folds those items into the pools only
+// once they're in the DB. Still inside the PostDBModLoader band (before trader/ragfair).
 [Injectable(TypePriority = OnLoadOrder.PostDBModLoader + 1000)]
 public class WeekendDropsLoader(
     WeekendChallengeService weekendChallengeService,
@@ -33,10 +31,9 @@ public class WeekendDropsLoader(
             "[WeekendDrops] Loading weekend challenges & drop crates...",
             LogTextColor.Yellow);
 
-        // The contract crew rides on the vanilla 'cursedAssault' WildSpawnType - its
-        // CursAssault brain is one SAIN actually controls, and it never spawns via normal
-        // waves - so we just override that bot type's definition in the DB from
-        // db/bots/types - no MoreBotsAPI, no custom enum.
+        // The contract crew rides on the vanilla 'cursedAssault' WildSpawnType: SAIN controls its
+        // CursAssault brain and it never spawns via normal waves, so we just override that bot type's
+        // DB definition from db/bots/types. No MoreBotsAPI, no custom enum.
         LoadContractBotTypes();
 
         weekendChallengeService.LoadConfig();
@@ -79,11 +76,9 @@ public class WeekendDropsLoader(
         return Task.CompletedTask;
     }
 
-    // Override vanilla bot types with our own definitions shipped in db/bots/types
-    // (e.g. cursedassault.json = the Cleanup Crew look/loadout/loot). Each file's
-    // name is the WildSpawnType key; we replace the whole entry so pinned single-value
-    // appearance/inventory arrays aren't merged back into randomness. SAIN still drives
-    // the combat brain off the WildSpawnType, so the crew fights properly.
+    // Override vanilla bot types with our definitions in db/bots/types (cursedassault.json = the
+    // Cleanup Crew look/loadout/loot). Filename = the WildSpawnType key; we replace the whole entry
+    // so pinned appearance/inventory arrays aren't merged back into randomness. SAIN still drives combat.
     private void LoadContractBotTypes()
     {
         var modDir = System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;

@@ -60,9 +60,10 @@ public class DailyChallengeService(
         _allDaily = LoadJson<List<DailyChallengeDefinition>>(
             SysPath.Combine(_configDir, "daily_challenges.json")) ?? [];
 
-        // Loot-value dailies need the LootNET bridge; seed from config, flipped on at
-        // runtime by the client signal via SetLootNetActive.
-        _lootNetActive = _config.IncludeLootNet;
+        // Loot-value dailies need LootNET: on automatically when its server mod is
+        // installed, or when forced via config. The client bridge signal can still flip
+        // it on later at runtime (SetLootNetActive) for setups we didn't detect at boot.
+        _lootNetActive = _config.IncludeLootNet || ModPresence.LootNetInstalled;
         ApplyDailyPool();
 
         _shopItems = LoadJson<List<ShopItemDefinition>>(
@@ -129,7 +130,9 @@ public class DailyChallengeService(
         if (r.Survived) state.SurvivalTimeBank += r.SurvivedSeconds;
         else            state.SurvivalTimeBank = 0;
 
-        int totalKills = r.ScavKills + r.PmcKills + r.BossKills;
+        // Raiders/Rogues are excluded from ScavKills (they aren't generic Scavs), so add
+        // them back into the raid total so scav-run and single-raid kill quests still count them.
+        int totalKills = r.ScavKills + r.PmcKills + r.BossKills + r.RaiderKills + r.RogueKills;
         int gpEarned = 0;
 
         foreach (var cp in state.Challenges.Where(c => !c.Completed))
@@ -139,6 +142,13 @@ public class DailyChallengeService(
                 case ChallengeType.KillScavs:            cp.Current += r.ScavKills; break;
                 case ChallengeType.KillPMCs:             cp.Current += r.PmcKills;  break;
                 case ChallengeType.KillBoss:             cp.Current += r.BossKills; break;
+                case ChallengeType.KillCultists:         cp.Current += r.CultistKills; break;
+                case ChallengeType.KillPriest:           cp.Current += r.PriestKills;  break;
+                case ChallengeType.KillRaiders:          cp.Current += r.RaiderKills;  break;
+                case ChallengeType.KillRogues:           cp.Current += r.RogueKills;   break;
+                case ChallengeType.MeleeKills:           cp.Current += r.MeleeKills;   break;
+                case ChallengeType.KillsSingleRaid:      if (totalKills >= cp.Target) cp.Current = cp.Target; break;
+                case ChallengeType.SurviveTimeSingleRaid: if (r.Survived && r.SurvivedSeconds >= cp.Target) cp.Current = cp.Target; break;
                 case ChallengeType.KillHeadshots:        cp.Current += r.Headshots; break;
                 case ChallengeType.GrenadeKills:         cp.Current += r.GrenadeKills; break;
                 case ChallengeType.SurviveTimeCumulative: cp.Current = (int)state.SurvivalTimeBank; break;
@@ -374,12 +384,8 @@ public class DailyChallengeService(
         return state;
     }
 
-    // Replace every Scav-run challenge in the set with another quest, in place. The
-    // replacement comes from a group not already in the set (preferring a PMC quest
-    // when the PMC slot is free), keeping the one-per-group variety of a fresh set.
-    // Other challenges and their progress are untouched; the replacement starts fresh
-    // at 0/target, so a previously-completed Scav challenge is genuinely re-tasked.
-    // Returns true if anything was swapped.
+    // Replace every Scav-run challenge with another quest, in place, from an unused group
+    // (preferring PMC). Replacements start at 0, so a completed Scav one is re-tasked. True if swapped.
     private bool ReplaceScavChallenges(PlayerDailyState state)
     {
         if (!_scavDisabled) return false;

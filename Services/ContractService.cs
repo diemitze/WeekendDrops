@@ -33,10 +33,8 @@ public class ContractService(
     // state file for every bot. Updated by accept/abandon/complete; seeded lazily.
     private readonly Dictionary<string, string?> _activeCache = [];
 
-    // Sessions running the "real board" debug sim: the board behaves exactly as a normal
-    // player sees it (3 sealed cards, single pick, cooldowns) even while debugMode is on,
-    // so the live flow can be tested without losing the other debug helpers. Toggled by
-    // the contract_realboard debug action; in-memory only.
+    // Sessions running the "real board" debug sim: the board behaves as a normal player sees
+    // it (sealed cards, single pick, cooldowns) even with debugMode on. In-memory only.
     private readonly HashSet<string> _realBoardSim = [];
 
     private readonly string _configDir = SysPath.Combine(
@@ -118,6 +116,7 @@ public class ContractService(
                     Map         = d.Map,
                     ObjectiveText  = d.ObjectiveText,
                     Flavor      = d.Flavor,
+                    Zone        = isActive ? FirstZone(d) : "",
                     ObjectiveRoles = d.ObjectiveRoles,
                     ObjectiveCount = d.ObjectiveCount,
                     GpReward    = d.GpReward,
@@ -134,10 +133,8 @@ public class ContractService(
         };
     }
 
-    // A redacted card for an un-accepted contract: GP reward and contract type stay
-    // visible (so the player can weigh payout and Bounty-vs-Supply-Run), but who the
-    // target is and which map it's on are withheld until acceptance. Built here, server
-    // side, so the real values never reach an un-accepted client.
+    // A redacted card for an un-accepted contract: GP reward and type stay visible, but the
+    // target and map are withheld until acceptance. Built server-side so real values never leak.
     private static ContractDto SealedDto(ContractDefinition c, double cooldownSeconds)
     {
         bool supply = c.TriggerAirdrop;
@@ -164,6 +161,17 @@ public class ContractService(
         };
     }
 
+    // The effective spawn zone of a resolved contract: the first group's non-empty
+    // BossZone (Resolve has already substituted the rolled airdrop/boss zone). If several
+    // are listed comma-separated, take the first. Blank = map default zones (no hint).
+    private static string FirstZone(ContractDefinition d)
+    {
+        var g = d.Groups?.FirstOrDefault(x => !string.IsNullOrWhiteSpace(x.BossZone));
+        if (g is null) return "";
+        var z = g.BossZone.Split(',')[0].Trim();
+        return z;
+    }
+
     // Accept / abandon
 
     public string AcceptContract(MongoId sessionId, string contractId)
@@ -177,10 +185,8 @@ public class ContractService(
         // Re-accepting the contract you already picked is a harmless no-op.
         if (state.ActiveContractId == contractId) return "ok";
 
-        // You get one pick from the board per period. Spending it (accept) or burning it
-        // (abandon) locks the board until it refreshes - so it can't be farmed or fished.
-        // Debug skips all of this so every contract can be picked (and switched) freely;
-        // the real-board sim re-enforces it for the session that opted in.
+        // One pick per board period. Accepting or abandoning locks the board until it refreshes,
+        // so it can't be farmed. Debug picks freely; the real-board sim re-enforces the lock.
         if (!BoardDebug(sessionId))
         {
             if (state.PickConsumed) return "pick_used";
@@ -232,11 +238,8 @@ public class ContractService(
         state.ActiveContractId = null;
         state.AcceptedAtUtc = null;
         ClearRolled(state);
-        // Backing out spends the whole board: no crew spawns, the offer is cleared, and the
-        // next board is days away (not pickable again until then). This is the "I died three
-        // times, I want out" escape hatch - and it stops the player from bailing on a blind
-        // pick just to fish for a better one. (Debug ignores the schedule, so testers keep
-        // picking freely.)
+        // Backing out spends the whole board (no crew, offer cleared, next board days away).
+        // The "I want out" escape hatch that also stops fishing for a better pick.
         ScheduleNextBoard(state);
         SaveState(sessionId, state);
         _activeCache[sessionId.ToString()] = null;
@@ -289,11 +292,8 @@ public class ContractService(
                 logger.Info($"[WeekendDrops] DEBUG force-completed contract '{def.Id}' (+{def.GpReward} GP)");
                 break;
 
-            // Toggle the real-board sim: present the board exactly as a player sees it
-            // (sealed cards, 3-card roll, single pick, cooldowns) while debugMode stays
-            // on for everything else. Turning it on wipes contract state to a clean slate
-            // so a fresh real board rolls on the next fetch; turning it off restores the
-            // "all offered, unlimited picks" debug board.
+            // Toggle the real-board sim: present the board as a player sees it while debugMode
+            // stays on otherwise. On wipes contract state for a fresh roll; off restores the debug board.
             case "realboard":
                 var rsid = sessionId.ToString();
                 if (_realBoardSim.Remove(rsid))
@@ -349,6 +349,25 @@ public class ContractService(
         if (def is null) return null;
         var resolved = Resolve(def, state);
         return LocationUtil.Matches(location, resolved.Map) ? resolved : null;
+    }
+
+    // Fika/headless fallback: the raid-generating session (headless or non-host) usually has
+    // no accepted contract, so scan every profile's state for an active one matching this map
+    // and return the first. Gated on Fika being installed, so solo SPT is unaffected.
+    public ContractDefinition? GetAnyActiveContractForMap(string location)
+    {
+        if (!Directory.Exists(_dataDir)) return null;
+        foreach (var path in Directory.EnumerateFiles(_dataDir, "*_contracts.json"))
+        {
+            var file = SysPath.GetFileName(path);
+            var idStr = file[..^"_contracts.json".Length];
+            MongoId sessionId;
+            try { sessionId = new MongoId(idStr); } catch { continue; }
+
+            var def = GetActiveContractForMap(sessionId, location);
+            if (def != null) return def;
+        }
+        return null;
     }
 
     // Resolves a config contract into the definition for THIS player's accepted state:
@@ -537,10 +556,8 @@ public class ContractService(
     // How many contracts are offered at once. The player picks exactly one.
     private const int BoardSize = 3;
 
-    // Ensures the player has a board when one is due. Contracts are NOT daily: a fresh
-    // board appears only once UtcNow has reached NextBoardAtUtc (pushed several days out
-    // each time a board is spent). A live, unspent board is left alone, and an in-progress
-    // contract is never disturbed. Returns true if anything changed (so the caller saves).
+    // Ensures a board exists when one is due (only once UtcNow reaches NextBoardAtUtc; not
+    // daily). A live board or in-progress contract is left alone. True if anything changed.
     private bool EnsureBoard(PlayerContractState state)
     {
         // An accepted, in-progress contract owns the board until it's completed.
@@ -558,10 +575,8 @@ public class ContractService(
         return true;
     }
 
-    // Rolls a fresh offer of BoardSize distinct contracts. Contracts on cooldown are
-    // skipped; if that leaves too few to fill the board, the full pool is used so the
-    // board is never short. The NEXT board isn't scheduled here - that happens when this
-    // one is spent (ScheduleNextBoard, on complete/abandon).
+    // Rolls a fresh offer of BoardSize distinct contracts, skipping those on cooldown (falls
+    // back to the full pool if too few). The next board is scheduled when this one is spent.
     private void RollBoard(PlayerContractState state)
     {
         var available = _config.Contracts

@@ -10,12 +10,9 @@ using WeekendDrops;
 
 namespace WeekendDrops.Patches;
 
-// Caps bulky wearables to one per crate. The loot generator picks each reward item
-// independently from the weighted pool, so an Equipment crate could roll 3 backpacks
-// (or 3 rigs, etc.). We hook PickRewardItem: the first item of a capped category is
-// kept, but a second one is re-rolled to a category the crate isn't already using.
-// Re-rolling at the tpl stage (not the result stage) lets SPT expand presets and the
-// weapon-kit / ammo postfixes run on the replacement exactly as if it were picked.
+// Caps bulky wearables to one per crate. The generator picks each reward independently, so an
+// Equipment crate could roll 3 backpacks. We hook PickRewardItem: keep the first of a capped
+// category, re-roll a second to an unused one (at the tpl stage, so presets/postfixes still run).
 public static class CrateCategoryCapPatch
 {
     private static ItemHelper? _itemHelper;
