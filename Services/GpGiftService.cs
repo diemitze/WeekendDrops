@@ -7,9 +7,8 @@ using WeekendDrops.Models;
 
 namespace WeekendDrops.Services;
 
-// GP gifting between profiles on the same server: a pure server-side balance transfer, no
-// stash edits (PvE would clobber those). The GP is credited at send time; the recipient
-// just gets a "gift from X" toast, queued and drained on their next /state poll.
+// Pure server-side balance transfer, no stash edits (PvE would clobber those). Credited at
+// send time; the recipient's toast is queued and drained on their next /state poll.
 [Injectable(InjectionType.Singleton)]
 public class GpGiftService
 {
@@ -32,8 +31,7 @@ public class GpGiftService
         Load();
     }
 
-    // Real profiles you can send to, by nickname. Excludes yourself and fresh/headless
-    // accounts (no PMC nickname). Balances are never exposed.
+    // Excludes the sender and any fresh or headless account. Balances are never exposed.
     public List<GiftFriendDto> ListFriends(string sessionId)
     {
         var result = new List<GiftFriendDto>();
@@ -59,8 +57,8 @@ public class GpGiftService
         return result;
     }
 
-    // Transfer GP and queue the recipient's toast. Server-authoritative: never trusts the
-    // client for target or amount. Returns ok / bad_amount / bad_target / insufficient_gp.
+    // Never trusts the client for target or amount. Returns ok, bad_amount, bad_target
+    // or insufficient_gp.
     public string SendGift(string fromId, string toId, int amount)
     {
         if (amount <= 0) return "bad_amount";

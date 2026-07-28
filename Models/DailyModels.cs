@@ -43,7 +43,6 @@ public class DailyChallengeProgress
 
 public class PlayerDailyState
 {
-
     public string DailyId { get; set; } = "";
     public List<DailyChallengeProgress> Challenges { get; set; } = [];
 
@@ -83,8 +82,18 @@ public class ShopItemDefinition
     [JsonPropertyName("contents")]
     public List<ShopBundleEntry>? Contents { get; set; }
 
+    // When set, this entry is a Trade-in (handover) rather than a GP purchase: the player
+    // hands over these junk items and receives Contents in return. GpCost is ignored.
+    [JsonPropertyName("barterCost")]
+    public List<ShopBundleEntry>? BarterCost { get; set; }
+
     [JsonPropertyName("restockHours")]
     public double? RestockHours { get; set; }
+
+    // When true, buying this item fires the full-screen trophy ceremony client-side
+    // (the Gamma container and any future top-end grail item).
+    [JsonPropertyName("trophy")]
+    public bool Trophy { get; set; }
 }
 
 public class ShopBundleEntry

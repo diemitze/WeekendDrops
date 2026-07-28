@@ -132,15 +132,15 @@
     "type": "KillCultists",
     "description": "Kill 2 cultists",
     "target": 2,
-    "gpReward": 85,
-    "difficulty": 2
+    "gpReward": 50,
+    "difficulty": 1
   },
   {
     "id": "daily_kill_cultists_3",
     "type": "KillCultists",
     "description": "Kill 3 cultists",
     "target": 3,
-    "gpReward": 95,
+    "gpReward": 90,
     "difficulty": 2
   },
   {
@@ -148,7 +148,7 @@
     "type": "KillCultists",
     "description": "Kill 5 cultists",
     "target": 5,
-    "gpReward": 160,
+    "gpReward": 165,
     "difficulty": 3
   },
   {
@@ -234,8 +234,8 @@
   {
     "id": "daily_kill_scavs_singleraid_25",
     "type": "KillScavsSingleRaid",
-    "description": "Kill 25 Scavs in a single raid",
-    "target": 25,
+    "description": "Kill 10 Scavs in a single raid",
+    "target": 10,
     "gpReward": 170,
     "difficulty": 3
   },
@@ -245,14 +245,6 @@
     "description": "Eliminate 3 bosses",
     "target": 3,
     "gpReward": 180,
-    "difficulty": 3
-  },
-  {
-    "id": "daily_kill_cultists_8",
-    "type": "KillCultists",
-    "description": "Kill 8 cultists",
-    "target": 8,
-    "gpReward": 170,
     "difficulty": 3
   },
   {
@@ -300,30 +292,6 @@
     "type": "KillRogues",
     "description": "Kill 4 Rogues",
     "target": 4,
-    "gpReward": 165,
-    "difficulty": 3
-  },
-  {
-    "id": "daily_melee_kill_1",
-    "type": "MeleeKills",
-    "description": "Bring a knife to a gunfight: get 1 melee kill",
-    "target": 1,
-    "gpReward": 90,
-    "difficulty": 2
-  },
-  {
-    "id": "daily_kills_single_raid_10",
-    "type": "KillsSingleRaid",
-    "description": "Kill 10 enemies in a single raid",
-    "target": 10,
-    "gpReward": 95,
-    "difficulty": 2
-  },
-  {
-    "id": "daily_kills_single_raid_15",
-    "type": "KillsSingleRaid",
-    "description": "Kill 15 enemies in a single raid",
-    "target": 15,
     "gpReward": 165,
     "difficulty": 3
   },
@@ -685,8 +653,8 @@
   {
     "id": "daily_scav_spree_20",
     "type": "KillScavsSingleRaid",
-    "description": "Kill 20 Scavs in a single raid",
-    "target": 20,
+    "description": "Kill 12 Scavs in a single raid",
+    "target": 12,
     "gpReward": 165,
     "difficulty": 3
   },
@@ -1004,12 +972,290 @@
     "difficulty": 2
   },
   {
-    "id": "daily_scav_extract_groundzero",
-    "type": "ScavExtractFromLocation",
-    "description": "Extract from Ground Zero as a Scav",
+    "id": "kill_cultist_1d",
+    "type": "KillCultists",
+    "description": "Kill a cultist",
+    "target": 1,
+    "gpReward": 50,
+    "difficulty": 1
+  },
+  {
+    "id": "kills_single_raid_6d",
+    "type": "KillsSingleRaid",
+    "description": "Kill 6 enemies in a single raid",
+    "target": 6,
+    "gpReward": 50,
+    "difficulty": 1
+  },
+  {
+    "id": "kills_single_raid_10d",
+    "type": "KillsSingleRaid",
+    "description": "Kill 10 enemies in a single raid",
+    "target": 10,
+    "gpReward": 90,
+    "difficulty": 2
+  },
+  {
+    "id": "kills_single_raid_15d",
+    "type": "KillsSingleRaid",
+    "description": "Kill 15 enemies in a single raid",
+    "target": 15,
+    "gpReward": 165,
+    "difficulty": 3
+  },
+  {
+    "id": "kills_single_raid_20d",
+    "type": "KillsSingleRaid",
+    "description": "Kill 20 enemies in a single raid",
+    "target": 20,
+    "gpReward": 165,
+    "difficulty": 3
+  },
+  {
+    "id": "kill_raiders_or_boss_1d",
+    "type": "KillBoss",
+    "description": "Track down and kill any boss",
+    "target": 1,
+    "gpReward": 165,
+    "difficulty": 3
+  },
+  {
+    "id": "kill_bosses_2xd",
+    "type": "KillBoss",
+    "description": "Kill 2 bosses",
+    "target": 2,
+    "gpReward": 165,
+    "difficulty": 3
+  },
+  {
+    "id": "kill_priest_easyd",
+    "type": "KillPriest",
+    "description": "Kill the cultist Priest",
+    "target": 1,
+    "gpReward": 165,
+    "difficulty": 3
+  },
+  {
+    "id": "survive_single_8d",
+    "type": "SurviveTimeSingleRaid",
+    "description": "Survive 8 minutes in a single raid",
+    "target": 480,
+    "gpReward": 50,
+    "difficulty": 1
+  },
+  {
+    "id": "survive_single_20d",
+    "type": "SurviveTimeSingleRaid",
+    "description": "Survive 20 minutes in a single raid",
+    "target": 1200,
+    "gpReward": 90,
+    "difficulty": 2
+  },
+  {
+    "id": "survive_single_25d",
+    "type": "SurviveTimeSingleRaid",
+    "description": "Survive 25 minutes in a single raid",
+    "target": 1500,
+    "gpReward": 165,
+    "difficulty": 3
+  },
+  {
+    "id": "pmc_spike_2d",
+    "type": "KillPMCsSingleRaid",
+    "description": "Kill 2 PMCs in a single raid",
+    "target": 2,
+    "gpReward": 90,
+    "difficulty": 2
+  },
+  {
+    "id": "pmc_spike_5d",
+    "type": "KillPMCsSingleRaid",
+    "description": "Kill 5 PMCs in a single raid",
+    "target": 5,
+    "gpReward": 165,
+    "difficulty": 3
+  },
+  {
+    "id": "kill_raiders_1d",
+    "type": "KillRaiders",
+    "description": "Kill a Raider",
+    "target": 1,
+    "gpReward": 50,
+    "difficulty": 1
+  },
+  {
+    "id": "kill_rogues_1d",
+    "type": "KillRogues",
+    "description": "Kill a Rogue",
+    "target": 1,
+    "gpReward": 50,
+    "difficulty": 1
+  },
+  {
+    "id": "kill_raiders_4d",
+    "type": "KillRaiders",
+    "description": "Kill 4 Raiders",
+    "target": 4,
+    "gpReward": 165,
+    "difficulty": 3
+  },
+  {
+    "id": "kill_rogues_3d",
+    "type": "KillRogues",
+    "description": "Kill 3 Rogues",
+    "target": 3,
+    "gpReward": 90,
+    "difficulty": 2
+  },
+  {
+    "id": "grenade_kill_1d",
+    "type": "GrenadeKills",
+    "description": "Get a grenade kill",
+    "target": 1,
+    "gpReward": 50,
+    "difficulty": 1
+  },
+  {
+    "id": "grenade_kills_2d",
+    "type": "GrenadeKills",
+    "description": "Get 2 grenade kills",
+    "target": 2,
+    "gpReward": 90,
+    "difficulty": 2
+  },
+  {
+    "id": "headshots_2d",
+    "type": "KillHeadshots",
+    "description": "Get 2 headshot kills",
+    "target": 2,
+    "gpReward": 50,
+    "difficulty": 1
+  },
+  {
+    "id": "scav_spike_3d",
+    "type": "KillScavsSingleRaid",
+    "description": "Kill 3 Scavs in a single raid",
+    "target": 3,
+    "gpReward": 50,
+    "difficulty": 1
+  },
+  {
+    "id": "extract_any_1d",
+    "type": "ExtractSuccessfully",
+    "description": "Extract from a raid alive",
+    "target": 1,
+    "gpReward": 50,
+    "difficulty": 1
+  },
+  {
+    "id": "extract_groundzero_1d",
+    "type": "ExtractFromLocation",
+    "description": "Extract from Ground Zero",
     "target": 1,
     "targetLocation": "groundzero",
     "gpReward": 50,
     "difficulty": 1
+  },
+  {
+    "id": "extract_factory_1d",
+    "type": "ExtractFromLocation",
+    "description": "Extract from Factory",
+    "target": 1,
+    "targetLocation": "factory",
+    "gpReward": 50,
+    "difficulty": 1
+  },
+  {
+    "id": "extract_customs_1d",
+    "type": "ExtractFromLocation",
+    "description": "Extract from Customs",
+    "target": 1,
+    "targetLocation": "customs",
+    "gpReward": 50,
+    "difficulty": 1
+  },
+  {
+    "id": "loot_extract_150kd",
+    "type": "ExtractWithLootValue",
+    "description": "Extract with ₽150,000 of loot in one raid",
+    "target": 150000,
+    "gpReward": 50,
+    "difficulty": 1,
+    "requiresLootNet": true
+  },
+  {
+    "id": "kill_pmcs_2d",
+    "type": "KillPMCs",
+    "description": "Kill 2 PMCs",
+    "target": 2,
+    "gpReward": 50,
+    "difficulty": 1
+  },
+  {
+    "id": "kill_scavs_8d",
+    "type": "KillScavs",
+    "description": "Kill 8 Scavs",
+    "target": 8,
+    "gpReward": 50,
+    "difficulty": 1
+  },
+  {
+    "id": "headshots_12d",
+    "type": "KillHeadshots",
+    "description": "Get 12 headshot kills",
+    "target": 12,
+    "gpReward": 165,
+    "difficulty": 3
+  },
+  {
+    "id": "extract_lighthouse_2d",
+    "type": "ExtractFromLocation",
+    "description": "Extract from Lighthouse 2 times",
+    "target": 2,
+    "targetLocation": "lighthouse",
+    "gpReward": 90,
+    "difficulty": 2
+  },
+  {
+    "id": "extract_interchange_2d",
+    "type": "ExtractFromLocation",
+    "description": "Extract from Interchange 2 times",
+    "target": 2,
+    "targetLocation": "interchange",
+    "gpReward": 90,
+    "difficulty": 2
+  },
+  {
+    "id": "extract_streets_2d",
+    "type": "ExtractFromLocation",
+    "description": "Extract from Streets 2 times",
+    "target": 2,
+    "targetLocation": "streets",
+    "gpReward": 165,
+    "difficulty": 3
+  },
+  {
+    "id": "survive_45mind",
+    "type": "SurviveTimeCumulative",
+    "description": "Survive 45 minutes total in-raid (resets on death)",
+    "target": 2700,
+    "gpReward": 165,
+    "difficulty": 3
+  },
+  {
+    "id": "survive_15mind",
+    "type": "SurviveTimeCumulative",
+    "description": "Survive 15 minutes total in-raid (resets on death)",
+    "target": 900,
+    "gpReward": 50,
+    "difficulty": 1
+  },
+  {
+    "id": "melee_kills_2d",
+    "type": "MeleeKills",
+    "description": "Bring a knife to a gunfight: get 2 melee kills",
+    "target": 2,
+    "gpReward": 165,
+    "difficulty": 3
   }
 ]

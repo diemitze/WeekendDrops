@@ -18,10 +18,10 @@ public static class WeaponKitPatch
 
     private static readonly (string Prefix, double Chance)[] TargetSlots =
     {
-        ("mod_scope",    0.55), // optic - the biggest visual/feel upgrade
-        ("mod_muzzle",   0.45), // suppressor / brake / flash hider
-        ("mod_foregrip", 0.50), // vertical / angled foregrip
-        ("mod_tactical", 0.40), // flashlight / laser
+        ("mod_scope",    0.55),
+        ("mod_muzzle",   0.45),
+        ("mod_foregrip", 0.50),
+        ("mod_tactical", 0.40),
     };
 
     public static void Apply(ItemHelper itemHelper, ISptLogger<WeekendDropsLoader> logger)
@@ -51,8 +51,8 @@ public static class WeaponKitPatch
     {
         if (_itemHelper is null || __result is null) return;
 
-        // Only kit weapons from OUR crates - this generator runs for every vanilla /
-        // third-party RandomLootContainer too.
+        // WeekendDrops crates only; this generator runs for every vanilla / third-party
+        // RandomLootContainer too.
         if (!WdCrateRegistry.IsOurs(__0)) return;
 
         foreach (var group in __result)
@@ -68,7 +68,6 @@ public static class WeaponKitPatch
 
     private static void KitWeapon(List<Item> group)
     {
-
         var hosts = group.ToList();
 
         foreach (var (prefix, chance) in TargetSlots)
@@ -92,7 +91,6 @@ public static class WeaponKitPatch
                 if (string.IsNullOrEmpty(slotName) || !slotName.StartsWith(prefix, StringComparison.Ordinal))
                     continue;
 
-                // Already occupied by the preset? Leave it.
                 var hostId = host.Id.ToString();
                 if (group.Any(i => i.ParentId == hostId && i.SlotId == slotName))
                     continue;

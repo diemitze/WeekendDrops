@@ -4,22 +4,21 @@ using SPTarkov.Server.Core.Models.Common;
 using SPTarkov.Server.Core.Models.Eft.Common;
 using SPTarkov.Server.Core.Models.Utils;
 using SPTarkov.Server.Core.Services;
+using WeekendDrops.Models;
 using WeekendDrops.Services;
 
 namespace WeekendDrops.Patches;
 
-// Injects a contract's boss spawn as the raid is generated. GenerateLocationAndLoot builds the
-// LocationBase whose BossLocationSpawn list drives boss spawns (the Goons pipeline). Forced spawn
-// only when the requesting player has an active contract for that map: per-raid, per-session.
+// Injects a contract's spawn as the raid is generated. GenerateLocationAndLoot builds the
+// LocationBase whose BossLocationSpawn list drives boss spawns. Per-raid, per-session.
 public static class ContractSpawnPatch
 {
     private static ContractService? _contracts;
     private static ISptLogger<WeekendDropsLoader>? _logger;
     private static bool _applied;
 
-    // Detect Fika once by the presence of its server mod. Only when Fika is installed do
-    // we allow the "any profile's contract" fallback below - so solo SPT with several save
-    // profiles never spawns a different profile's contract crew into an unrelated raid.
+    // Fika detected once by its server mod. The "any profile's contract" fallback below is
+    // gated on this, so solo SPT with several profiles never pulls in another profile's crew.
     private static readonly bool _fikaPresent = Directory.Exists(
         System.IO.Path.Combine(AppContext.BaseDirectory, "user", "mods", "fika-server"));
 
@@ -54,9 +53,8 @@ public static class ContractSpawnPatch
 
         var def = _contracts.GetActiveContractForMap(__0, __1);
 
-        // Fika/headless: the session that GENERATES the raid is the headless/non-host client,
-        // which never accepts contracts, so its own lookup is empty. Fall back to any profile's
-        // active contract so the crew/airdrop still spawns.
+        // The session that GENERATES the raid is the headless/non-host client, which never
+        // accepts contracts, so fall back to any profile's.
         if (def is null && _fikaPresent)
         {
             def = _contracts.GetAnyActiveContractForMap(__1);
@@ -68,16 +66,21 @@ public static class ContractSpawnPatch
 
         __result.BossLocationSpawn ??= [];
         int injected = 0;
+        var zonesPlaced = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-        // One forced spawn per group - one group = a boss + guards, several groups = the
-        // roaming event crews.
+        // Off by default, which gives a "two warlords" raid. A same-named native is deduped
+        // below either way.
+        if (def.BossPool is { Count: > 0 } && _contracts.SuppressNativeBoss)
+            foreach (var existing in __result.BossLocationSpawn)
+                if (!string.IsNullOrEmpty(existing.BossName) &&
+                    existing.BossName.StartsWith("boss", StringComparison.OrdinalIgnoreCase))
+                    existing.BossChance = 0;
+
         foreach (var g in def.Groups)
         {
             if (string.IsNullOrEmpty(g.BossName)) continue;
 
-            // If this map already spawns the same boss natively (a boss hunted on its
-            // lore home map), disable the vanilla copy so the player faces exactly one -
-            // ours, with the contract's escort and zone - instead of two of the same boss.
+            // Disable a native copy of the same boss, or the player faces two of them.
             foreach (var existing in __result.BossLocationSpawn)
                 if (string.Equals(existing.BossName, g.BossName, StringComparison.OrdinalIgnoreCase))
                     existing.BossChance = 0;
@@ -104,34 +107,26 @@ public static class ContractSpawnPatch
             __result.BossLocationSpawn.Add(spawn);
             injected++;
 
-            // Make the crew hostile to the player only and neutral to all AI - so it has
-            // nothing to chase across the map and holds its spawn zone until the player
-            // arrives.
+            // Hostile to the player only, so it has nothing to chase and holds its zone.
             if (g.HostileToPlayer)
                 ApplyPlayerHostility(__result, g.BossName, g.EscortType);
+
+            // Once per zone: several groups sharing one zone must not each replace its points.
+            if (_contracts.CrewSpawnOnPosts && def.ResolvedPosts.Count > 0 &&
+                !string.IsNullOrEmpty(g.BossZone) && zonesPlaced.Add(g.BossZone))
+                InjectCrewSpawnPoints(__result, g.BossZone, def.ResolvedPosts, def.Id);
         }
 
-        // Supply Run: force a guaranteed airdrop on this map. The client relocates the
-        // crate to the contract's AirdropPosition so it lands on the crew's zone.
+        // The client relocates the crate to AirdropPosition, so it lands on the crew's zone.
         if (def.TriggerAirdrop)
             ForceAirdrop(__result, def.Id);
 
         if (injected > 0)
-        {
             _logger?.Info($"[WeekendDrops] Contract '{def.Id}' - injected {injected} group(s) into {__1} for {__0}");
-
-            // TEMP debug: dump the full boss spawn list so we can see exactly what went
-            // into the raid (boss name, escort type/amount, difficulty, zone). Remove
-            // once custom-type spawning is confirmed.
-            foreach (var s in __result.BossLocationSpawn)
-                _logger?.Info($"[WeekendDrops] DEBUG BossLocationSpawn: boss={s.BossName} chance={s.BossChance} force={s.ForceSpawn} diff={s.BossDifficulty} zone='{s.BossZone}' escort={s.BossEscortType}x{s.BossEscortAmount} escortDiff={s.BossEscortDifficulty}");
-        }
     }
 
-    // Prepare the Supply Run airdrop WITHOUT a self-firing timer: the client summons the plane on
-    // crew-wipe (InitAirdrop), so the drop rewards the kill. Keep the subsystem enabled (chance>0,
-    // MinPlayers 1) so AirdropPoints load, but push the auto-trigger window past any raid length so
-    // the native timer never fires. Per-raid only (edits the generated LocationBase).
+    // Armed but with no self-firing timer: the client summons the plane on crew-wipe, so the drop
+    // rewards the kill. Kept enabled so AirdropPoints load; the window is pushed past raid length.
     private static void ForceAirdrop(LocationBase loc, string contractId)
     {
         loc.AirdropParameters ??= [];
@@ -140,19 +135,52 @@ public static class ContractSpawnPatch
 
         foreach (var ap in loc.AirdropParameters)
         {
-            ap.PlaneAirdropChance = 1.0;                  // keep the subsystem enabled (points load)
-            ap.MinimumPlayersCountToSpawnAirdrop = 1;     // solo PvE counts
-            ap.PlaneAirdropMax = 1;                       // at most one
-            ap.PlaneAirdropStartMin = 999999;             // auto-timer never elapses; the
+            ap.PlaneAirdropChance = 1.0;                  // keeps the subsystem enabled
+            ap.MinimumPlayersCountToSpawnAirdrop = 1;     // so solo PvE counts
+            ap.PlaneAirdropMax = 1;
+            ap.PlaneAirdropStartMin = 999999;             // the auto-timer must never elapse; the
             ap.PlaneAirdropStartMax = 999999;             // client summons the drop on crew-wipe
         }
 
         _logger?.Info($"[WeekendDrops] Contract '{contractId}' - airdrop armed for on-wipe summon (no auto-timer)");
     }
 
-    // Make the given role(s) hostile to the PLAYER only, neutral to all AI, per-raid via the
-    // location's AdditionalHostilitySettings. AlwaysEnemies empty (nothing to chase, holds its
-    // zone); AlwaysFriends = own squad; PlayerBehaviour = AlwaysEnemies so it's winnable in PMC and Scav.
+    // A zone spans 300-500m, so a vanilla spawn left the crew walking in. Points are cloned
+    // from a real one, keeping collider and side data valid.
+    private static void InjectCrewSpawnPoints(LocationBase loc, string zone, List<Vec3> posts, string contractId)
+    {
+        var all = loc.SpawnPointParams?.ToList();
+        if (all is null || all.Count == 0) return;
+
+        static bool IsBotPoint(SpawnPointParam p) =>
+            p.Categories?.Any(c => string.Equals(c, "Bot", StringComparison.OrdinalIgnoreCase)) == true;
+
+        // Prefer a template from the target zone so sides/colliders match what spawns there.
+        var template = all.FirstOrDefault(p => IsBotPoint(p) &&
+                            string.Equals(p.BotZoneName, zone, StringComparison.OrdinalIgnoreCase))
+                    ?? all.FirstOrDefault(IsBotPoint);
+        if (template is null) return;
+
+        // Drop the zone's vanilla bot points, or the crew rolls one of those instead of a post.
+        all.RemoveAll(p => IsBotPoint(p) &&
+                           string.Equals(p.BotZoneName, zone, StringComparison.OrdinalIgnoreCase));
+
+        for (int i = 0; i < posts.Count; i++)
+        {
+            all.Add(template with
+            {
+                Id          = $"WD_{contractId}_{zone}_{i}",
+                BotZoneName = zone,
+                Position    = new XYZ { X = posts[i].X, Y = posts[i].Y, Z = posts[i].Z },
+            });
+        }
+
+        loc.SpawnPointParams = all;
+        _logger?.Info($"[WeekendDrops] Contract '{contractId}' - zone '{zone}' bot spawns replaced with {posts.Count} post(s)");
+    }
+
+    // Per-raid, via the location's AdditionalHostilitySettings. AlwaysEnemies empty (nothing to
+    // chase); PlayerBehaviour = AlwaysEnemies so it's winnable as PMC and as Scav.
     private static void ApplyPlayerHostility(LocationBase loc, params string[] ownRoles)
     {
         loc.BotLocationModifier ??= new BotLocationModifier();

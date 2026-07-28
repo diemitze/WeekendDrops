@@ -31,54 +31,44 @@ public class WeekendDropsLoader(
             "[WeekendDrops] Loading weekend challenges & drop crates...",
             LogTextColor.Yellow);
 
-        // The contract crew rides on the vanilla 'cursedAssault' WildSpawnType: SAIN controls its
-        // CursAssault brain and it never spawns via normal waves, so we just override that bot type's
-        // DB definition from db/bots/types. No MoreBotsAPI, no custom enum.
+        // The crew rides on the vanilla 'cursedAssault' type (SAIN drives its brain, and it never
+        // spawns via normal waves), so only its DB definition is overridden. No MoreBotsAPI.
         LoadContractBotTypes();
 
         weekendChallengeService.LoadConfig();
         dailyChallengeService.LoadConfig();
         contractService.LoadConfig();
 
-        // Wire loot pools into the drop crates so opening them actually yields loot.
+        // Without a pool, the crates open empty.
         weekendChallengeService.RegisterLootContainerPools();
 
-        // Give the paid GP-shop Arena crates their own (richer) loot pools too -
-        // otherwise they open empty / with vanilla loot and aren't worth the coins.
+        // Arena crates need richer pools of their own, or they aren't worth the coins.
         weekendChallengeService.RegisterArenaShopPools();
 
         // Make crate ammo drop as a full stack instead of a single round / empty box.
         LootContainerAmmoStackPatch.Apply(itemHelper, logger);
 
-        // Cap bulky wearables (backpack / armor / rig / headwear) to one per crate so
-        // an Equipment crate can't hand out 3 backpacks at once.
+        // One bulky wearable per crate, or an Equipment crate can roll 3 backpacks.
         CrateCategoryCapPatch.Apply(itemHelper, logger);
 
-        // Contracts: force-spawn an accepted contract's boss group on the player's next
-        // raid of the target map (per-session, no global DB edit).
+        // Per-session, so neither of these edits the DB globally.
         ContractSpawnPatch.Apply(contractService, logger);
-
-        // Drop each contract's bonusItems onto the bots it spawns (e.g. a LEDX so the
-        // crew is worth looting).
         ContractBotLootPatch.Apply(contractService, logger);
 
-        // Bolt compatible attachments onto weapons pulled from crates so they arrive
-        // kitted instead of as the bare default preset.
+        // Crate weapons arrive kitted instead of as the bare default preset.
         if (weekendChallengeService.Config.KitWeaponDrops)
             WeaponKitPatch.Apply(itemHelper, logger);
 
-        // Challenge progress is driven by the client reporting each raid result to
-        // /weekenddrops/raidend (see WeekendChallengeService.ApplyRaidResult) - no
-        // server-side raid-end hook, because PvE/co-op (PitFireTeam) owns that flow.
+        // Progress comes from the client POSTing each raid result to /weekenddrops/raidend.
+        // No server-side raid-end hook, because PvE/co-op (PitFireTeam) owns that flow.
 
         bool active = weekendChallengeService.IsWeekendActive();
         PrintBanner(active, weekendChallengeService.GetWeekendScheduleText());
         return Task.CompletedTask;
     }
 
-    // Override vanilla bot types with our definitions in db/bots/types (cursedassault.json = the
-    // Cleanup Crew look/loadout/loot). Filename = the WildSpawnType key; we replace the whole entry
-    // so pinned appearance/inventory arrays aren't merged back into randomness. SAIN still drives combat.
+    // Filename = the WildSpawnType key. The whole entry is replaced, not merged, so pinned
+    // appearance/inventory arrays don't fall back to randomness.
     private void LoadContractBotTypes()
     {
         var modDir = System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
@@ -100,7 +90,7 @@ public class WeekendDropsLoader(
                 continue;
             }
 
-            // Match the existing key case-insensitively so we override (not duplicate) it.
+            // Match the existing key case-insensitively, to override rather than duplicate.
             var key = types.Keys.FirstOrDefault(k => string.Equals(k, role, StringComparison.OrdinalIgnoreCase)) ?? role;
             types[key] = botType;
             logger.Info($"[WeekendDrops] Contract bot type '{key}' overridden from {System.IO.Path.GetFileName(file)}");
@@ -114,8 +104,7 @@ public class WeekendDropsLoader(
             : $"weekend closed, opens {schedule}";
         var statusColor = weekendActive ? LogTextColor.Green : LogTextColor.Gray;
 
-        // Inner width between the vertical bars. Centre each line to exactly this
-        // many chars so the right border always lines up (no hand-counted spaces).
+        // Centre each line to exactly this width so the right border lines up.
         const int width = 42;
         string Row(string text)
         {

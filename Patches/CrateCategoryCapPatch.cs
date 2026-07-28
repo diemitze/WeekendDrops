@@ -10,17 +10,15 @@ using WeekendDrops;
 
 namespace WeekendDrops.Patches;
 
-// Caps bulky wearables to one per crate. The generator picks each reward independently, so an
-// Equipment crate could roll 3 backpacks. We hook PickRewardItem: keep the first of a capped
-// category, re-roll a second to an unused one (at the tpl stage, so presets/postfixes still run).
+// The generator picks each reward independently, so an Equipment crate could roll 3 backpacks.
+// Re-rolls a repeat at the tpl stage, so presets and later postfixes still run.
 public static class CrateCategoryCapPatch
 {
     private static ItemHelper? _itemHelper;
     private static bool _applied;
     private static readonly Random Rng = new();
 
-    // One item max per crate from each of these base classes (HEADWEAR also covers
-    // helmets). VEST covers both armored and tactical rigs.
+    // One item max per crate from each. VEST covers both armored and tactical rigs.
     private static readonly (MongoId Bc, string Key)[] Capped =
     {
         (BaseClasses.BACKPACK, "backpack"),
@@ -29,9 +27,8 @@ public static class CrateCategoryCapPatch
         (BaseClasses.HEADWEAR, "headwear"),
     };
 
-    // Per-crate state. Loot for one crate is generated synchronously on one thread
-    // (GetRandomLootContainerLoot loops PickRewardItem), so ThreadStatic is the right
-    // scope and keeps concurrent crate generations from clobbering each other.
+    // One crate's loot is generated synchronously on one thread, so ThreadStatic keeps
+    // concurrent crate generations from clobbering each other.
     [ThreadStatic] private static RewardDetails? _activeDetails;
     [ThreadStatic] private static HashSet<string>? _usedCategories;
 
@@ -61,7 +58,7 @@ public static class CrateCategoryCapPatch
     private static MethodInfo Method(string name) =>
         typeof(CrateCategoryCapPatch).GetMethod(name, BindingFlags.Static | BindingFlags.NonPublic)!;
 
-    // Open a per-crate tracking scope only for our crates.
+    // Per-crate tracking scope, WeekendDrops crates only.
     private static void GenPrefix(RewardDetails __0)
     {
         if (WdCrateRegistry.IsOurs(__0))
@@ -82,8 +79,7 @@ public static class CrateCategoryCapPatch
         _usedCategories = null;
     }
 
-    // ref the picked tpl so a capped-category duplicate gets swapped before the
-    // generator expands it into items.
+    // Swaps a capped-category duplicate before the generator expands it into items.
     private static void PickPostfix(RewardDetails __0, ref MongoId __result)
     {
         if (_itemHelper is null || _usedCategories is null || !ReferenceEquals(__0, _activeDetails))
@@ -93,7 +89,6 @@ public static class CrateCategoryCapPatch
         if (key is null) return;                  // not a capped category, leave it
         if (_usedCategories.Add(key)) return;     // first of this category, allow it
 
-        // Duplicate capped category: re-roll to a tpl whose category is still free.
         var replacement = RepickAvoidingUsed(__0);
         if (replacement is null) return;          // nothing better available, keep it
 
@@ -102,7 +97,7 @@ public static class CrateCategoryCapPatch
         if (newKey is not null) _usedCategories.Add(newKey);
     }
 
-    // First capped base class this tpl belongs to, or null if it's not a capped item.
+    // Null when the tpl isn't a capped item.
     private static string? CategoryKey(MongoId tpl)
     {
         foreach (var (bc, key) in Capped)
@@ -110,8 +105,7 @@ public static class CrateCategoryCapPatch
         return null;
     }
 
-    // Weighted pick from the crate's own pool, skipping any tpl whose capped category
-    // is already used this crate. Returns null when nothing suitable remains.
+    // Weighted pick from the crate's own pool. Null when nothing suitable remains.
     private static MongoId? RepickAvoidingUsed(RewardDetails details)
     {
         var pool = details.RewardTplPool;

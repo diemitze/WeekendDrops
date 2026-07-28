@@ -4,7 +4,7 @@
   "tiers": {
     "6658876e146af22739040fad": {
       "_name": "Equipment Common",
-      "rewardCount": 3,
+      "rewardCount": 5,
       "pool": {
         "5ab8e4ed86f7742d8e50c7fa": 8,
         "5b40e61f5acfc4001a599bec": 8,
@@ -55,7 +55,7 @@
     },
     "665888282c4a1b73af576b77": {
       "_name": "Weapon Common",
-      "rewardCount": 3,
+      "rewardCount": 5,
       "pool": {
         "5bc09a18d4351e003562b68e": 8,
         "5cc9c20cd7f00c001336c65d": 8,
@@ -112,7 +112,7 @@
     },
     "6658892e6e007c6f33662002": {
       "_name": "Supply Common",
-      "rewardCount": 3,
+      "rewardCount": 5,
       "pool": {
         "56742c284bdc2d98058b456d": 3,
         "5672cb304bdc2dc2088b456a": 3,
@@ -150,7 +150,7 @@
     },
     "665886abdaadd1069736c539": {
       "_name": "Valuables Common",
-      "rewardCount": 3,
+      "rewardCount": 5,
       "pool": {
         "63a39e1d234195315d4020bd": 8,
         "5672c92d4bdc2d180f8b4567": 8,
@@ -201,7 +201,7 @@
     },
     "665730fa4de4820934746c48": {
       "_name": "Equipment Rare",
-      "rewardCount": 4,
+      "rewardCount": 7,
       "pool": {
         "6034d0230ca681766b6a0fb5": 8,
         "5c0e541586f7747fa54205c9": 8,
@@ -252,7 +252,7 @@
     },
     "665732e7ac60f009f270d1ef": {
       "_name": "Weapon Rare",
-      "rewardCount": 4,
+      "rewardCount": 7,
       "pool": {
         "5c1bc5612e221602b5429350": 8,
         "59f8a37386f7747af3328f06": 8,
@@ -311,7 +311,7 @@
     },
     "665732f4464c4b4ba4670fa9": {
       "_name": "Supply Rare",
-      "rewardCount": 4,
+      "rewardCount": 7,
       "pool": {
         "590a3b0486f7743954552bdb": 3,
         "62a0a098de7ac8199358053b": 3,
@@ -349,7 +349,7 @@
     },
     "66573310a1657263d816a139": {
       "_name": "Valuables Rare",
-      "rewardCount": 4,
+      "rewardCount": 7,
       "pool": {
         "5d8e15b686f774445103b190": 8,
         "60b0f6c058e0b0481a09ad11": 8,
@@ -400,7 +400,7 @@
     },
     "6658291eefd94e2d665b14a4": {
       "_name": "Equipment Epic",
-      "rewardCount": 5,
+      "rewardCount": 10,
       "pool": {
         "62a09e08de7ac81993580532": 8,
         "628baf0b967de16aab5a4f36": 8,
@@ -450,7 +450,7 @@
     },
     "665829424de4820934746ce6": {
       "_name": "Weapon Epic",
-      "rewardCount": 5,
+      "rewardCount": 10,
       "pool": {
         "5c1cd46f2e22164bef5cfedb": 8,
         "5a7dbfc1159bd40016548fde": 8,
@@ -489,7 +489,7 @@
     },
     "66582972ac60f009f270d2aa": {
       "_name": "Supply Epic",
-      "rewardCount": 5,
+      "rewardCount": 10,
       "pool": {
         "61bf83814088ec1a363d7097": 3,
         "5d1b2fa286f77425227d1674": 3,
@@ -527,7 +527,7 @@
     },
     "665829a6efd94e2d665b14a8": {
       "_name": "Valuables Epic",
-      "rewardCount": 5,
+      "rewardCount": 10,
       "pool": {
         "66572c82ad599021091c6118": 8,
         "6759bb94b8913ff13e049669": 8,

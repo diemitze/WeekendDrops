@@ -3,11 +3,46 @@
   "_boardComment": "Boards are NOT daily. After a contract is completed or abandoned, the next board of sealed offers appears a random whole number of UTC days later, in [boardMinDays, boardMaxDays]. Set both equal for a fixed gap. A dry stretch of a couple days is intended, not a bug.",
   "boardMinDays": 2,
   "boardMaxDays": 4,
+  "_suppressComment": "suppressNativeBoss: when true, a boss bounty removes the map's own native boss so you face only the target. Default false = the native boss stays too (a 'two warlords' raid). Bounty spawn zones are placed off the native boss's home so they don't stack. Flip to true if the double-boss fights are too hard.",
+  "suppressNativeBoss": false,
+  "_postsComment": "crewSpawnOnPosts: spawn the crew standing on its rolled posts by replacing the bot spawn points of its zone for that raid. Off = vanilla zone spawn, which scatters them across a 300-500m zone and makes them walk in - that walk is where a passing PMC or scav wipes them before you arrive. Side effect while on: ordinary scavs assigned to that one zone also use the posts. supplyRingRadius is how far from the crate a Supply Run crew is posted.",
+  "crewSpawnOnPosts": true,
+  "supplyRingRadius": 16,
+  "mapHideouts": {
+    "woods": [
+      { "zone": "ZoneUsecBase", "posts": [ { "x": 293.83, "y": 23.07, "z": -450.84 } ] },
+      { "zone": "ZoneUsecBase", "posts": [ { "x": 280.83, "y": 22.89, "z": -510.97 } ] },
+      { "zone": "ZoneBrokenVill", "posts": [ { "x": -78.09, "y": 11.8, "z": -717.66 } ] },
+      { "zone": "ZoneClearVill", "posts": [ { "x": -458.24, "y": 15.02, "z": -374.65 }, { "x": -453.16, "y": 15.04, "z": -405.03 }, { "x": -508.19, "y": 14.95, "z": -380.77 } ] },
+      { "zone": "ZoneHouse", "posts": [ { "x": 413.31, "y": -13.45, "z": 240.12 } ] }
+    ],
+    "customs": [
+      { "zone": "ZoneFactoryCenter", "posts": [ { "x": 392.58, "y": 1.69, "z": -89.52 }, { "x": 374.14, "y": 1.41, "z": -98.42 }, { "x": 408.91, "y": 1.34, "z": -104.32 } ] },
+      { "zone": "ZoneTankSquare", "posts": [ { "x": 59.2, "y": 1.16, "z": -60.77 }, { "x": 57.9, "y": 1.19, "z": -47.57 }, { "x": 44.26, "y": 4.49, "z": -53.41 }, { "x": 36.41, "y": 4.46, "z": -58.68 }, { "x": 26.98, "y": 4.49, "z": -56.36 }, { "x": 43.82, "y": 1.2, "z": -69.14 } ] },
+      { "zone": "ZoneScavBase", "posts": [ { "x": 268.32, "y": 12.82, "z": -69.99 }, { "x": 261.95, "y": 5.85, "z": -65.62 } ] },
+      { "zone": "ZoneFactorySide", "posts": [ { "x": 618.27, "y": -0.6, "z": -85.19 } ] },
+      { "zone": "ZoneGasStation", "posts": [ { "x": 492.99, "y": 15.67, "z": 104.42 } ] },
+      { "zone": "ZoneCustoms", "posts": [ { "x": -181.21, "y": 0.91, "z": -118.11 }, { "x": -217.64, "y": 1.16, "z": -140.8 } ] }
+    ],
+    "lighthouse": [
+      { "zone": "Zone_Rocks", "posts": [ { "x": -69.53, "y": 26.77, "z": 126.35 } ] },
+      { "zone": "Zone_Rocks", "posts": [ { "x": -137.15, "y": 39.85, "z": 89.58 } ] },
+      { "zone": "Zone_Village", "posts": [ { "x": -196.95, "y": 12.26, "z": -204.07 }, { "x": -156.34, "y": 10.99, "z": -245.48 }, { "x": -148.83, "y": 11.5, "z": -211.36 }, { "x": -129.7, "y": 11.01, "z": -245.92 } ] },
+      { "zone": "Zone_Village", "posts": [ { "x": -288.39, "y": 0.68, "z": -347.08 }, { "x": -254.69, "y": 0.96, "z": -345.47 }, { "x": -274.51, "y": 0.41, "z": -313.57 } ] }
+    ],
+    "shoreline": [
+      { "zone": "ZoneForestSpawn", "posts": [ { "x": 146.75, "y": -41.08, "z": -226.1 }, { "x": 146.71, "y": -40.18, "z": -234.14 }, { "x": 133.91, "y": -37.92, "z": -249.94 }, { "x": 161.78, "y": -38.51, "z": -252.56 } ] },
+      { "zone": "ZoneSmuglers", "posts": [ { "x": -644, "y": -26.9, "z": -241.07 }, { "x": -629.34, "y": -26.87, "z": -243.79 } ] },
+      { "zone": "ZoneSmuglers", "posts": [ { "x": -663.71, "y": -26.86, "z": -159.54 }, { "x": -616.25, "y": -29.83, "z": -174.49 } ] },
+      { "zone": "ZoneSmuglers", "posts": [ { "x": -603.51, "y": -29.83, "z": -177.35 } ] },
+      { "zone": "ZoneIsland", "posts": [ { "x": 219.09, "y": -64.54, "z": 438.21 }, { "x": 234.96, "y": -64.13, "z": 432.76 }, { "x": 209.56, "y": -64.29, "z": 437.83 }, { "x": 198.81, "y": -64.74, "z": 443.84 }, { "x": 205.28, "y": -64.48, "z": 418.54 } ] }
+    ]
+  },
   "contracts": [
     {
       "id": "bounty_wdcrew_customs",
-      "name": "Bounty: Dropfall Crew",
-      "description": "A hardened crew calling themselves the Dropfall have dug into Customs. Wipe them out and take their kit.",
+      "name": "Bounty: Cleanup Crew",
+      "description": "A hardened crew calling themselves the Cleanup Crew have dug into Customs. Wipe them out and take their kit.",
       "map": "customs",
       "groups": [
         {
@@ -16,7 +51,7 @@
           "escortType": "cursedAssault",
           "escortAmount": "4",
           "escortDifficulty": "normal",
-          "bossZone": "ZoneDormitory,ZoneCustoms,ZoneTankSquare",
+          "bossZone": "ZoneDormitory,ZoneTankSquare,ZoneFactoryCenter",
           "hostileToPlayer": true
         }
       ],
@@ -24,20 +59,20 @@
         "cursedAssault"
       ],
       "objectiveCount": 5,
-      "objectiveText": "Wipe out the Dropfall Crew",
+      "objectiveText": "Wipe out the Cleanup Crew",
       "flavor": "The Cleanup Crew have been spotted on {map}.",
       "bonusItems": [],
       "gpReward": 1500,
       "acceptDialog": "Fresh contract, fresh kit. We will be wearing yours by morning.",
-      "dialogSpeaker": "DROPFALL CREW",
+      "dialogSpeaker": "CLEANUP CREW",
       "crateTemplateId": "",
       "requireExtract": false,
       "cooldownHours": 24
     },
     {
       "id": "cleanout_rogues_woods",
-      "name": "Bounty: Dropfall Crew (Woods)",
-      "description": "The Dropfall crew set up in Woods. Wipe them out and take their kit.",
+      "name": "Bounty: Cleanup Crew (Woods)",
+      "description": "The Cleanup Crew set up in Woods. Wipe them out and take their kit.",
       "map": "woods",
       "groups": [
         {
@@ -46,7 +81,7 @@
           "escortType": "cursedAssault",
           "escortAmount": "4",
           "escortDifficulty": "normal",
-          "bossZone": "ZoneBrokenVill,ZoneUsecBase,ZoneRoad",
+          "bossZone": "ZoneBrokenVill,ZoneUsecBase,ZoneClearVill,ZoneRedHouse",
           "hostileToPlayer": true
         }
       ],
@@ -54,11 +89,11 @@
         "cursedAssault"
       ],
       "objectiveCount": 5,
-      "objectiveText": "Wipe out the Dropfall Crew",
+      "objectiveText": "Wipe out the Cleanup Crew",
       "flavor": "The Cleanup Crew have been spotted on {map}.",
       "gpReward": 1200,
       "acceptDialog": "You came to the Woods looking for us. Saves us dragging your body far.",
-      "dialogSpeaker": "DROPFALL CREW",
+      "dialogSpeaker": "CLEANUP CREW",
       "crateTemplateId": "",
       "requireExtract": false,
       "cooldownHours": 24
@@ -84,10 +119,6 @@
               "bossZone": "ZoneDormitory,ZoneGasStation,ZoneOldAZS"
             },
             {
-              "map": "reserve",
-              "bossZone": "ZoneBarrack,ZoneSubStorage"
-            },
-            {
               "map": "woods",
               "bossZone": "ZoneBrokenVill,ZoneClearVill,ZoneRedHouse"
             }
@@ -108,11 +139,11 @@
             },
             {
               "map": "customs",
-              "bossZone": "ZoneDormitory,ZoneTankSquare,ZoneFactoryCenter"
+              "bossZone": "ZoneTankSquare,ZoneFactoryCenter,ZoneFactorySide"
             },
             {
               "map": "shoreline",
-              "bossZone": "ZoneSanatorium1,ZoneSanatorium2,ZonePort"
+              "bossZone": "ZonePort,ZoneStartVillage,ZonePowerStation"
             }
           ]
         },
@@ -153,12 +184,8 @@
               "bossZone": "ZoneWoodCutter,ZoneBigRocks,ZoneScavBase2"
             },
             {
-              "map": "reserve",
-              "bossZone": "ZoneRailStrorage,ZonePTOR2,ZoneBarrack,ZoneSubStorage"
-            },
-            {
               "map": "shoreline",
-              "bossZone": "ZoneForestSpawn,ZoneGreenHouses,ZonePort"
+              "bossZone": "ZoneForestSpawn,ZonePort,ZoneStartVillage"
             }
           ]
         }

@@ -2,14 +2,12 @@ using SPTarkov.Server.Core.Models.Spt.Config;
 
 namespace WeekendDrops.Patches;
 
-// Tracks the RewardDetails Weekend Drops registers for its OWN crates (per-tier reward + Arena).
-// The loot postfixes use this to scope their effects: GetRandomLootContainerLoot fires for every
-// vanilla/third-party RandomLootContainer too, and we don't want to touch those.
+// Scopes the loot postfixes to WeekendDrops' own crates. GetRandomLootContainerLoot fires for
+// every vanilla/third-party RandomLootContainer too, which must be left alone.
 public static class WdCrateRegistry
 {
-    // Reference identity: the exact RewardDetails instance we store in
-    // InventoryConfig.RandomLootContainers is the one passed to the generator, so
-    // a reference-keyed set is enough (and immune to any DTO Equals override).
+    // The exact instance stored in InventoryConfig.RandomLootContainers is the one handed to the
+    // generator, so a reference-keyed set is enough and survives any DTO Equals override.
     private static readonly HashSet<RewardDetails> Ours =
         new(ReferenceEqualityComparer.Instance);
 

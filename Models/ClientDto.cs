@@ -8,9 +8,7 @@ public class ChallengeDto
     [JsonPropertyName("id")]
     public string Id { get; set; } = "";
 
-    // ChallengeType name (e.g. "KillScavs") - lets the client map live in-raid
-    // kills to the right challenge. Sent as a string so it survives the router's
-    // serializer, which has no enum converter.
+    // Sent as a string, not the enum: the router's serializer has no enum converter.
     [JsonPropertyName("type")]
     public string Type { get; set; } = "";
 
@@ -56,25 +54,19 @@ public class WeekendStateDto
     [JsonPropertyName("gpCoins")]
     public int GpCoins { get; set; }
 
-    // Localized weekend schedule, e.g. "Fri 18:00 to Mon 04:00" / "Fri 6:00 PM to Mon 4:00 AM".
     [JsonPropertyName("scheduleText")]
     public string ScheduleText { get; set; } = "";
 
-    // True when the server is in debugMode. The client only shows the debug
-    // controls (Reset/Complete) when this is set, since the server rejects those
-    // actions otherwise - so the buttons aren't dead when debugMode is off.
+    // Gates the client's debug controls, which the server would otherwise reject.
     [JsonPropertyName("debugMode")]
     public bool DebugMode { get; set; }
 
-    // GP gifts sent to this player since their last /state poll. Drained on read
-    // server-side, so each gift appears here exactly once; the client fires the
-    // "gift received" toast for each. The GP itself is already in GpCoins above.
+    // Drained on read, so each gift appears exactly once. The GP is already in GpCoins.
     [JsonPropertyName("pendingGifts")]
     public List<ReceivedGiftDto> PendingGifts { get; set; } = [];
 }
 
-// A GP gift the player just received (drives the receive toast). The coins are already
-// reflected in the balance; this is only the announcement.
+// The announcement only: the coins are already in the balance.
 public class ReceivedGiftDto
 {
     [JsonPropertyName("fromNickname")]
@@ -84,7 +76,6 @@ public class ReceivedGiftDto
     public int Amount { get; set; }
 }
 
-// A profile the player can gift GP to (every other real profile on the server).
 public class GiftFriendDto
 {
     [JsonPropertyName("id")]
@@ -100,8 +91,7 @@ public class FriendsStateDto
     public List<GiftFriendDto> Friends { get; set; } = [];
 }
 
-// One row of the Fika squad rivalry board: a real profile on the server with its GP
-// standing this weekend. Balances/earnings are exposed here (unlike the gift picker).
+// Unlike the gift picker, this exposes balances and earnings.
 public class SquadRowDto
 {
     [JsonPropertyName("nickname")]
@@ -129,7 +119,6 @@ public class SquadStateDto
     public List<SquadRowDto> Rows { get; set; } = [];
 }
 
-// Client -> server: send `amount` GP to the profile `toId`.
 public class GiftRequest : IRequestData
 {
     [JsonPropertyName("toId")]
@@ -183,7 +172,7 @@ public class ShopItemDto
     [JsonPropertyName("stock")]
     public int Stock { get; set; }
 
-    // Item used for the card icon (the container/representative item).
+    // Drawn as the card icon.
     [JsonPropertyName("templateId")]
     public string TemplateId { get; set; } = "";
 
@@ -191,9 +180,17 @@ public class ShopItemDto
     [JsonPropertyName("contents")]
     public List<ShopContentDto> Contents { get; set; } = [];
 
-    // Seconds until this item can be bought again (0 = available now).
+    // When non-empty, this entry is a Trade-in: hand these over to receive Contents.
+    [JsonPropertyName("barterCost")]
+    public List<ShopContentDto> BarterCost { get; set; } = [];
+
+    // 0 = available now.
     [JsonPropertyName("restockSeconds")]
     public double RestockSeconds { get; set; }
+
+    // Plays the full-screen ceremony on purchase instead of the toast.
+    [JsonPropertyName("trophy")]
+    public bool Trophy { get; set; }
 }
 
 public class ShopContentDto
@@ -216,16 +213,15 @@ public class DailyStateDto
     [JsonPropertyName("nextResetSeconds")]
     public double NextResetSeconds { get; set; }
 
-    // Seconds until the next global shop stock refill (0 = disabled).
+    // 0 = disabled.
     [JsonPropertyName("globalRestockSeconds")]
     public double GlobalRestockSeconds { get; set; }
 
-    // GP paid for clearing the whole daily set (50% of the set's total GP).
+    // Paid for clearing the whole daily set: 50% of the set's total GP.
     [JsonPropertyName("dailyBonusGp")]
     public int DailyBonusGp { get; set; }
 
-    // True once the complete-all bonus has been collected today. Authoritative -
-    // the client renders the button state from this so it survives a restart.
+    // Authoritative, so the client's button state survives a restart.
     [JsonPropertyName("dailyBonusClaimed")]
     public bool DailyBonusClaimed { get; set; }
 }
@@ -236,8 +232,8 @@ public class StringIdRequest : IRequestData
     public string Id { get; set; } = "";
 }
 
-// Client pushes the F12 toggles the server can't infer. Carried in the request body, not the
-// URL (SPT's router drops the query string). Sticky server-side.
+// The F12 toggles the server can't infer. Carried in the body, since SPT's router drops the
+// query string. Sticky server-side.
 public class ClientFlagsRequest : IRequestData
 {
     [JsonPropertyName("noScav")]
@@ -261,21 +257,18 @@ public class ContractDto
     [JsonPropertyName("map")]
     public string Map { get; set; } = "";
 
-    // Short objective line for the card (e.g. "Eliminate Knight", "Clear out 8 Rogues").
     [JsonPropertyName("objectiveText")]
     public string ObjectiveText { get; set; } = "";
 
-    // Flavour "intel" line for the card (supports {map} substituted client-side).
+    // Supports a {map} token substituted client-side.
     [JsonPropertyName("flavor")]
     public string Flavor { get; set; } = "";
 
-    // Effective spawn zone of the active contract's target (resolved BossZone, e.g. "ZoneScavBase").
-    // Populated on the accepted contract only; the client prettifies it for the intel toast.
+    // Resolved BossZone, e.g. "ZoneScavBase". Accepted contract only; the client prettifies it.
     [JsonPropertyName("zone")]
     public string Zone { get; set; } = "";
 
-    // WildSpawnType roles whose deaths count, and how many, so the client kill hook can
-    // recognise the kills that complete the active contract.
+    // WildSpawnType roles the client kill hook matches against.
     [JsonPropertyName("objectiveRoles")]
     public List<string> ObjectiveRoles { get; set; } = [];
 
@@ -285,29 +278,26 @@ public class ContractDto
     [JsonPropertyName("gpReward")]
     public int GpReward { get; set; }
 
-    // In-character "transmission" line shown when the contract is accepted/revealed (the
-    // crew or boss taunting the player). Only sent on the active card. Supports {map}.
+    // Sent on the active card only. Supports a {map} token.
     [JsonPropertyName("dialog")]
     public string Dialog { get; set; } = "";
 
     [JsonPropertyName("dialogSpeaker")]
     public string DialogSpeaker { get; set; } = "";
 
-    // True for the player's currently-accepted contract.
     [JsonPropertyName("active")]
     public bool Active { get; set; }
 
-    // True while the card is sealed: target and map withheld until accept. GP reward and type stay
-    // visible; identifying fields are redacted server-side so the board can't be datamined.
+    // Identifying fields are redacted server-side, so a sealed board can't be datamined.
+    // GP reward and type stay visible.
     [JsonPropertyName("sealed")]
     public bool Sealed { get; set; }
 
-    // Seconds until this contract can be accepted again (0 = available now).
+    // 0 = available now.
     [JsonPropertyName("cooldownSeconds")]
     public double CooldownSeconds { get; set; }
 
-    // Supply Run: when true the client forces the raid airdrop to land at (airdropX,
-    // airdropZ) on this contract's map, so the crate drops on the Cleanup Crew.
+    // Supply Run: the client forces the raid airdrop to land at (airdropX, airdropZ).
     [JsonPropertyName("triggerAirdrop")]
     public bool TriggerAirdrop { get; set; }
 
@@ -319,52 +309,50 @@ public class ContractDto
 
     [JsonPropertyName("airdropZ")]
     public float AirdropZ { get; set; }
+
+    // Active contract only. Empty = no hideout for this map, so a bossZone spawn.
+    [JsonPropertyName("hideoutPosts")]
+    public List<Vec3> HideoutPosts { get; set; } = [];
 }
 
 public class ContractsStateDto
 {
-    // The board: only the contracts currently offered this period (not the whole config
-    // pool). The chosen one, if any, has Active = true.
+    // Only what's offered this period, not the whole config pool.
     [JsonPropertyName("contracts")]
     public List<ContractDto> Contracts { get; set; } = [];
 
-    // The currently-accepted contract id, or empty when none.
     [JsonPropertyName("activeContractId")]
     public string ActiveContractId { get; set; } = "";
 
-    // False once the player has spent their pick for this period (accepted or abandoned).
-    // The client uses this to grey out the accept buttons until the board refreshes.
+    // False once the pick for this period is spent, by accepting or abandoning.
     [JsonPropertyName("pickAvailable")]
     public bool PickAvailable { get; set; }
 
-    // Seconds until the board re-rolls a fresh set of offers (matches the daily reset).
+    // Until the board re-rolls, which matches the daily reset.
     [JsonPropertyName("nextRefreshSeconds")]
     public double NextRefreshSeconds { get; set; }
 
-    // True when the server is in debugMode: the board lists every contract and picks are
-    // unlimited, so the client lets any card be accepted/switched for testing.
+    // In debugMode the board lists every contract and picks are unlimited.
     [JsonPropertyName("debugMode")]
     public bool DebugMode { get; set; }
 }
 
-// Client tells the server a contract objective was met in raid (mirrors RaidResultRequest).
 public class ContractResultRequest : IRequestData
 {
     [JsonPropertyName("contractId")]
     public string ContractId { get; set; } = "";
 
-    // Map the kill happened on, validated against the contract's target map.
+    // Validated against the contract's target map.
     [JsonPropertyName("location")]
     public string Location { get; set; } = "";
 
-    // True when the player extracted alive (for contracts with requireExtract).
+    // Checked by contracts with requireExtract.
     [JsonPropertyName("survived")]
     public bool Survived { get; set; }
 }
 
 public class RaidResultRequest : IRequestData
 {
-
     [JsonPropertyName("raidId")]
     public string RaidId { get; set; } = "";
 
@@ -401,14 +389,14 @@ public class RaidResultRequest : IRequestData
     [JsonPropertyName("lootValue")]
     public int LootValue { get; set; }
 
-    // True when the player extracted alive (ExitStatus.Survived / Runner).
+    // ExitStatus.Survived or Runner.
     [JsonPropertyName("survived")]
     public bool Survived { get; set; }
 
     [JsonPropertyName("survivedSeconds")]
     public float SurvivedSeconds { get; set; }
 
-    // Map id (GameWorld.LocationId), for ExtractFromLocation challenges.
+    // GameWorld.LocationId, for ExtractFromLocation challenges.
     [JsonPropertyName("location")]
     public string Location { get; set; } = "";
 

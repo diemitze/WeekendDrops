@@ -35,6 +35,10 @@ public class WeekendDropsRouter(JsonUtil jsonUtil, WeekendDropsCallback callback
             async (url, info, sessionId, output) => await callback.BuyShopItem(sessionId, info.Id)
         ),
         new RouteAction<StringIdRequest>(
+            "/weekenddrops/tradein",
+            async (url, info, sessionId, output) => await callback.RedeemBarter(sessionId, info.Id)
+        ),
+        new RouteAction<StringIdRequest>(
             "/weekenddrops/claimtier",
             async (url, info, sessionId, output) => await callback.ClaimTier(sessionId, info.Id)
         ),
@@ -100,9 +104,7 @@ public class WeekendDropsCallback(
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     };
 
-    // Client pushes its BepInEx-side toggles (LootNET bridge, F12 no-Scav) to
-    // /weekenddrops/clientflags in the body: SPT's router strips the query string, so a URL tag
-    // never arrives. Both sticky for the server run.
+    // Sent in the body, not the query string: SPT's router strips that. Sticky for the run.
     public ValueTask<string> SetClientFlags(MongoId sessionId, ClientFlagsRequest info)
     {
         if (info is { NoScav: true })
@@ -156,6 +158,13 @@ public class WeekendDropsCallback(
         return new ValueTask<string>(httpResponseUtil.GetBody(json));
     }
 
+    public ValueTask<string> RedeemBarter(MongoId sessionId, string itemId)
+    {
+        var result = dailyService.RedeemBarter(sessionId, itemId);
+        var json = JsonSerializer.Serialize(new { result }, JsonOptions);
+        return new ValueTask<string>(httpResponseUtil.GetBody(json));
+    }
+
     public ValueTask<string> ClaimTier(MongoId sessionId, string tierId)
     {
         bool result = int.TryParse(tierId, out int required)
@@ -172,7 +181,6 @@ public class WeekendDropsCallback(
         return new ValueTask<string>(httpResponseUtil.GetBody(json));
     }
 
-    // The Fika squad rivalry board: every real profile on the server with its GP standing.
     public ValueTask<string> GetSquad(MongoId sessionId)
     {
         var state = squadService.GetSquad(sessionId.ToString());
@@ -180,7 +188,6 @@ public class WeekendDropsCallback(
         return new ValueTask<string>(httpResponseUtil.GetBody(json));
     }
 
-    // The recipient picker: every other real profile on the server.
     public ValueTask<string> GetFriends(MongoId sessionId)
     {
         var state = new FriendsStateDto { Friends = giftService.ListFriends(sessionId.ToString()) };
@@ -225,7 +232,6 @@ public class WeekendDropsCallback(
 
     public ValueTask<string> ReportRaidResult(MongoId sessionId, RaidResultRequest info)
     {
-
         int gpEarned = challengeService.ApplyRaidResult(sessionId, info)
                      + dailyService.ApplyRaidResult(sessionId, info);
         var json = JsonSerializer.Serialize(new { result = true, gpEarned }, JsonOptions);

@@ -2,7 +2,6 @@ namespace WeekendDrops.Services;
 
 public static class LocationUtil
 {
-
     private static string Canonical(string raw)
     {
         var s = (raw ?? "").Trim().ToLowerInvariant();

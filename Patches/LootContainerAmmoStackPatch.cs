@@ -44,8 +44,8 @@ public static class LootContainerAmmoStackPatch
     {
         if (_itemHelper is null || __result is null) return;
 
-        // Only fatten ammo stacks in OUR crates - this generator runs for every
-        // vanilla / third-party RandomLootContainer too.
+        // WeekendDrops crates only; this generator runs for every vanilla / third-party
+        // RandomLootContainer too.
         if (!WdCrateRegistry.IsOurs(__0)) return;
 
         foreach (var group in __result)
@@ -56,7 +56,7 @@ public static class LootContainerAmmoStackPatch
             var template = _itemHelper.GetItem(root.Template).Value;
             if (template is null) continue;
 
-            // Loose ammo: fatten the single round up to a full stack.
+            // The generator emits a single loose round; fatten it to a full stack.
             if (template.Parent == AmmoParentId)
             {
                 var max = template.Properties?.StackMaxSize ?? 1;
@@ -67,13 +67,11 @@ public static class LootContainerAmmoStackPatch
                 continue;
             }
 
-            // Ammo boxes: GetRandomLootContainerLoot emits only the bare box (no
-            // preset), so it arrives empty. Fill it with its cartridges the same
-            // way the static-loot path does.
+            // The generator emits the bare box with no preset, so it arrives empty.
             if (template.Parent == AmmoBoxParentId)
             {
-                // Skip if it somehow already has cartridge children, or the template
-                // has no cartridge slot to read (AddCartridgesToAmmoBox calls First()).
+                // AddCartridgesToAmmoBox calls First(), so a template with no cartridge slot
+                // (or a box that already has children) has to be skipped.
                 if (group.Count > 1) continue;
                 if (template.Properties?.StackSlots?.Any() != true) continue;
                 _itemHelper.AddCartridgesToAmmoBox(group, template);

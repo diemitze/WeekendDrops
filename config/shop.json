@@ -268,5 +268,75 @@
         "count": 1
       }
     ]
+  },
+  {
+    "id": "shop_kit_556",
+    "name": "5.56 Fire Support Drop",
+    "description": "Care package: 120x M995 (flea-banned), 3 PMAGs and a Salewa",
+    "templateId": "59e690b686f7746c9f75e848",
+    "gpCost": 1300,
+    "stock": -1,
+    "count": 1,
+    "contents": [
+      { "templateId": "59e690b686f7746c9f75e848", "count": 60 },
+      { "templateId": "59e690b686f7746c9f75e848", "count": 60 },
+      { "templateId": "5aaa5dfee5b5b000140293d3", "count": 3 },
+      { "templateId": "544fb45d4bdc2dee738b4568", "count": 1 }
+    ]
+  },
+  {
+    "id": "shop_kit_762nato",
+    "name": "7.62 NATO Marksman Drop",
+    "description": "Care package: 80x M993 (flea-banned), a Grizzly and a Surv12",
+    "templateId": "5efb0c1bd79ff02a1f5e68d9",
+    "gpCost": 1500,
+    "stock": -1,
+    "count": 1,
+    "contents": [
+      { "templateId": "5efb0c1bd79ff02a1f5e68d9", "count": 40 },
+      { "templateId": "5efb0c1bd79ff02a1f5e68d9", "count": 40 },
+      { "templateId": "590c657e86f77412b013051d", "count": 1 },
+      { "templateId": "5d02797c86f774203f38e30a", "count": 1 }
+    ]
+  },
+  {
+    "id": "shop_kit_ak",
+    "name": "Eastern Bloc Supply Drop",
+    "description": "Care package: 120x 7.62x39 BP (flea-banned), 2 stun grenades and an IFAK",
+    "templateId": "59e0d99486f7744a32234762",
+    "gpCost": 1200,
+    "stock": -1,
+    "count": 1,
+    "contents": [
+      { "templateId": "59e0d99486f7744a32234762", "count": 60 },
+      { "templateId": "59e0d99486f7744a32234762", "count": 60 },
+      { "templateId": "5a0c27731526d80618476ac4", "count": 2 },
+      { "templateId": "590c678286f77426c9660122", "count": 1 }
+    ]
+  },
+  {
+    "id": "shop_kit_dmr",
+    "name": "Designated Marksman Drop",
+    "description": "Care package: 80x 7.62x54R 7N37 (flea-banned), a Grizzly and a Surv12",
+    "templateId": "5e023d48186a883be655e551",
+    "gpCost": 1300,
+    "stock": -1,
+    "count": 1,
+    "contents": [
+      { "templateId": "5e023d48186a883be655e551", "count": 40 },
+      { "templateId": "5e023d48186a883be655e551", "count": 40 },
+      { "templateId": "590c657e86f77412b013051d", "count": 1 },
+      { "templateId": "5d02797c86f774203f38e30a", "count": 1 }
+    ]
+  },
+  {
+    "id": "shop_gamma_container",
+    "name": "Gamma Secure Container",
+    "description": "The ultimate grind reward: 3x3 Gamma secure container",
+    "templateId": "5857a8bc2459772bad15db29",
+    "gpCost": 15000,
+    "stock": 1,
+    "count": 1,
+    "trophy": true
   }
 ]

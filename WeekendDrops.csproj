@@ -6,9 +6,9 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <RootNamespace>WeekendDrops</RootNamespace>
     <AssemblyName>WeekendDrops</AssemblyName>
-    <Version>1.0.3</Version>
-    <AssemblyVersion>1.0.3</AssemblyVersion>
-    <FileVersion>1.0.3</FileVersion>
+    <Version>1.0.4</Version>
+    <AssemblyVersion>1.0.4</AssemblyVersion>
+    <FileVersion>1.0.4</FileVersion>
     <Authors>20fpsguy</Authors>
     <Nullable>enable</Nullable>
   </PropertyGroup>
@@ -65,7 +65,7 @@
           Condition="!Exists('D:\SPT dev\SPT\user\mods\WeekendDrops\config\config.json')" />
     <!-- Custom bot data. We read db\bots\types from the mod folder ourselves (see
          WeekendDropsLoader.LoadContractBotTypes) and override the matching vanilla bot
-         type, so crazyassaultevent.json lands at ...\WeekendDrops\db\bots\types\. -->
+         type, so cursedassault.json lands at ...\WeekendDrops\db\bots\types\. -->
     <ItemGroup>
       <_BotFiles Include="$(ProjectDir)db\**\*.*" />
     </ItemGroup>

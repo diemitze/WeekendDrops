@@ -2,9 +2,8 @@ using System.Text.Json.Serialization;
 
 namespace WeekendDrops.Models;
 
-// One spawn group: a leader (BossName) plus escorts, dropped into a zone. Boss contracts
-// have one group; event contracts several. Uses EFT WildSpawnType ids (bossKnight, exUsec,
-// pmcBot...); Raiders/Rogues spawn geared through the boss pipeline, which suits the event style.
+// A leader (BossName) plus escorts, dropped into a zone. Boss contracts have one group, event
+// contracts several. Uses EFT WildSpawnType ids; Raiders/Rogues spawn geared via the boss pipeline.
 public class ContractGroup
 {
     [JsonPropertyName("bossName")]
@@ -26,15 +25,13 @@ public class ContractGroup
     [JsonPropertyName("bossZone")]
     public string BossZone { get; set; } = "";
 
-    // When true the role is hostile to the player only, neutral to all AI. Keeps the Cleanup
-    // Crew anchored to its zone (nothing to chase) so it holds until the player shows. Leave
-    // false for boss bounties (a boss keeps its vanilla relations to its guards).
+    // Hostile to the player only, so the crew has nothing to chase and holds its zone. False
+    // for boss bounties, which keep their vanilla relations to their guards.
     [JsonPropertyName("hostileToPlayer")]
     public bool HostileToPlayer { get; set; }
 }
 
-// A world position (x,y,z). Used for the Supply Run airdrop landing point - the crate
-// keeps its own drop altitude, so only x/z are honoured (y is informational).
+// As an airdrop landing point only x/z are honoured: the crate keeps its own drop altitude.
 public class Vec3
 {
     [JsonPropertyName("x")]
@@ -47,12 +44,10 @@ public class Vec3
     public float Z { get; set; }
 }
 
-// One candidate Supply Run landing site: a spawn zone for the crew paired with the world
-// coordinate the crate is steered to. AcceptContract rolls one of these so the drop lands
-// somewhere different each run instead of always the same spot.
+// One is rolled per accept, so the drop moves run to run.
 public class AirdropSpot
 {
-    // Spawn zone the crew is dropped into (a single BotZoneName near the coordinate).
+    // A single BotZoneName near the coordinate.
     [JsonPropertyName("bossZone")]
     public string BossZone { get; set; } = "";
 
@@ -66,10 +61,9 @@ public class AirdropSpot
     public float Z { get; set; }
 }
 
-// One map a boss can be hunted on, with the zone(s) it spawns at there.
 public class BossSpawnMap
 {
-    // Location id, matched via LocationUtil (e.g. customs, woods, reserve, shoreline).
+    // Location id, matched via LocationUtil.
     [JsonPropertyName("map")]
     public string Map { get; set; } = "";
 
@@ -78,15 +72,14 @@ public class BossSpawnMap
     public string BossZone { get; set; } = "";
 }
 
-// One entry in a randomized boss contract's pool. On accept the service rolls one of these
-// plus one of its Maps and locks both in, so the spawn and the kill objective always agree.
+// On accept, one of these plus one of its Maps is rolled and locked in, so the spawn and the
+// kill objective always agree.
 public class BossOption
 {
-    // Stable id stored in the player's state once rolled (survives config reordering).
+    // Stored in the player's state once rolled, so it must survive config reordering.
     [JsonPropertyName("key")]
     public string Key { get; set; } = "";
 
-    // Name shown on the card after the roll, e.g. "Reshala".
     [JsonPropertyName("displayName")]
     public string DisplayName { get; set; } = "";
 
@@ -100,7 +93,7 @@ public class BossOption
     [JsonPropertyName("escortAmount")]
     public string EscortAmount { get; set; } = "0";
 
-    // The maps this boss can be hunted on; one is rolled at accept.
+    // One is rolled at accept.
     [JsonPropertyName("maps")]
     public List<BossSpawnMap> Maps { get; set; } = [];
 
@@ -108,8 +101,7 @@ public class BossOption
     [JsonPropertyName("objectiveRole")]
     public string ObjectiveRole { get; set; } = "";
 
-    // Short in-character line shown as a "transmission" popup when this boss is rolled and
-    // accepted. Supports {map} (the rolled map's pretty name). The speaker is DisplayName.
+    // Supports {map}. The speaker is DisplayName.
     [JsonPropertyName("acceptDialog")]
     public string AcceptDialog { get; set; } = "";
 }
@@ -125,56 +117,46 @@ public class ContractDefinition
     [JsonPropertyName("description")]
     public string Description { get; set; } = "";
 
-    // Target map (location id), matched against the raid via LocationUtil.
+    // Location id, matched against the raid via LocationUtil.
     [JsonPropertyName("map")]
     public string Map { get; set; } = "";
 
-    // What spawns. One group = boss contract; several = roaming event. Ignored when
-    // BossPool is set (the rolled boss supplies the group instead).
+    // One group = boss contract, several = roaming event. Ignored when BossPool is set.
     [JsonPropertyName("groups")]
     public List<ContractGroup> Groups { get; set; } = [];
 
-    // When non-empty, this is a randomized boss bounty: accepting rolls one of these and
-    // locks it in. The rolled option supplies the map, spawn group and objective role, so
-    // Groups / Map / ObjectiveRoles below act only as the pre-roll (menu) placeholders.
+    // Non-empty = a randomized boss bounty, where the rolled option supplies map, group and
+    // objective role. Groups / Map / ObjectiveRoles are then pre-roll placeholders only.
     [JsonPropertyName("bossPool")]
     public List<BossOption> BossPool { get; set; } = [];
 
-    // WildSpawnType roles whose deaths count toward the objective (e.g. ["bossKnight"]
-    // for a boss kill, ["exUsec"] for clearing a Rogue crew).
+    // WildSpawnType roles whose deaths count, e.g. ["bossKnight"] or ["exUsec"].
     [JsonPropertyName("objectiveRoles")]
     public List<string> ObjectiveRoles { get; set; } = [];
 
-    // How many of those roles must die to complete the contract.
     [JsonPropertyName("objectiveCount")]
     public int ObjectiveCount { get; set; } = 1;
 
-    // Short objective line shown on the card, e.g. "Eliminate Knight" or "Clear out 8 Rogues".
+    // Shown on the card, e.g. "Eliminate Knight" or "Clear out 8 Rogues".
     [JsonPropertyName("objectiveText")]
     public string ObjectiveText { get; set; } = "";
 
-    // Flavour "intel" line shown on the card, e.g. "The Cleanup Crew have been spotted
-    // on {map}." Supports {map} (resolved to the pretty map name client-side) and {boss}
-    // (the rolled boss name, for pool contracts). Blank = no intel line.
+    // Intel line on the card. Supports {map} and {boss}. Blank = no intel line.
     [JsonPropertyName("flavor")]
     public string Flavor { get; set; } = "";
 
     [JsonPropertyName("gpReward")]
     public int GpReward { get; set; }
 
-    // Short in-character line shown as a "transmission" popup the moment the contract is
-    // accepted and revealed (the crew or target taunting the player). Supports {map}. For a
-    // boss pool, the rolled BossOption.AcceptDialog overrides this. Blank = no popup.
+    // Supports {map}. Overridden by a rolled BossOption.AcceptDialog; blank = no popup.
     [JsonPropertyName("acceptDialog")]
     public string AcceptDialog { get; set; } = "";
 
-    // Who's "speaking" the accept line (e.g. "DROPFALL CREW", "CLEANUP CREW"). Blank falls
-    // back to the contract name client-side. Boss pools use the rolled boss's display name.
+    // Blank falls back to the contract name; boss pools use the rolled boss's display name.
     [JsonPropertyName("dialogSpeaker")]
     public string DialogSpeaker { get; set; } = "";
 
-    // Item tpls force-added to every bot this contract spawns (e.g. a LEDX so the
-    // crew is worth looting). Foundation for the later gear layer; empty = none.
+    // Item tpls force-added to every bot this contract spawns, so the crew is worth looting.
     [JsonPropertyName("bonusItems")]
     public List<string> BonusItems { get; set; } = [];
 
@@ -186,26 +168,27 @@ public class ContractDefinition
     [JsonPropertyName("requireExtract")]
     public bool RequireExtract { get; set; }
 
-    // Supply Run: forces a guaranteed airdrop and the client relocates the crate to
-    // AirdropPosition (guarded by the Cleanup Crew). Airdrop-capable maps only (not factory/labs).
+    // Supply Run: forces an airdrop, which the client relocates to AirdropPosition.
+    // Airdrop-capable maps only, so not factory or labs.
     [JsonPropertyName("triggerAirdrop")]
     public bool TriggerAirdrop { get; set; }
 
-    // Where the forced airdrop should land (world x,z; the crate keeps its drop altitude,
-    // so y is ignored). Pair this with the group's bossZone so the crew is on the crate.
-    // Used as the single fixed site when AirdropSpots is empty.
+    // The single fixed site, used only when AirdropSpots is empty.
     [JsonPropertyName("airdropPosition")]
     public Vec3? AirdropPosition { get; set; }
 
-    // Candidate landing sites for a Supply Run. When non-empty, accepting rolls one and
-    // locks it in (zone + coordinate) so the drop lands somewhere different each run. Each
-    // spot's bossZone replaces the group's zone so the crew always spawns on the crate.
+    // One is rolled and locked in per accept, so the drop moves run to run. The spot's bossZone
+    // replaces the group's, so the crew always spawns on the crate.
     [JsonPropertyName("airdropSpots")]
     public List<AirdropSpot> AirdropSpots { get; set; } = [];
 
     // Hours before this contract can be accepted again after completion.
     [JsonPropertyName("cooldownHours")]
     public double CooldownHours { get; set; } = 24;
+
+    // Filled by Resolve, never by config. ContractSpawnPatch turns these into spawn points.
+    [JsonIgnore]
+    public List<Vec3> ResolvedPosts { get; set; } = [];
 }
 
 public class ContractsConfig
@@ -220,41 +203,75 @@ public class ContractsConfig
 
     [JsonPropertyName("boardMaxDays")]
     public int BoardMaxDays { get; set; } = 4;
+
+    // False gives a "two warlords" raid. Bounty zones sit away from native homes, so the
+    // two don't stack.
+    [JsonPropertyName("suppressNativeBoss")]
+    public bool SuppressNativeBoss { get; set; }
+
+    // Dead spots where no bot normally spawns, keyed by map id. One is rolled per accept;
+    // a missing map falls back to a bossZone spawn.
+    [JsonPropertyName("mapHideouts")]
+    public Dictionary<string, List<Hideout>> MapHideouts { get; set; } = [];
+
+    // Metres. Wide enough that the crew doesn't all spot the player at once.
+    [JsonPropertyName("supplyRingRadius")]
+    public float SupplyRingRadius { get; set; } = 16f;
+
+    // Replaces the zone's bot spawn points for that raid. Off = vanilla zone spawn, which
+    // drops the crew a few hundred metres out to walk in.
+    [JsonPropertyName("crewSpawnOnPosts")]
+    public bool CrewSpawnOnPosts { get; set; } = true;
 }
 
-// Per-session contract state (data/{sessionId}_contracts.json). One active contract at
-// a time; CompletedAtUtc drives cooldowns.
+// One post per crew member; a single post means they spread around it. `zone` is the real BSG
+// zone nearest them, used only to name the "spotted near X" intel toast.
+public class Hideout
+{
+    [JsonPropertyName("zone")]
+    public string Zone { get; set; } = "";
+
+    [JsonPropertyName("posts")]
+    public List<Vec3> Posts { get; set; } = [];
+}
+
+// Per-session state in data/{sessionId}_contracts.json. One active contract at a time.
 public class PlayerContractState
 {
-    // The contract board: a fixed offer of a few contracts, of which the player picks ONE. Not
-    // daily. (BoardId is legacy from the old per-day cadence, kept so old state files load.)
+    // Legacy name from the old per-day board cadence, kept so old state files still load.
     public string? BoardId { get; set; }
     public List<string> OfferedContractIds { get; set; } = [];
 
-    // When the next board may appear. Null = evaluate now (new players get one immediately).
-    // Sits in the past while a board is live; pushed to UtcNow + random(BoardMin..Max) days
-    // when a board is spent, so offers are irregular rather than daily.
+    // Null = evaluate now, so new players get a board immediately. Sits in the past while one is
+    // live; pushed out a random BoardMin..Max days when spent.
     public DateTime? NextBoardAtUtc { get; set; }
 
-    // True once the player has spent their single pick this period - set on accept and
-    // left set on abandon, so abandoning burns the pick (no re-picking a different offer
-    // until the board refreshes). Reset only when a new board is rolled.
+    // Left set on abandon too, so backing out burns the pick. Reset only on a new board.
     public bool PickConsumed { get; set; }
 
     public string? ActiveContractId { get; set; }
     public DateTime? AcceptedAtUtc { get; set; }
 
-    // For a randomized boss contract: the BossOption.Key and the map rolled when it was
-    // accepted. Null for non-pool contracts or when nothing is active.
+    // Null for non-pool contracts, or when nothing is active.
     public string? ChosenBossKey { get; set; }
     public string? ChosenMap { get; set; }
 
-    // For a Supply Run with multiple AirdropSpots: the spot rolled at accept (zone +
-    // coordinate), so the crew spawn and the client crate-relocate agree. Null otherwise.
+    // The AirdropSpot rolled at accept, so the crew spawn and the client's crate-relocate
+    // agree. Null outside a multi-spot Supply Run.
     public string? ChosenAirdropZone { get; set; }
     public float? ChosenAirdropX { get; set; }
     public float? ChosenAirdropY { get; set; }
     public float? ChosenAirdropZ { get; set; }
+
+    // Locks a multi-zone BossZone to one zone, or SPT picks at random while the intel toast
+    // names the first. Null for Supply Runs and single-zone contracts.
+    public string? ChosenBossZone { get; set; }
+
+    // Null = no hideouts for this map, so fall back to a bossZone spawn.
+    public List<Vec3>? ChosenHideoutPosts { get; set; }
+
+    // Names the crew's real location in the intel toast. Null falls back to the spawn zone.
+    public string? ChosenHideoutZone { get; set; }
 
     public Dictionary<string, DateTime> CompletedAtUtc { get; set; } = [];
 }

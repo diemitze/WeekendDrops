@@ -10,9 +10,8 @@ public class GpBalanceService
     private readonly string _file = SysPath.Combine(
         AppContext.BaseDirectory, "user", "mods", "WeekendDrops", "data", "gp_balances.json");
 
-    // "Earned this weekend" - a per-profile tally for the Fika team board, stamped with a weekend
-    // period so it resets each cycle. Only Add() (challenges/contracts/deposits) feeds it; gift
-    // transfers are excluded so friends can't sling GP back and forth to farm the board.
+    // Per-profile tally for the Fika team board, stamped with a weekend period so it resets each
+    // cycle. Gift transfers are excluded, or friends could sling GP back and forth to farm it.
     private readonly string _weeklyFile = SysPath.Combine(
         AppContext.BaseDirectory, "user", "mods", "WeekendDrops", "data", "gp_weekly_earned.json");
 
@@ -48,9 +47,7 @@ public class GpBalanceService
         lock (_lock) return _weeklyEarned.TryGetValue(sessionId, out var v) ? v : 0;
     }
 
-    // Reset the whole "earned this weekend" tally when the weekend period advances. The
-    // period id is global (same for every profile), so one stamp guards the whole dict.
-    // Idempotent - safe to call on every squad-board build.
+    // The period id is global, so one stamp guards the whole dict. Idempotent.
     public void RollWeeklyPeriod(string currentWeekendId)
     {
         if (string.IsNullOrEmpty(currentWeekendId)) return;
@@ -76,8 +73,7 @@ public class GpBalanceService
         }
     }
 
-    // Atomic gift: debit fromId and credit toId under one lock so a race can't dupe/lose coins.
-    // Returns false (touching nothing) if the sender can't cover it. Target already validated.
+    // One lock over both sides, so a race can't dupe or lose coins. False touches nothing.
     public bool TryTransfer(string fromId, string toId, int amount)
     {
         if (amount <= 0 || string.IsNullOrEmpty(fromId) || string.IsNullOrEmpty(toId) || fromId == toId)

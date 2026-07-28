@@ -10,9 +10,8 @@ using WeekendDrops.Models;
 
 namespace WeekendDrops.Services;
 
-// Backbone for the Contracts feature: load contract defs, track the player's accepted
-// contract, and pay out on completion. The actual boss spawn is injected at raid start
-// by ContractSpawnPatch, which asks this service for the active contract.
+// Loads contract defs, tracks the accepted contract, pays out on completion. The boss spawn
+// itself is injected at raid start by ContractSpawnPatch.
 [Injectable(InjectionType.Singleton)]
 public class ContractService(
     MailSendService mailSendService,
@@ -27,14 +26,16 @@ public class ContractService(
 
     private ContractsConfig _config = new();
     private bool _debug;                     // mirrors config.json debugMode
+
+    public bool SuppressNativeBoss => _config.SuppressNativeBoss;
+
+    public bool CrewSpawnOnPosts => _config.CrewSpawnOnPosts;
     private readonly object _fileLock = new();
 
-    // sessionId -> active contract id, so the per-bot loot hook doesn't re-read the
-    // state file for every bot. Updated by accept/abandon/complete; seeded lazily.
+    // sessionId -> active contract id, so the per-bot loot hook doesn't re-read the file.
     private readonly Dictionary<string, string?> _activeCache = [];
 
-    // Sessions running the "real board" debug sim: the board behaves as a normal player sees
-    // it (sealed cards, single pick, cooldowns) even with debugMode on. In-memory only.
+    // Sessions running the "real board" debug sim: live board rules despite debugMode.
     private readonly HashSet<string> _realBoardSim = [];
 
     private readonly string _configDir = SysPath.Combine(
@@ -43,15 +44,12 @@ public class ContractService(
     private readonly string _dataDir = SysPath.Combine(
         AppContext.BaseDirectory, "user", "mods", "WeekendDrops", "data");
 
-    // Mail expiry for a contract reward crate.
     private const double CrateExpiryHours = 72;
 
     public void LoadConfig()
     {
         _config = LoadJson<ContractsConfig>(SysPath.Combine(_configDir, "contracts.json")) ?? new ContractsConfig();
 
-        // Share the mod's debug switch (config.json). In debug the board offers EVERY
-        // contract and picks are unlimited, so all of them can be tested back to back.
         _debug = (LoadJson<ModConfig>(SysPath.Combine(_configDir, "config.json")) ?? new ModConfig()).DebugMode;
 
         Directory.CreateDirectory(_dataDir);
@@ -60,9 +58,8 @@ public class ContractService(
 
     // Client state
 
-    // Whether the board should use its debug presentation (all contracts, unsealed,
-    // unlimited picks) for this session. True only when debugMode is on AND the session
-    // isn't running the real-board sim - so a tester can opt back into the live flow.
+    // Debug presentation (all contracts, unsealed, unlimited picks), unless this session
+    // opted back into the live flow via the real-board sim.
     private bool BoardDebug(MongoId sessionId) =>
         _debug && !_realBoardSim.Contains(sessionId.ToString());
 
@@ -73,8 +70,6 @@ public class ContractService(
 
         bool boardDebug = BoardDebug(sessionId);
 
-        // Debug offers every contract (so each can be tested); normally just the board's
-        // three, in offer order.
         var offeredIds = boardDebug ? _config.Contracts.Select(c => c.Id) : state.OfferedContractIds;
         var offered = offeredIds
             .Select(id => _config.Contracts.FirstOrDefault(c => c.Id == id))
@@ -82,9 +77,6 @@ public class ContractService(
             .Select(c => c!)
             .ToList();
 
-        // Countdown to the next board, shown only while the player is actually waiting
-        // (no cards on offer). Once a board is up, or a contract is active, there's nothing
-        // to count down to. Debug always has cards, so it never shows a countdown.
         double nextRefresh = 0;
         if (offered.Count == 0 && state.NextBoardAtUtc is DateTime next)
             nextRefresh = Math.Max(0, (next - DateTime.UtcNow).TotalSeconds);
@@ -99,14 +91,9 @@ public class ContractService(
             {
                 bool isActive = state.ActiveContractId == c.Id;
 
-                // Seal every card the player hasn't accepted: the target and map are
-                // withheld until they commit a pick. Only GP and the contract type leak.
-                // Debug shows everything (unsealed + resolved) so each can be tested.
                 if (!boardDebug && !isActive)
                     return SealedDto(c, CooldownSecondsLeft(state, c));
 
-                // Reveal the rolled boss (name / map / objective role) only on the
-                // contract the player has actually accepted.
                 var d = isActive ? Resolve(c, state) : c;
                 return new ContractDto
                 {
@@ -116,7 +103,11 @@ public class ContractService(
                     Map         = d.Map,
                     ObjectiveText  = d.ObjectiveText,
                     Flavor      = d.Flavor,
-                    Zone        = isActive ? FirstZone(d) : "",
+                    // A repaired Supply Run's stored zone is stale; name the landing site.
+                    Zone        = isActive
+                        ? ((SupplyPostsNeedRepair(c, state) ? state.ChosenAirdropZone : state.ChosenHideoutZone)
+                           ?? FirstZone(d))
+                        : "",
                     ObjectiveRoles = d.ObjectiveRoles,
                     ObjectiveCount = d.ObjectiveCount,
                     GpReward    = d.GpReward,
@@ -128,13 +119,14 @@ public class ContractService(
                     AirdropX        = d.AirdropPosition?.X ?? 0f,
                     AirdropY        = d.AirdropPosition?.Y ?? 0f,
                     AirdropZ        = d.AirdropPosition?.Z ?? 0f,
+                    // Resolved, not the raw roll: client and server must agree on the posts.
+                    HideoutPosts    = isActive ? d.ResolvedPosts : [],
                 };
             }).ToList()
         };
     }
 
-    // A redacted card for an un-accepted contract: GP reward and type stay visible, but the
-    // target and map are withheld until acceptance. Built server-side so real values never leak.
+    // Built server-side, so the withheld values never reach the client at all.
     private static ContractDto SealedDto(ContractDefinition c, double cooldownSeconds)
     {
         bool supply = c.TriggerAirdrop;
@@ -161,9 +153,6 @@ public class ContractService(
         };
     }
 
-    // The effective spawn zone of a resolved contract: the first group's non-empty
-    // BossZone (Resolve has already substituted the rolled airdrop/boss zone). If several
-    // are listed comma-separated, take the first. Blank = map default zones (no hint).
     private static string FirstZone(ContractDefinition d)
     {
         var g = d.Groups?.FirstOrDefault(x => !string.IsNullOrWhiteSpace(x.BossZone));
@@ -172,7 +161,6 @@ public class ContractService(
         return z;
     }
 
-    // Accept / abandon
 
     public string AcceptContract(MongoId sessionId, string contractId)
     {
@@ -182,11 +170,9 @@ public class ContractService(
         var state = LoadState(sessionId);
         EnsureBoard(state);
 
-        // Re-accepting the contract you already picked is a harmless no-op.
-        if (state.ActiveContractId == contractId) return "ok";
+            if (state.ActiveContractId == contractId) return "ok";
 
-        // One pick per board period. Accepting or abandoning locks the board until it refreshes,
-        // so it can't be farmed. Debug picks freely; the real-board sim re-enforces the lock.
+        // One pick per board period, so the board can't be farmed.
         if (!BoardDebug(sessionId))
         {
             if (state.PickConsumed) return "pick_used";
@@ -194,13 +180,9 @@ public class ContractService(
             if (CooldownSecondsLeft(state, def) > 0) return "on_cooldown";
         }
 
-        // Fresh pick: clear any roll left over from a previous contract (matters when
-        // debug-switching from one active contract straight to another).
         ClearRolled(state);
 
-        // Roll the boss once, here, and lock it in. Everything downstream (the forced
-        // spawn, the kill objective, the card) reads this single choice, so server and
-        // client never disagree about which boss this contract is for.
+        // Rolled once and locked in, so spawn, objective and card never disagree.
         if (def.BossPool.Count > 0)
         {
             var boss = def.BossPool[Random.Shared.Next(def.BossPool.Count)];
@@ -210,8 +192,7 @@ public class ContractService(
                 : null;
         }
 
-        // Roll a Supply Run landing site (zone + coordinate) once, so the crew spawn and
-        // the client crate-relocate always agree, and the drop varies run to run.
+        // Landing site rolled once, so the crew spawn and the crate always agree.
         if (def.TriggerAirdrop && def.AirdropSpots.Count > 0 && string.IsNullOrEmpty(state.ChosenAirdropZone))
         {
             var spot = def.AirdropSpots[Random.Shared.Next(def.AirdropSpots.Count)];
@@ -219,6 +200,46 @@ public class ContractService(
             state.ChosenAirdropX = spot.X;
             state.ChosenAirdropY = spot.Y;
             state.ChosenAirdropZ = spot.Z;
+        }
+
+        // Without this, SPT picks at random from a multi-zone list while the intel toast names
+        // the first ("said Broken Village, crew was at RUAF").
+        if (string.IsNullOrEmpty(state.ChosenAirdropZone))
+        {
+            string? zoneCsv = def.BossPool.Count > 0
+                ? def.BossPool.FirstOrDefault(b => b.Key == state.ChosenBossKey)?
+                      .Maps.FirstOrDefault(m => m.Map == state.ChosenMap)?.BossZone
+                : def.Groups.FirstOrDefault(g => !string.IsNullOrWhiteSpace(g.BossZone))?.BossZone;
+            state.ChosenBossZone = PickOneZone(zoneCsv);
+        }
+
+        // Crew posts. Boss bounties self-place, so they're skipped.
+        if (def.BossPool.Count == 0)
+        {
+            // The crew guards the crate, so ring them around the rolled landing site.
+            if (def.TriggerAirdrop && !string.IsNullOrEmpty(state.ChosenAirdropZone))
+            {
+                state.ChosenHideoutPosts = RingPosts(
+                    state.ChosenAirdropX ?? 0f, state.ChosenAirdropY ?? 0f, state.ChosenAirdropZ ?? 0f,
+                    CrewSize(def), _config.SupplyRingRadius);
+                state.ChosenHideoutZone = state.ChosenAirdropZone;
+            }
+            // Crew bounty: a hideout from this map's pool, re-rolled per accept.
+            else if (!def.TriggerAirdrop && _config.MapHideouts is { Count: > 0 })
+            {
+                var pool = _config.MapHideouts
+                    .FirstOrDefault(kv => string.Equals(kv.Key, def.Map, StringComparison.OrdinalIgnoreCase))
+                    .Value;
+                if (pool is { Count: > 0 })
+                {
+                    var hideout = pool[Random.Shared.Next(pool.Count)];
+                    if (hideout?.Posts is { Count: > 0 })
+                    {
+                        state.ChosenHideoutPosts = hideout.Posts;
+                        state.ChosenHideoutZone = string.IsNullOrWhiteSpace(hideout.Zone) ? null : hideout.Zone;
+                    }
+                }
+            }
         }
 
         state.ActiveContractId = contractId;
@@ -238,16 +259,14 @@ public class ContractService(
         state.ActiveContractId = null;
         state.AcceptedAtUtc = null;
         ClearRolled(state);
-        // Backing out spends the whole board (no crew, offer cleared, next board days away).
-        // The "I want out" escape hatch that also stops fishing for a better pick.
+        // Backing out spends the whole board, so it can't be used to fish for a better pick.
         ScheduleNextBoard(state);
         SaveState(sessionId, state);
         _activeCache[sessionId.ToString()] = null;
         return "ok";
     }
 
-    // Clears the per-contract roll (boss/map/airdrop site). Does NOT touch the board or
-    // the consumed-pick flag.
+    // Clears the per-contract roll only. Leaves the board and the consumed-pick flag alone.
     private static void ClearRolled(PlayerContractState state)
     {
         state.ChosenBossKey = null;
@@ -256,6 +275,65 @@ public class ContractService(
         state.ChosenAirdropX = null;
         state.ChosenAirdropY = null;
         state.ChosenAirdropZ = null;
+        state.ChosenBossZone = null;
+        state.ChosenHideoutPosts = null;
+        state.ChosenHideoutZone = null;
+    }
+
+    private static int CrewSize(ContractDefinition def)
+    {
+        int n = 0;
+        foreach (var g in def.Groups)
+        {
+            if (string.IsNullOrEmpty(g.BossName)) continue;
+            n++;
+            if (int.TryParse(g.EscortAmount, out int escorts) && escorts > 0) n += escorts;
+        }
+        return Math.Max(1, n);
+    }
+
+    // FNV-1a, not GetHashCode: string hashing is randomized per process, so the ring would move
+    // every restart.
+    private static int Seed(string contractId, PlayerContractState state)
+    {
+        unchecked
+        {
+            uint h = 2166136261;
+            foreach (char c in $"{contractId}|{state.ChosenAirdropX}|{state.ChosenAirdropZ}")
+                h = (h ^ c) * 16777619;
+            return (int)(h & 0x7FFFFFFF);
+        }
+    }
+
+    // Radius is jittered so the posts don't read as a drawn circle. The client snaps them to
+    // the navmesh; a seed makes the ring reproducible.
+    private static List<Vec3> RingPosts(float x, float y, float z, int count, float radius, int? seed = null)
+    {
+        var rng = seed is null ? Random.Shared : new Random(seed.Value);
+        var posts = new List<Vec3>(count);
+        double start = rng.NextDouble() * Math.Tau;
+        for (int i = 0; i < count; i++)
+        {
+            double angle = start + i * Math.Tau / count;
+            double r = radius * (0.6 + rng.NextDouble() * 0.4);
+            posts.Add(new Vec3
+            {
+                X = x + (float)(Math.Cos(angle) * r),
+                Y = y,
+                Z = z + (float)(Math.Sin(angle) * r),
+            });
+        }
+        return posts;
+    }
+
+    private static string? PickOneZone(string? csv)
+    {
+        if (string.IsNullOrWhiteSpace(csv)) return null;
+        var parts = csv.Split(',')
+                       .Select(s => s.Trim())
+                       .Where(s => s.Length > 0)
+                       .ToArray();
+        return parts.Length == 0 ? null : parts[Random.Shared.Next(parts.Length)];
     }
 
     // Debug actions (gated by config.debugMode)
@@ -272,8 +350,6 @@ public class ContractService(
 
         switch (action?.ToLowerInvariant())
         {
-            // Force-complete the active contract (pay GP + crate) without needing the raid,
-            // to test the reward path.
             case "completeactive":
                 if (string.IsNullOrEmpty(state.ActiveContractId)) return false;
                 var rawDef = _config.Contracts.FirstOrDefault(c => c.Id == state.ActiveContractId);
@@ -292,8 +368,7 @@ public class ContractService(
                 logger.Info($"[WeekendDrops] DEBUG force-completed contract '{def.Id}' (+{def.GpReward} GP)");
                 break;
 
-            // Toggle the real-board sim: present the board as a player sees it while debugMode
-            // stays on otherwise. On wipes contract state for a fresh roll; off restores the debug board.
+            // Toggle the real-board sim. On wipes contract state; off restores the debug board.
             case "realboard":
                 var rsid = sessionId.ToString();
                 if (_realBoardSim.Remove(rsid))
@@ -313,8 +388,6 @@ public class ContractService(
                 logger.Info("[WeekendDrops] DEBUG real-board sim ON (sealed, 3 cards, single pick)");
                 break;
 
-            // Wipe contract state to a clean slate: no active contract, fresh board, no
-            // cooldowns - so testing can start over.
             case "reset":
                 state.ActiveContractId = null;
                 state.AcceptedAtUtc = null;
@@ -339,7 +412,6 @@ public class ContractService(
 
     // Spawn lookup (called by ContractSpawnPatch)
 
-    // The contract whose target map matches this raid, if the player has one active.
     public ContractDefinition? GetActiveContractForMap(MongoId sessionId, string location)
     {
         var state = LoadState(sessionId);
@@ -351,9 +423,8 @@ public class ContractService(
         return LocationUtil.Matches(location, resolved.Map) ? resolved : null;
     }
 
-    // Fika/headless fallback: the raid-generating session (headless or non-host) usually has
-    // no accepted contract, so scan every profile's state for an active one matching this map
-    // and return the first. Gated on Fika being installed, so solo SPT is unaffected.
+    // Under Fika the raid-generating session usually holds no contract, so fall back to the
+    // first active one on this map from any profile. Solo SPT never reaches this.
     public ContractDefinition? GetAnyActiveContractForMap(string location)
     {
         if (!Directory.Exists(_dataDir)) return null;
@@ -370,69 +441,90 @@ public class ContractService(
         return null;
     }
 
-    // Resolves a config contract into the definition for THIS player's accepted state:
-    // applies a randomized boss contract's rolled boss/map, then overlays a Supply Run's
-    // rolled landing site. Non-rolled contracts pass through unchanged.
-    private static ContractDefinition Resolve(ContractDefinition def, PlayerContractState state)
+    // Non-rolled contracts pass through unchanged.
+    private ContractDefinition Resolve(ContractDefinition def, PlayerContractState state)
     {
         var result = ResolveBoss(def, state);
 
-        // Supply Run: overlay the landing site rolled at accept (crew zone + crate coord).
         if (def.TriggerAirdrop && !string.IsNullOrEmpty(state.ChosenAirdropZone))
             result = ApplyAirdropSpot(result, state);
+        // Narrow the multi-zone list to the one rolled at accept. Cloned, never mutates config.
+        else if (!string.IsNullOrEmpty(state.ChosenBossZone))
+            result = ApplyChosenZone(result, state.ChosenBossZone!);
 
+        // With nothing rolled, `result` is still the shared config object, so clone before
+        // writing the posts ContractSpawnPatch reads.
+        if (ReferenceEquals(result, def)) result = CloneWithGroups(def, def.Groups);
+        result.ResolvedPosts = SupplyPostsNeedRepair(def, state)
+            ? RingPosts(state.ChosenAirdropX ?? 0f, state.ChosenAirdropY ?? 0f, state.ChosenAirdropZ ?? 0f,
+                        CrewSize(result), _config.SupplyRingRadius, Seed(def.Id, state))
+            : state.ChosenHideoutPosts ?? [];
         return result;
     }
 
-    // Returns a copy of `def` with the rolled Supply Run landing site applied: the crew's
-    // spawn zone and the crate coordinate both point at the chosen spot. Cloned so the
-    // shared config object is never mutated.
-    private static ContractDefinition ApplyAirdropSpot(ContractDefinition def, PlayerContractState state)
-    {
-        var groups = def.Groups
-            .Select(g => new ContractGroup
-            {
-                BossName         = g.BossName,
-                BossDifficulty   = g.BossDifficulty,
-                EscortType       = g.EscortType,
-                EscortAmount     = g.EscortAmount,
-                EscortDifficulty = g.EscortDifficulty,
-                BossZone         = state.ChosenAirdropZone ?? g.BossZone,
-                HostileToPlayer  = g.HostileToPlayer,
-            })
-            .ToList();
+    // Older Supply Runs stored a hideout unrelated to the drop. Repaired on read, not at accept,
+    // so a contract in flight fixes itself instead of costing the player their board pick.
+    private static bool SupplyPostsNeedRepair(ContractDefinition def, PlayerContractState state)
+        => def.TriggerAirdrop
+           && !string.IsNullOrEmpty(state.ChosenAirdropZone)
+           && !string.Equals(state.ChosenHideoutZone, state.ChosenAirdropZone, StringComparison.OrdinalIgnoreCase);
 
-        return new ContractDefinition
-        {
-            Id              = def.Id,
-            Name            = def.Name,
-            Description     = def.Description,
-            Map             = def.Map,
-            Groups          = groups,
-            BossPool        = def.BossPool,
-            ObjectiveRoles  = def.ObjectiveRoles,
-            ObjectiveCount  = def.ObjectiveCount,
-            ObjectiveText   = def.ObjectiveText,
-            Flavor          = def.Flavor,
-            AcceptDialog    = def.AcceptDialog,
-            DialogSpeaker   = def.DialogSpeaker,
-            GpReward        = def.GpReward,
-            BonusItems      = def.BonusItems,
-            CrateTemplateId = def.CrateTemplateId,
-            RequireExtract  = def.RequireExtract,
-            CooldownHours   = def.CooldownHours,
-            TriggerAirdrop  = def.TriggerAirdrop,
-            AirdropPosition = new Vec3
+    // Copy with every group's BossZone forced to the rolled zone (blank stays blank).
+    private static ContractDefinition ApplyChosenZone(ContractDefinition def, string zone) =>
+        CloneWithGroups(def, def.Groups
+            .Select(g => CloneGroup(g, string.IsNullOrWhiteSpace(g.BossZone) ? null : zone))
+            .ToList());
+
+    // Copy with the rolled landing site applied to both the crew zone and the crate coord.
+    private static ContractDefinition ApplyAirdropSpot(ContractDefinition def, PlayerContractState state) =>
+        CloneWithGroups(def,
+            def.Groups.Select(g => CloneGroup(g, state.ChosenAirdropZone)).ToList(),
+            new Vec3
             {
                 X = state.ChosenAirdropX ?? 0f,
                 Y = state.ChosenAirdropY ?? 0f,
                 Z = state.ChosenAirdropZ ?? 0f,
-            },
-            AirdropSpots    = def.AirdropSpots,
-        };
-    }
+            });
 
-    // Applies a randomized boss contract's rolled choice (the original Resolve body).
+    // null override = keep the group's own zone.
+    private static ContractGroup CloneGroup(ContractGroup g, string? zoneOverride) => new()
+    {
+        BossName         = g.BossName,
+        BossDifficulty   = g.BossDifficulty,
+        EscortType       = g.EscortType,
+        EscortAmount     = g.EscortAmount,
+        EscortDifficulty = g.EscortDifficulty,
+        BossZone         = zoneOverride ?? g.BossZone,
+        HostileToPlayer  = g.HostileToPlayer,
+    };
+
+    // Copy carrying the given groups; airdropPosition replaces the config coordinate when set.
+    private static ContractDefinition CloneWithGroups(
+        ContractDefinition def, List<ContractGroup> groups, Vec3? airdropPosition = null) => new()
+    {
+        Id              = def.Id,
+        Name            = def.Name,
+        Description     = def.Description,
+        Map             = def.Map,
+        Groups          = groups,
+        BossPool        = def.BossPool,
+        ObjectiveRoles  = def.ObjectiveRoles,
+        ObjectiveCount  = def.ObjectiveCount,
+        ObjectiveText   = def.ObjectiveText,
+        Flavor          = def.Flavor,
+        AcceptDialog    = def.AcceptDialog,
+        DialogSpeaker   = def.DialogSpeaker,
+        GpReward        = def.GpReward,
+        BonusItems      = def.BonusItems,
+        CrateTemplateId = def.CrateTemplateId,
+        RequireExtract  = def.RequireExtract,
+        CooldownHours   = def.CooldownHours,
+        TriggerAirdrop  = def.TriggerAirdrop,
+        AirdropPosition = airdropPosition ?? def.AirdropPosition,
+        AirdropSpots    = def.AirdropSpots,
+    };
+
+    // Applies a pooled contract's rolled boss and map.
     private static ContractDefinition ResolveBoss(ContractDefinition def, PlayerContractState state)
     {
         if (def.BossPool.Count == 0) return def;
@@ -508,8 +600,7 @@ public class ContractService(
         state.AcceptedAtUtc = null;
         ClearRolled(state);
         state.CompletedAtUtc[def.Id] = DateTime.UtcNow;
-        // Finishing a contract spends the board too: the next offer is days out, so contracts
-        // stay an occasional event rather than a daily grind.
+        // Finishing spends the board too, so contracts stay occasional.
         ScheduleNextBoard(state);
         SaveState(sessionId, state);
         _activeCache[sessionId.ToString()] = null;
@@ -520,7 +611,7 @@ public class ContractService(
 
     // Bot loot hook (called by ContractBotLootPatch)
 
-    // The active contract regardless of map (used by the per-bot loot hook).
+    // The active contract regardless of map.
     private ContractDefinition? GetActiveContract(MongoId sessionId)
     {
         var sid = sessionId.ToString();
@@ -534,8 +625,7 @@ public class ContractService(
             : _config.Contracts.FirstOrDefault(c => c.Id == activeId);
     }
 
-    // Bonus item tpls to force onto a bot of the given role, if it belongs to the
-    // active contract's spawn groups. Empty when there's nothing to add.
+    // Item tpls forced onto a bot of this role, if it belongs to the active contract.
     public List<string> BonusItemsForRole(MongoId sessionId, string role)
     {
         var def = GetActiveContract(sessionId);
@@ -553,30 +643,26 @@ public class ContractService(
 
     // Board (the offered set)
 
-    // How many contracts are offered at once. The player picks exactly one.
+    // Offered at once; the player picks exactly one.
     private const int BoardSize = 3;
 
-    // Ensures a board exists when one is due (only once UtcNow reaches NextBoardAtUtc; not
-    // daily). A live board or in-progress contract is left alone. True if anything changed.
+    // Rolls a board only once NextBoardAtUtc arrives. True if anything changed.
     private bool EnsureBoard(PlayerContractState state)
     {
         // An accepted, in-progress contract owns the board until it's completed.
         if (!string.IsNullOrEmpty(state.ActiveContractId)) return false;
 
-        // A live board the player hasn't spent their pick on yet: keep it waiting for them
-        // (no expiry - it sits there until they accept or abandon).
+        // An unspent board never expires; it waits until they accept or abandon.
         if (state.OfferedContractIds.Count > 0 && !state.PickConsumed) return false;
 
-        // No live board. A new one only appears once the scheduled time arrives. A brand
-        // new player (NextBoardAtUtc null) gets one immediately so the feature is visible.
+        // A brand new player (null) gets one immediately, so the feature is visible.
         if (state.NextBoardAtUtc is DateTime due && DateTime.UtcNow < due) return false;
 
         RollBoard(state);
         return true;
     }
 
-    // Rolls a fresh offer of BoardSize distinct contracts, skipping those on cooldown (falls
-    // back to the full pool if too few). The next board is scheduled when this one is spent.
+    // BoardSize distinct contracts, skipping cooldowns (falls back to the full pool if too few).
     private void RollBoard(PlayerContractState state)
     {
         var available = _config.Contracts
@@ -603,9 +689,7 @@ public class ContractService(
         logger.Info($"[WeekendDrops] Contract board rolled: {string.Join(", ", state.OfferedContractIds)}");
     }
 
-    // Spends the current board: clears the offer and schedules the next board a random
-    // whole number of UTC days out (BoardMinDays..BoardMaxDays). Called when a contract is
-    // completed or abandoned, so the player goes a few quiet days before the next offer.
+    // A random BoardMinDays..BoardMaxDays out, so there are quiet days between offers.
     private void ScheduleNextBoard(PlayerContractState state)
     {
         int min = Math.Max(0, _config.BoardMinDays);
@@ -660,8 +744,7 @@ public class ContractService(
             File.WriteAllText(StatePath(sessionId), json);
     }
 
-    // Tolerant load (see the challenge services): a malformed or half-written file
-    // falls back to default instead of throwing, so it can't brick the mod.
+    // A malformed or half-written file falls back to default instead of throwing.
     private T? LoadJson<T>(string path)
     {
         if (!File.Exists(path)) return default;
