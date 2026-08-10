@@ -1266,5 +1266,329 @@
     "description": "Bring a knife to a gunfight: get 2 melee kills",
     "target": 2,
     "difficulty": 3
+  },
+  {
+    "id": "leg_kills_3",
+    "type": "KillLegs",
+    "description": "Kill 3 enemies with leg damage",
+    "target": 3,
+    "difficulty": 1
+  },
+  {
+    "id": "leg_kills_8",
+    "type": "KillLegs",
+    "description": "Kill 8 enemies with leg damage",
+    "target": 8,
+    "difficulty": 2
+  },
+  {
+    "id": "leg_kills_15",
+    "type": "KillLegs",
+    "description": "Kill 15 enemies with leg damage",
+    "target": 15,
+    "difficulty": 3
+  },
+  {
+    "id": "arm_kills_2",
+    "type": "KillArms",
+    "description": "Kill 2 enemies with arm damage",
+    "target": 2,
+    "difficulty": 2
+  },
+  {
+    "id": "arm_kills_5",
+    "type": "KillArms",
+    "description": "Kill 5 enemies with arm damage",
+    "target": 5,
+    "difficulty": 3
+  },
+  {
+    "id": "stomach_kills_3",
+    "type": "KillStomach",
+    "description": "Kill 3 enemies with stomach damage",
+    "target": 3,
+    "difficulty": 1
+  },
+  {
+    "id": "stomach_kills_8",
+    "type": "KillStomach",
+    "description": "Kill 8 enemies with stomach damage",
+    "target": 8,
+    "difficulty": 2
+  },
+  {
+    "id": "stomach_kills_15",
+    "type": "KillStomach",
+    "description": "Kill 15 enemies with stomach damage",
+    "target": 15,
+    "difficulty": 3
+  },
+  {
+    "id": "any_kills_40",
+    "type": "KillsCumulative",
+    "description": "Kill 40 enemies",
+    "target": 40,
+    "difficulty": 1
+  },
+  {
+    "id": "any_kills_75",
+    "type": "KillsCumulative",
+    "description": "Kill 75 enemies",
+    "target": 75,
+    "difficulty": 2
+  },
+  {
+    "id": "any_kills_120",
+    "type": "KillsCumulative",
+    "description": "Kill 120 enemies",
+    "target": 120,
+    "difficulty": 3
+  },
+  {
+    "id": "any_kills_200",
+    "type": "KillsCumulative",
+    "description": "Kill 200 enemies",
+    "target": 200,
+    "difficulty": 3
+  },
+  {
+    "id": "headshot_raid_3",
+    "type": "KillHeadshotsSingleRaid",
+    "description": "Land 3 headshot kills in a single raid",
+    "target": 3,
+    "difficulty": 1
+  },
+  {
+    "id": "headshot_raid_5",
+    "type": "KillHeadshotsSingleRaid",
+    "description": "Land 5 headshot kills in a single raid",
+    "target": 5,
+    "difficulty": 2
+  },
+  {
+    "id": "headshot_raid_8",
+    "type": "KillHeadshotsSingleRaid",
+    "description": "Land 8 headshot kills in a single raid",
+    "target": 8,
+    "difficulty": 3
+  },
+  {
+    "id": "raids_done_5",
+    "type": "RaidsDone",
+    "description": "Finish 5 raids, dead or alive",
+    "target": 5,
+    "difficulty": 1
+  },
+  {
+    "id": "raids_done_10",
+    "type": "RaidsDone",
+    "description": "Finish 10 raids, dead or alive",
+    "target": 10,
+    "difficulty": 2
+  },
+  {
+    "id": "raids_done_15",
+    "type": "RaidsDone",
+    "description": "Finish 15 raids, dead or alive",
+    "target": 15,
+    "difficulty": 3
+  },
+  {
+    "id": "raids_done_25",
+    "type": "RaidsDone",
+    "description": "Finish 25 raids, dead or alive",
+    "target": 25,
+    "difficulty": 3
+  },
+  {
+    "id": "scavrun_spree_5",
+    "type": "ScavKillsSingleRaid",
+    "description": "Kill 5 enemies in a single Scav run",
+    "target": 5,
+    "difficulty": 1
+  },
+  {
+    "id": "scavrun_spree_8",
+    "type": "ScavKillsSingleRaid",
+    "description": "Kill 8 enemies in a single Scav run",
+    "target": 8,
+    "difficulty": 2
+  },
+  {
+    "id": "scavrun_spree_12",
+    "type": "ScavKillsSingleRaid",
+    "description": "Kill 12 enemies in a single Scav run",
+    "target": 12,
+    "difficulty": 3
+  },
+  {
+    "id": "melee_kills_1",
+    "type": "MeleeKills",
+    "description": "Get a melee kill",
+    "target": 1,
+    "difficulty": 2
+  },
+  {
+    "id": "melee_kills_5",
+    "type": "MeleeKills",
+    "description": "Get 5 melee kills",
+    "target": 5,
+    "difficulty": 3
+  },
+  {
+    "id": "loot_haul_500k",
+    "type": "LootValueCumulative",
+    "description": "Haul out ₽500,000 of loot this weekend",
+    "target": 500000,
+    "difficulty": 1,
+    "requiresLootNet": true
+  },
+  {
+    "id": "loot_haul_1m",
+    "type": "LootValueCumulative",
+    "description": "Haul out ₽1,000,000 of loot this weekend",
+    "target": 1000000,
+    "difficulty": 2,
+    "requiresLootNet": true
+  },
+  {
+    "id": "loot_haul_5m",
+    "type": "LootValueCumulative",
+    "description": "Haul out ₽5,000,000 of loot this weekend",
+    "target": 5000000,
+    "difficulty": 3,
+    "requiresLootNet": true
+  },
+  {
+    "id": "kills_raid_25",
+    "type": "KillsSingleRaid",
+    "description": "Kill 25 enemies in a single raid",
+    "target": 25,
+    "difficulty": 3
+  },
+  {
+    "id": "arm_kills_1",
+    "type": "KillArms",
+    "description": "Kill an enemy with arm damage",
+    "target": 1,
+    "difficulty": 1
+  },
+  {
+    "id": "survive_30min_raid",
+    "type": "SurviveTimeSingleRaid",
+    "description": "Survive 30 minutes in a single raid",
+    "target": 1800,
+    "difficulty": 3
+  },
+  {
+    "id": "distance_kills_100m_5",
+    "type": "KillsAtDistance",
+    "description": "Kill 5 enemies from 100m or further",
+    "target": 5,
+    "minDistanceMeters": 100,
+    "difficulty": 1
+  },
+  {
+    "id": "distance_kills_100m_15",
+    "type": "KillsAtDistance",
+    "description": "Kill 15 enemies from 100m or further",
+    "target": 15,
+    "minDistanceMeters": 100,
+    "difficulty": 2
+  },
+  {
+    "id": "distance_kills_150m_8",
+    "type": "KillsAtDistance",
+    "description": "Kill 8 enemies from 150m or further",
+    "target": 8,
+    "minDistanceMeters": 150,
+    "difficulty": 2
+  },
+  {
+    "id": "distance_kills_200m_3",
+    "type": "KillsAtDistance",
+    "description": "Kill 3 enemies from 200m or further",
+    "target": 3,
+    "minDistanceMeters": 200,
+    "difficulty": 2
+  },
+  {
+    "id": "distance_kills_200m_8",
+    "type": "KillsAtDistance",
+    "description": "Kill 8 enemies from 200m or further",
+    "target": 8,
+    "minDistanceMeters": 200,
+    "difficulty": 3
+  },
+  {
+    "id": "distance_kills_300m_3",
+    "type": "KillsAtDistance",
+    "description": "Kill 3 enemies from 300m or further",
+    "target": 3,
+    "minDistanceMeters": 300,
+    "difficulty": 3
+  },
+  {
+    "id": "suppressed_kills_5",
+    "type": "KillsSuppressed",
+    "description": "Kill 5 enemies with a suppressed weapon",
+    "target": 5,
+    "difficulty": 1
+  },
+  {
+    "id": "suppressed_kills_15",
+    "type": "KillsSuppressed",
+    "description": "Kill 15 enemies with a suppressed weapon",
+    "target": 15,
+    "difficulty": 2
+  },
+  {
+    "id": "suppressed_kills_30",
+    "type": "KillsSuppressed",
+    "description": "Kill 30 enemies with a suppressed weapon",
+    "target": 30,
+    "difficulty": 3
+  },
+  {
+    "id": "optic_kills_10",
+    "type": "KillsWithOptic",
+    "description": "Kill 10 enemies with an optic mounted",
+    "target": 10,
+    "difficulty": 1
+  },
+  {
+    "id": "optic_kills_25",
+    "type": "KillsWithOptic",
+    "description": "Kill 25 enemies with an optic mounted",
+    "target": 25,
+    "difficulty": 2
+  },
+  {
+    "id": "optic_kills_50",
+    "type": "KillsWithOptic",
+    "description": "Kill 50 enemies with an optic mounted",
+    "target": 50,
+    "difficulty": 3
+  },
+  {
+    "id": "ironsight_kills_5",
+    "type": "KillsIronSights",
+    "description": "Kill 5 enemies on iron sights",
+    "target": 5,
+    "difficulty": 1
+  },
+  {
+    "id": "ironsight_kills_15",
+    "type": "KillsIronSights",
+    "description": "Kill 15 enemies on iron sights",
+    "target": 15,
+    "difficulty": 2
+  },
+  {
+    "id": "ironsight_kills_30",
+    "type": "KillsIronSights",
+    "description": "Kill 30 enemies on iron sights",
+    "target": 30,
+    "difficulty": 3
   }
 ]

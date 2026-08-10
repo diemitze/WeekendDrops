@@ -1257,5 +1257,332 @@
     "target": 2,
     "gpReward": 165,
     "difficulty": 3
+  },
+  {
+    "id": "daily_leg_kills_2",
+    "type": "KillLegs",
+    "description": "Kill 2 enemies with leg damage",
+    "target": 2,
+    "gpReward": 50,
+    "difficulty": 1
+  },
+  {
+    "id": "daily_leg_kills_4",
+    "type": "KillLegs",
+    "description": "Kill 4 enemies with leg damage",
+    "target": 4,
+    "gpReward": 90,
+    "difficulty": 2
+  },
+  {
+    "id": "daily_leg_kills_8",
+    "type": "KillLegs",
+    "description": "Kill 8 enemies with leg damage",
+    "target": 8,
+    "gpReward": 160,
+    "difficulty": 3
+  },
+  {
+    "id": "daily_arm_kills_1",
+    "type": "KillArms",
+    "description": "Kill an enemy with arm damage",
+    "target": 1,
+    "gpReward": 55,
+    "difficulty": 1
+  },
+  {
+    "id": "daily_arm_kills_2",
+    "type": "KillArms",
+    "description": "Kill 2 enemies with arm damage",
+    "target": 2,
+    "gpReward": 95,
+    "difficulty": 2
+  },
+  {
+    "id": "daily_arm_kills_4",
+    "type": "KillArms",
+    "description": "Kill 4 enemies with arm damage",
+    "target": 4,
+    "gpReward": 165,
+    "difficulty": 3
+  },
+  {
+    "id": "daily_stomach_kills_2",
+    "type": "KillStomach",
+    "description": "Kill 2 enemies with stomach damage",
+    "target": 2,
+    "gpReward": 50,
+    "difficulty": 1
+  },
+  {
+    "id": "daily_stomach_kills_4",
+    "type": "KillStomach",
+    "description": "Kill 4 enemies with stomach damage",
+    "target": 4,
+    "gpReward": 90,
+    "difficulty": 2
+  },
+  {
+    "id": "daily_stomach_kills_8",
+    "type": "KillStomach",
+    "description": "Kill 8 enemies with stomach damage",
+    "target": 8,
+    "gpReward": 160,
+    "difficulty": 3
+  },
+  {
+    "id": "daily_any_kills_10",
+    "type": "KillsCumulative",
+    "description": "Kill 10 enemies",
+    "target": 10,
+    "gpReward": 50,
+    "difficulty": 1
+  },
+  {
+    "id": "daily_any_kills_20",
+    "type": "KillsCumulative",
+    "description": "Kill 20 enemies",
+    "target": 20,
+    "gpReward": 90,
+    "difficulty": 2
+  },
+  {
+    "id": "daily_any_kills_35",
+    "type": "KillsCumulative",
+    "description": "Kill 35 enemies",
+    "target": 35,
+    "gpReward": 165,
+    "difficulty": 3
+  },
+  {
+    "id": "daily_headshot_raid_2",
+    "type": "KillHeadshotsSingleRaid",
+    "description": "Land 2 headshot kills in a single raid",
+    "target": 2,
+    "gpReward": 50,
+    "difficulty": 1
+  },
+  {
+    "id": "daily_headshot_raid_4",
+    "type": "KillHeadshotsSingleRaid",
+    "description": "Land 4 headshot kills in a single raid",
+    "target": 4,
+    "gpReward": 90,
+    "difficulty": 2
+  },
+  {
+    "id": "daily_headshot_raid_6",
+    "type": "KillHeadshotsSingleRaid",
+    "description": "Land 6 headshot kills in a single raid",
+    "target": 6,
+    "gpReward": 160,
+    "difficulty": 3
+  },
+  {
+    "id": "daily_raids_done_2",
+    "type": "RaidsDone",
+    "description": "Finish 2 raids, dead or alive",
+    "target": 2,
+    "gpReward": 45,
+    "difficulty": 1
+  },
+  {
+    "id": "daily_raids_done_3",
+    "type": "RaidsDone",
+    "description": "Finish 3 raids, dead or alive",
+    "target": 3,
+    "gpReward": 85,
+    "difficulty": 2
+  },
+  {
+    "id": "daily_raids_done_5",
+    "type": "RaidsDone",
+    "description": "Finish 5 raids, dead or alive",
+    "target": 5,
+    "gpReward": 155,
+    "difficulty": 3
+  },
+  {
+    "id": "daily_scavrun_spree_5",
+    "type": "ScavKillsSingleRaid",
+    "description": "Kill 5 enemies in a single Scav run",
+    "target": 5,
+    "gpReward": 50,
+    "difficulty": 1
+  },
+  {
+    "id": "daily_scavrun_spree_8",
+    "type": "ScavKillsSingleRaid",
+    "description": "Kill 8 enemies in a single Scav run",
+    "target": 8,
+    "gpReward": 90,
+    "difficulty": 2
+  },
+  {
+    "id": "daily_scavrun_spree_12",
+    "type": "ScavKillsSingleRaid",
+    "description": "Kill 12 enemies in a single Scav run",
+    "target": 12,
+    "gpReward": 165,
+    "difficulty": 3
+  },
+  {
+    "id": "daily_melee_kills_1",
+    "type": "MeleeKills",
+    "description": "Get a melee kill",
+    "target": 1,
+    "gpReward": 95,
+    "difficulty": 2
+  },
+  {
+    "id": "daily_loot_haul_500k",
+    "type": "LootValueCumulative",
+    "description": "Haul out ₽500,000 of loot today",
+    "target": 500000,
+    "gpReward": 95,
+    "difficulty": 2,
+    "requiresLootNet": true
+  },
+  {
+    "id": "daily_loot_haul_1m",
+    "type": "LootValueCumulative",
+    "description": "Haul out ₽1,000,000 of loot today",
+    "target": 1000000,
+    "gpReward": 165,
+    "difficulty": 3,
+    "requiresLootNet": true
+  },
+  {
+    "id": "daily_kills_raid_25",
+    "type": "KillsSingleRaid",
+    "description": "Kill 25 enemies in a single raid",
+    "target": 25,
+    "gpReward": 170,
+    "difficulty": 3
+  },
+  {
+    "id": "daily_arm_kills_6",
+    "type": "KillArms",
+    "description": "Kill 6 enemies with arm damage",
+    "target": 6,
+    "gpReward": 165,
+    "difficulty": 3
+  },
+  {
+    "id": "daily_distance_kills_100m_2",
+    "type": "KillsAtDistance",
+    "description": "Kill 2 enemies from 100m or further",
+    "target": 2,
+    "minDistanceMeters": 100,
+    "gpReward": 50,
+    "difficulty": 1
+  },
+  {
+    "id": "daily_distance_kills_100m_5",
+    "type": "KillsAtDistance",
+    "description": "Kill 5 enemies from 100m or further",
+    "target": 5,
+    "minDistanceMeters": 100,
+    "gpReward": 90,
+    "difficulty": 2
+  },
+  {
+    "id": "daily_distance_kills_200m_2",
+    "type": "KillsAtDistance",
+    "description": "Kill 2 enemies from 200m or further",
+    "target": 2,
+    "minDistanceMeters": 200,
+    "gpReward": 95,
+    "difficulty": 2
+  },
+  {
+    "id": "daily_distance_kills_200m_5",
+    "type": "KillsAtDistance",
+    "description": "Kill 5 enemies from 200m or further",
+    "target": 5,
+    "minDistanceMeters": 200,
+    "gpReward": 165,
+    "difficulty": 3
+  },
+  {
+    "id": "daily_distance_kills_300m_1",
+    "type": "KillsAtDistance",
+    "description": "Kill an enemy from 300m or further",
+    "target": 1,
+    "minDistanceMeters": 300,
+    "gpReward": 160,
+    "difficulty": 3
+  },
+  {
+    "id": "daily_suppressed_kills_3",
+    "type": "KillsSuppressed",
+    "description": "Kill 3 enemies with a suppressed weapon",
+    "target": 3,
+    "gpReward": 50,
+    "difficulty": 1
+  },
+  {
+    "id": "daily_suppressed_kills_8",
+    "type": "KillsSuppressed",
+    "description": "Kill 8 enemies with a suppressed weapon",
+    "target": 8,
+    "gpReward": 90,
+    "difficulty": 2
+  },
+  {
+    "id": "daily_suppressed_kills_15",
+    "type": "KillsSuppressed",
+    "description": "Kill 15 enemies with a suppressed weapon",
+    "target": 15,
+    "gpReward": 165,
+    "difficulty": 3
+  },
+  {
+    "id": "daily_optic_kills_5",
+    "type": "KillsWithOptic",
+    "description": "Kill 5 enemies with an optic mounted",
+    "target": 5,
+    "gpReward": 50,
+    "difficulty": 1
+  },
+  {
+    "id": "daily_optic_kills_12",
+    "type": "KillsWithOptic",
+    "description": "Kill 12 enemies with an optic mounted",
+    "target": 12,
+    "gpReward": 90,
+    "difficulty": 2
+  },
+  {
+    "id": "daily_optic_kills_25",
+    "type": "KillsWithOptic",
+    "description": "Kill 25 enemies with an optic mounted",
+    "target": 25,
+    "gpReward": 165,
+    "difficulty": 3
+  },
+  {
+    "id": "daily_ironsight_kills_3",
+    "type": "KillsIronSights",
+    "description": "Kill 3 enemies on iron sights",
+    "target": 3,
+    "gpReward": 50,
+    "difficulty": 1
+  },
+  {
+    "id": "daily_ironsight_kills_8",
+    "type": "KillsIronSights",
+    "description": "Kill 8 enemies on iron sights",
+    "target": 8,
+    "gpReward": 90,
+    "difficulty": 2
+  },
+  {
+    "id": "daily_ironsight_kills_15",
+    "type": "KillsIronSights",
+    "description": "Kill 15 enemies on iron sights",
+    "target": 15,
+    "gpReward": 165,
+    "difficulty": 3
   }
 ]

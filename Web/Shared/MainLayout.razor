@@ -1,0 +1,114 @@
+@inherits LayoutComponentBase
+@inject ISnackbar Snackbar
+@inject WebConfigService Cfg
+
+<HeadContent>
+    <link href="@Assets["_content/MudBlazor/MudBlazor.min.css"]" rel="stylesheet"/>
+    <meta name="robots" content="noindex, nofollow">
+    <script src="@Assets["_content/MudBlazor/MudBlazor.min.js"]"></script>
+    <style>
+        /* Config keys and file names are reference data, not prose. */
+        .wd-mono { font-family: "JetBrains Mono", Consolas, monospace; font-size: 0.78rem; letter-spacing: -0.2px; }
+
+        /* A crate seen from above, cracked open. Stands in for a logo without being one. */
+        .wd-mark { width: 22px; height: 22px; position: relative; flex: none; }
+        .wd-mark i { position: absolute; background: #CD8532; display: block; }
+        .wd-mark i:nth-child(1) { inset: 0 0 auto 0; height: 2px; }
+        .wd-mark i:nth-child(2) { inset: auto 0 0 0; height: 2px; }
+        .wd-mark i:nth-child(3) { inset: 0 auto 0 0; width: 2px; }
+        .wd-mark i:nth-child(4) { inset: 0 0 0 auto; width: 2px; }
+        .wd-mark i:nth-child(5) { left: 50%; top: 4px; bottom: 4px; width: 2px; margin-left: -1px; opacity: .55; }
+
+        .wd-card { transition: border-color .18s ease; }
+        .wd-card:hover { border-color: #3A3A44 !important; }
+
+        /* Sits above the content without shifting it when it appears. */
+        .wd-savebar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 1400;
+                      border-top: 1px solid #CD8532; background: #0E0E10;
+                      animation: wd-slide-up .28s cubic-bezier(.22,.61,.36,1); }
+        @@keyframes wd-slide-up { from { transform: translateY(100%); } to { transform: none; } }
+
+        .wd-pulse { animation: wd-pulse 2s ease-in-out infinite; }
+        @@keyframes wd-pulse { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
+
+        /* All of the above is decoration; none of it carries information. */
+        @@media (prefers-reduced-motion: reduce) {
+            .wd-savebar, .wd-pulse { animation: none !important; }
+            .wd-card { transition: none !important; }
+        }
+    </style>
+</HeadContent>
+
+<MudThemeProvider Theme="WdTheme.Theme" IsDarkMode/>
+<MudPopoverProvider/>
+<MudSnackbarProvider/>
+<MudDialogProvider/>
+
+<MudLayout>
+    @* One page, so no drawer and no nav: a hamburger for a single destination is noise. *@
+    <MudAppBar Dense Elevation="0" Style="border-bottom: 1px solid #323234;">
+        <div class="wd-mark mr-3"><i></i><i></i><i></i><i></i><i></i></div>
+        <MudText Typo="Typo.h6" Style="font-weight: 600; letter-spacing: -0.4px;">Weekend Drops</MudText>
+        <MudText Typo="Typo.caption" Class="ml-2" Style="color: #6E6E76;">server config</MudText>
+
+        <MudSpacer/>
+
+        <MudTooltip Text="Discard unsaved changes and re-read the config files">
+            <MudIconButton Icon="@Icons.Material.Outlined.RestartAlt" Color="Color.Default" OnClick="Reload"/>
+        </MudTooltip>
+    </MudAppBar>
+
+    <MudMainContent Class="pt-4" Style="padding-bottom: 88px;">
+        <CascadingValue Value="this">
+            @Body
+        </CascadingValue>
+    </MudMainContent>
+
+    @if (Dirty)
+    {
+        <div class="wd-savebar">
+            <MudContainer MaxWidth="MaxWidth.Large" Class="py-3 d-flex align-center">
+                <MudIcon Icon="@Icons.Material.Filled.Circle" Color="Color.Warning" Size="Size.Small" Class="mr-2 wd-pulse"/>
+                <MudText Typo="Typo.body2">Unsaved changes</MudText>
+                <MudSpacer/>
+                <MudButton Variant="Variant.Text" Color="Color.Default" OnClick="Reload" Class="mr-2">Discard</MudButton>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.Check" OnClick="Save">Save changes</MudButton>
+            </MudContainer>
+        </div>
+    }
+</MudLayout>
+
+@code {
+    public bool Dirty { get; private set; }
+
+    public void MarkDirty()
+    {
+        Dirty = true;
+        StateHasChanged();
+    }
+
+    private void Save()
+    {
+        try
+        {
+            Cfg.Save();
+            Dirty = false;
+            // The running services hold the config they read at boot, so say so rather than
+            // letting someone wonder why the weekend did not move.
+            Snackbar.Add("Saved. Restart the SPT server to apply it.", Severity.Success);
+        }
+        catch (Exception e)
+        {
+            Snackbar.Add($"Could not save: {e.Message}", Severity.Error);
+        }
+    }
+
+    private void Reload()
+    {
+        Cfg.Load();
+        Dirty = false;
+        Snackbar.Add("Reloaded from disk.", Severity.Info);
+        StateHasChanged();
+    }
+}

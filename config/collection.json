@@ -1,0 +1,173 @@
+{
+  "enabled": true,
+  "requireFoundInRaid": true,
+  "wipeWithProfile": true,
+  "prestigeGpPerPiece": 150,
+  "prestigeGpPerSet": 1000,
+  "protectedQuestIds": [
+    "5c51aac186f77432ea65c552"
+  ],
+  "sets": [
+    {
+      "id": "set_antiques",
+      "name": "ANTIQUES",
+      "description": "Older than the war.",
+      "gpPerItem": 200,
+      "itemIds": [
+        "590de7e986f7741b096e5f32",
+        "590de71386f774347051a052",
+        "59e3647686f774176a362507"
+      ],
+      "milestones": [
+        {
+          "required": 3,
+          "gpReward": 1000,
+          "perk": "GpPercent",
+          "perkValue": 2,
+          "description": "+2% GP from everything, permanently."
+        }
+      ]
+    },
+    {
+      "id": "set_operatives",
+      "name": "THE OPERATIVES",
+      "description": "Everyone who fights over this place.",
+      "gpPerItem": 300,
+      "itemIds": [
+        "655c663a6689c676ce57af85",
+        "655c652d60d0ac437100fed7",
+        "655c673673a43e23e857aebd",
+        "655c669103999d3c810c025b"
+      ],
+      "milestones": [
+        {
+          "required": 2,
+          "gpReward": 600,
+          "perk": "None",
+          "perkValue": 0,
+          "description": "Halfway."
+        },
+        {
+          "required": 4,
+          "gpReward": 2000,
+          "perk": "GpPercent",
+          "perkValue": 2,
+          "description": "+2% GP from everything, permanently."
+        }
+      ]
+    },
+    {
+      "id": "set_oddities",
+      "name": "ODDITIES",
+      "description": "No idea why anyone kept these.",
+      "gpPerItem": 350,
+      "itemIds": [
+        "59faff1d86f7746c51718c9c",
+        "5c1267ee86f77416ec610f72",
+        "5c12620d86f7743f8b198b72",
+        "6389c7750ef44505c87f5996",
+        "67586bee39b1b82b0d0f9d06"
+      ],
+      "milestones": [
+        {
+          "required": 3,
+          "gpReward": 1200,
+          "perk": "None",
+          "perkValue": 0,
+          "description": "Most of the way."
+        },
+        {
+          "required": 5,
+          "gpReward": 3000,
+          "perk": "GpPercent",
+          "perkValue": 3,
+          "description": "+3% GP from everything, permanently."
+        }
+      ]
+    },
+    {
+      "id": "set_bosses",
+      "name": "THE BOSSES",
+      "description": "Figurines of the men who run this place.",
+      "gpPerItem": 400,
+      "itemIds": [
+        "66572c82ad599021091c6118",
+        "66572be36a723f7f005a066e",
+        "66572cbdad599021091c611a",
+        "66572b8d80b1cd4b6a67847f",
+        "655c67782a1356436041c9c5",
+        "655c66e40b2de553b618d4b8"
+      ],
+      "milestones": [
+        {
+          "required": 3,
+          "gpReward": 1500,
+          "perk": "None",
+          "perkValue": 0,
+          "description": "Half the set."
+        },
+        {
+          "required": 6,
+          "gpReward": 4000,
+          "perk": "GpPercent",
+          "perkValue": 3,
+          "description": "+3% GP from everything, permanently."
+        }
+      ]
+    },
+    {
+      "id": "set_propaganda",
+      "name": "PROPAGANDA",
+      "description": "Everyone selling something, to nobody.",
+      "gpPerItem": 450,
+      "itemIds": [
+        "675a213ff905bde03d0f8255",
+        "675a0a91af26c56ee1090728",
+        "675a04c01474133a0d0bb212"
+      ],
+      "milestones": [
+        {
+          "required": 2,
+          "gpReward": 1500,
+          "perk": "GpPercent",
+          "perkValue": 2,
+          "description": "+2% GP from everything, permanently."
+        },
+        {
+          "required": 3,
+          "gpReward": 3000,
+          "perk": "GpPercent",
+          "perkValue": 3,
+          "description": "+3% more GP, permanently."
+        }
+      ]
+    },
+    {
+      "id": "set_posters",
+      "name": "THE GALLERY",
+      "description": "Paper someone died defending.",
+      "gpPerItem": 1200,
+      "itemIds": [
+        "675a20c83fb2de89670113b4",
+        "675a04fdb8913ff13e0496bb",
+        "6759e91d8367ee2b0c0f4b94"
+      ],
+      "milestones": [
+        {
+          "required": 2,
+          "gpReward": 4000,
+          "perk": "GpPercent",
+          "perkValue": 4,
+          "description": "+4% GP from everything, permanently."
+        },
+        {
+          "required": 3,
+          "gpReward": 8000,
+          "perk": "GpPercent",
+          "perkValue": 6,
+          "description": "+6% more GP, permanently."
+        }
+      ]
+    }
+  ]
+}

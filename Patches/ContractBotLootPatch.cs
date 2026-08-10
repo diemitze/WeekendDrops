@@ -7,11 +7,13 @@ using SPTarkov.Server.Core.Models.Enums;
 using SPTarkov.Server.Core.Models.Spt.Bots;
 using SPTarkov.Server.Core.Models.Utils;
 using WeekendDrops.Services;
+using SPTarkov.Common.Models.Logging;
+using SPTarkov.Server.Core.Generators.Loot;
+using SPTarkov.Server.Core.Models.Eft.ItemEvent;
+using SPTarkov.Server.Core.Models.Eft.Profile;
 
 namespace WeekendDrops.Patches;
 
-// Forces a contract's bonusItems onto every bot it spawns, via the generator's own
-// AddLootFromPool. Scoped to the active contract's roles, so unrelated bots are untouched.
 public static class ContractBotLootPatch
 {
     private static ContractService? _contracts;
@@ -19,7 +21,6 @@ public static class ContractBotLootPatch
     private static MethodInfo? _addLoot;
     private static bool _applied;
 
-    // Roomy containers to try; AddLootFromPool places the item wherever it fits.
     private static readonly EquipmentSlots[] CandidateSlots =
     {
         EquipmentSlots.Backpack, EquipmentSlots.TacticalVest, EquipmentSlots.Pockets
@@ -48,8 +49,6 @@ public static class ContractBotLootPatch
         _applied = true;
     }
 
-    // GenerateLoot(MongoId botId, MongoId sessionId, BotType botJsonTemplate,
-    //              BotGenerationDetails botGenerationDetails, BotBaseInventory botInventory)
     private static void Postfix(MongoId botId, MongoId sessionId,
         BotGenerationDetails botGenerationDetails, BotBaseInventory botInventory, BotLootGenerator __instance)
     {
@@ -64,7 +63,6 @@ public static class ContractBotLootPatch
             {
                 var pool  = new Dictionary<MongoId, double> { { new MongoId(tpl), 1 } };
                 var slots = new HashSet<EquipmentSlots>(CandidateSlots);
-                // (botId, pool, slots, count, inventory, role, spawnLimits=null, valueLimit=0=none, isPmc=false)
                 _addLoot.Invoke(__instance, new object?[]
                 {
                     botId, pool, slots, 1.0, botInventory, botGenerationDetails.RoleLowercase, null, 0.0, false

@@ -7,6 +7,8 @@ using SPTarkov.Server.Core.Models.Utils;
 using SPTarkov.Server.Core.Utils;
 using WeekendDrops.Models;
 using WeekendDrops.Services;
+using SPTarkov.Server.Core.Models.Eft.Match;
+using SPTarkov.Server.Core.Models.Spt.Config;
 
 namespace WeekendDrops.Controllers;
 
@@ -16,75 +18,91 @@ public class WeekendDropsRouter(JsonUtil jsonUtil, WeekendDropsCallback callback
     [
         new RouteAction<EmptyRequestData>(
             "/weekenddrops/state",
-            async (url, info, sessionId, output) => await callback.GetState(sessionId, url)
+            async (url, info, sessionId, output, cancellationToken) => await callback.GetState(sessionId, url)
         ),
         new RouteAction<EmptyRequestData>(
             "/weekenddrops/dailystate",
-            async (url, info, sessionId, output) => await callback.GetDailyState(sessionId, url)
+            async (url, info, sessionId, output, cancellationToken) => await callback.GetDailyState(sessionId, url)
         ),
         new RouteAction<StringIdRequest>(
             "/weekenddrops/claimdaily",
-            async (url, info, sessionId, output) => await callback.ClaimDailyReward(sessionId, info.Id)
+            async (url, info, sessionId, output, cancellationToken) => await callback.ClaimDailyReward(sessionId, info.Id)
         ),
         new RouteAction<StringIdRequest>(
             "/weekenddrops/claimdailybonus",
-            async (url, info, sessionId, output) => await callback.ClaimDailyBonus(sessionId)
+            async (url, info, sessionId, output, cancellationToken) => await callback.ClaimDailyBonus(sessionId)
         ),
         new RouteAction<StringIdRequest>(
             "/weekenddrops/buyitem",
-            async (url, info, sessionId, output) => await callback.BuyShopItem(sessionId, info.Id)
+            async (url, info, sessionId, output, cancellationToken) => await callback.BuyShopItem(sessionId, info.Id)
         ),
         new RouteAction<StringIdRequest>(
             "/weekenddrops/tradein",
-            async (url, info, sessionId, output) => await callback.RedeemBarter(sessionId, info.Id)
+            async (url, info, sessionId, output, cancellationToken) => await callback.RedeemBarter(sessionId, info.Id)
+        ),
+        new RouteAction<StringIdRequest>(
+            "/weekenddrops/rerollchallenge",
+            async (url, info, sessionId, output, cancellationToken) => await callback.RerollChallenge(sessionId, info.Id)
+        ),
+        new RouteAction<StringIdRequest>(
+            "/weekenddrops/rerolldaily",
+            async (url, info, sessionId, output, cancellationToken) => await callback.RerollDaily(sessionId, info.Id)
         ),
         new RouteAction<StringIdRequest>(
             "/weekenddrops/claimtier",
-            async (url, info, sessionId, output) => await callback.ClaimTier(sessionId, info.Id)
+            async (url, info, sessionId, output, cancellationToken) => await callback.ClaimTier(sessionId, info.Id)
         ),
         new RouteAction<StringIdRequest>(
             "/weekenddrops/depositgp",
-            async (url, info, sessionId, output) => await callback.DepositGp(sessionId, info.Id)
+            async (url, info, sessionId, output, cancellationToken) => await callback.DepositGp(sessionId, info.Id)
         ),
         new RouteAction<StringIdRequest>(
             "/weekenddrops/debug",
-            async (url, info, sessionId, output) => await callback.DebugAction(sessionId, info.Id)
+            async (url, info, sessionId, output, cancellationToken) => await callback.DebugAction(sessionId, info.Id)
         ),
         new RouteAction<RaidResultRequest>(
             "/weekenddrops/raidend",
-            async (url, info, sessionId, output) => await callback.ReportRaidResult(sessionId, info)
+            async (url, info, sessionId, output, cancellationToken) => await callback.ReportRaidResult(sessionId, info)
         ),
         new RouteAction<EmptyRequestData>(
             "/weekenddrops/contracts",
-            async (url, info, sessionId, output) => await callback.GetContractsState(sessionId)
+            async (url, info, sessionId, output, cancellationToken) => await callback.GetContractsState(sessionId)
         ),
         new RouteAction<StringIdRequest>(
             "/weekenddrops/acceptcontract",
-            async (url, info, sessionId, output) => await callback.AcceptContract(sessionId, info.Id)
+            async (url, info, sessionId, output, cancellationToken) => await callback.AcceptContract(sessionId, info.Id)
         ),
         new RouteAction<StringIdRequest>(
             "/weekenddrops/abandoncontract",
-            async (url, info, sessionId, output) => await callback.AbandonContract(sessionId)
+            async (url, info, sessionId, output, cancellationToken) => await callback.AbandonContract(sessionId)
         ),
         new RouteAction<ContractResultRequest>(
             "/weekenddrops/contractresult",
-            async (url, info, sessionId, output) => await callback.ReportContractResult(sessionId, info)
+            async (url, info, sessionId, output, cancellationToken) => await callback.ReportContractResult(sessionId, info)
         ),
         new RouteAction<ClientFlagsRequest>(
             "/weekenddrops/clientflags",
-            async (url, info, sessionId, output) => await callback.SetClientFlags(sessionId, info)
+            async (url, info, sessionId, output, cancellationToken) => await callback.SetClientFlags(sessionId, info)
         ),
         new RouteAction<EmptyRequestData>(
             "/weekenddrops/friends",
-            async (url, info, sessionId, output) => await callback.GetFriends(sessionId)
+            async (url, info, sessionId, output, cancellationToken) => await callback.GetFriends(sessionId)
         ),
         new RouteAction<EmptyRequestData>(
             "/weekenddrops/squad",
-            async (url, info, sessionId, output) => await callback.GetSquad(sessionId)
+            async (url, info, sessionId, output, cancellationToken) => await callback.GetSquad(sessionId)
+        ),
+        new RouteAction<EmptyRequestData>(
+            "/weekenddrops/collection",
+            async (url, info, sessionId, output, cancellationToken) => await callback.GetCollection(sessionId)
+        ),
+        new RouteAction<StringIdRequest>(
+            "/weekenddrops/donate",
+            async (url, info, sessionId, output, cancellationToken) => await callback.DonateCollectible(sessionId, info.Id)
         ),
         new RouteAction<GiftRequest>(
             "/weekenddrops/giftgp",
-            async (url, info, sessionId, output) => await callback.SendGift(sessionId, info)
+            async (url, info, sessionId, output, cancellationToken) => await callback.SendGift(sessionId, info)
         )
     ])
 { }
@@ -97,14 +115,14 @@ public class WeekendDropsCallback(
     ContractService contractService,
     GpBalanceService gpBalance,
     GpGiftService giftService,
-    SquadService squadService)
+    SquadService squadService,
+    CollectionService collection)
 {
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     };
 
-    // Sent in the body, not the query string: SPT's router strips that. Sticky for the run.
     public ValueTask<string> SetClientFlags(MongoId sessionId, ClientFlagsRequest info)
     {
         if (info is { NoScav: true })
@@ -173,11 +191,39 @@ public class WeekendDropsCallback(
         return new ValueTask<string>(httpResponseUtil.GetBody(json));
     }
 
+    public ValueTask<string> RerollChallenge(MongoId sessionId, string challengeId)
+    {
+        var result = challengeService.RerollChallenge(sessionId, challengeId ?? "");
+        var json = JsonSerializer.Serialize(new { result }, JsonOptions);
+        return new ValueTask<string>(httpResponseUtil.GetBody(json));
+    }
+
+    public ValueTask<string> RerollDaily(MongoId sessionId, string challengeId)
+    {
+        var result = dailyService.RerollDailyChallenge(sessionId, challengeId ?? "");
+        var json = JsonSerializer.Serialize(new { result }, JsonOptions);
+        return new ValueTask<string>(httpResponseUtil.GetBody(json));
+    }
+
     public ValueTask<string> DepositGp(MongoId sessionId, string countStr)
     {
         bool ok = int.TryParse(countStr, out int count) && count > 0;
         if (ok) gpBalance.Add(sessionId.ToString(), count);
         var json = JsonSerializer.Serialize(new { result = ok, deposited = ok ? count : 0 }, JsonOptions);
+        return new ValueTask<string>(httpResponseUtil.GetBody(json));
+    }
+
+    public ValueTask<string> GetCollection(MongoId sessionId)
+    {
+        var state = collection.GetState(sessionId.ToString());
+        var json = JsonSerializer.Serialize(state, JsonOptions);
+        return new ValueTask<string>(httpResponseUtil.GetBody(json));
+    }
+
+    public ValueTask<string> DonateCollectible(MongoId sessionId, string templateId)
+    {
+        var result = collection.Donate(sessionId.ToString(), templateId);
+        var json = JsonSerializer.Serialize(new { result }, JsonOptions);
         return new ValueTask<string>(httpResponseUtil.GetBody(json));
     }
 
@@ -195,8 +241,6 @@ public class WeekendDropsCallback(
         return new ValueTask<string>(httpResponseUtil.GetBody(json));
     }
 
-    // Gift GP to another profile. Server validates the target and the sender's balance;
-    // returns an outcome code ("ok" / "bad_amount" / "bad_target" / "insufficient_gp").
     public ValueTask<string> SendGift(MongoId sessionId, GiftRequest info)
     {
         var result = giftService.SendGift(sessionId.ToString(), info?.ToId ?? "", info?.Amount ?? 0);
@@ -237,8 +281,6 @@ public class WeekendDropsCallback(
         var json = JsonSerializer.Serialize(new { result = true, gpEarned }, JsonOptions);
         return new ValueTask<string>(httpResponseUtil.GetBody(json));
     }
-
-    // Contracts
 
     public ValueTask<string> GetContractsState(MongoId sessionId)
     {

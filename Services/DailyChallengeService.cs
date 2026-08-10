@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 using SysPath = System.IO.Path;
 using SPTarkov.DI.Annotations;
@@ -12,6 +12,12 @@ using SPTarkov.Server.Core.Models.Utils;
 using SPTarkov.Server.Core.Servers;
 using SPTarkov.Server.Core.Services;
 using WeekendDrops.Models;
+using SPTarkov.Common.Models.Logging;
+using SPTarkov.Server.Core.Helpers.Profile;
+using SPTarkov.Server.Core.Models.Eft.ItemEvent;
+using SPTarkov.Server.Core.Models.Eft.Profile;
+using SPTarkov.Server.Core.Models.Spt.Repeatable;
+using SPTarkov.Server.Core.Services.Commerce;
 
 namespace WeekendDrops.Services;
 
@@ -20,6 +26,8 @@ public class DailyChallengeService(
     ProfileHelper profileHelper,
     MailSendService mailSendService,
     GpBalanceService gpBalance,
+    WeekendModifierService modifiers,
+    CollectionService collection,
     ISptLogger<DailyChallengeService> logger)
 {
     private static readonly JsonSerializerOptions JsonOptions = new()
@@ -35,19 +43,15 @@ public class DailyChallengeService(
     private bool _scavDisabled;
     private List<ShopItemDefinition> _shopItems = [];
 
-    
     private readonly Dictionary<string, DateTime> _restockUntil = [];
 
-  
     private readonly Dictionary<string, int> _maxStock = [];
 
     private DateTime _nextGlobalRestock = DateTime.MinValue;
 
-    private readonly string _dataDir = SysPath.Combine(
-        AppContext.BaseDirectory, "user", "mods", "WeekendDrops", "data");
+    private readonly string _dataDir = WdPaths.DataDir;
 
-    private readonly string _configDir = SysPath.Combine(
-        AppContext.BaseDirectory, "user", "mods", "WeekendDrops", "config");
+    private readonly string _configDir = WdPaths.ConfigDir;
 
     public void LoadConfig()
     {
@@ -56,14 +60,12 @@ public class DailyChallengeService(
         _allDaily = LoadJson<List<DailyChallengeDefinition>>(
             SysPath.Combine(_configDir, "daily_challenges.json")) ?? [];
 
-        // The client bridge can still flip this on later, for setups undetected at boot.
         _lootNetActive = _config.IncludeLootNet || ModPresence.LootNetInstalled;
         ApplyDailyPool();
 
         _shopItems = LoadJson<List<ShopItemDefinition>>(
             SysPath.Combine(_configDir, "shop.json")) ?? [];
 
-        // Separate config, same shop pipeline. These carry a barterCost instead of a GP cost.
         var barters = LoadJson<List<ShopItemDefinition>>(
             SysPath.Combine(_configDir, "handover.json")) ?? [];
         _shopItems.AddRange(barters);
@@ -79,20 +81,17 @@ public class DailyChallengeService(
         LoadShopStock();
 
         if (_config.DebugMode)
-            logger.Warning("[WeekendDrops] Daily DEBUG MODE active");
+            logger.Debug("[WeekendDrops] Daily DEBUG MODE active");
     }
 
-    // Without the LootNET bridge, loot-value dailies would never progress.
     private void ApplyDailyPool() =>
         _pool = _allDaily
             .Where(c => _lootNetActive || !c.RequiresLootNet)
             .Where(c => ScavEnabled || !ChallengeMetrics.IsScavOnly(c.Type))
             .ToList();
 
-    // Either the config or the client toggle can suppress them.
     private bool ScavEnabled => _config.EnableScavChallenges && !_scavDisabled;
 
-    // Sticky for the server run.
     public void SetLootNetActive()
     {
         if (_lootNetActive) return;
@@ -100,15 +99,12 @@ public class DailyChallengeService(
         ApplyDailyPool();
     }
 
-    // Sticky for the server run, so it takes full effect on restart.
     public void SetScavChallengesDisabled()
     {
         if (_scavDisabled) return;
         _scavDisabled = true;
         ApplyDailyPool();
     }
-
-    // Raid end
 
     public int ApplyRaidResult(MongoId sessionId, RaidResultRequest r)
     {
@@ -126,8 +122,6 @@ public class DailyChallengeService(
         if (r.Survived) state.SurvivalTimeBank += r.SurvivedSeconds;
         else            state.SurvivalTimeBank = 0;
 
-        // Raiders/Rogues are excluded from ScavKills, so add them back or they never count
-        // toward the scav-run and single-raid quests.
         int totalKills = r.ScavKills + r.PmcKills + r.BossKills + r.RaiderKills + r.RogueKills;
         int gpEarned = 0;
 
@@ -144,9 +138,14 @@ public class DailyChallengeService(
                 case ChallengeType.KillRogues:           cp.Current += r.RogueKills;   break;
                 case ChallengeType.MeleeKills:           cp.Current += r.MeleeKills;   break;
                 case ChallengeType.KillsSingleRaid:      if (totalKills >= cp.Target) cp.Current = cp.Target; break;
+                case ChallengeType.KillsCumulative:      cp.Current += totalKills; break;
                 case ChallengeType.SurviveTimeSingleRaid: if (r.Survived && r.SurvivedSeconds >= cp.Target) cp.Current = cp.Target; break;
                 case ChallengeType.KillHeadshots:        cp.Current += r.Headshots; break;
+                case ChallengeType.KillHeadshotsSingleRaid: if (r.Headshots >= cp.Target) cp.Current = cp.Target; break;
                 case ChallengeType.GrenadeKills:         cp.Current += r.GrenadeKills; break;
+                case ChallengeType.KillLegs:             cp.Current += r.LegKills; break;
+                case ChallengeType.KillArms:             cp.Current += r.ArmKills; break;
+                case ChallengeType.KillStomach:          cp.Current += r.StomachKills; break;
                 case ChallengeType.SurviveTimeCumulative: cp.Current = (int)state.SurvivalTimeBank; break;
                 case ChallengeType.ExtractSuccessfully:  if (r.Survived) cp.Current += 1; break;
                 case ChallengeType.ExtractFromLocation:
@@ -155,22 +154,31 @@ public class DailyChallengeService(
                         cp.Current += 1;
                     break;
 
-                // Credited only if this one raid hits the target.
                 case ChallengeType.KillPMCsSingleRaid:   if (r.PmcKills  >= cp.Target) cp.Current = cp.Target; break;
                 case ChallengeType.KillScavsSingleRaid:  if (r.ScavKills >= cp.Target) cp.Current = cp.Target; break;
 
                 case ChallengeType.ScavExtract:   if (r.IsScavRaid && r.Survived) cp.Current += 1; break;
                 case ChallengeType.ScavRaidsDone: if (r.IsScavRaid)               cp.Current += 1; break;
                 case ChallengeType.ScavKills:     if (r.IsScavRaid)               cp.Current += totalKills; break;
+                case ChallengeType.ScavKillsSingleRaid:
+                    if (r.IsScavRaid && totalKills >= cp.Target) cp.Current = cp.Target;
+                    break;
+                case ChallengeType.RaidsDone:     if (!r.IsScavRaid)              cp.Current += 1; break;
                 case ChallengeType.ScavExtractFromLocation:
                     if (r.IsScavRaid && r.Survived && !string.IsNullOrEmpty(cp.Definition.TargetLocation)
                         && LocationUtil.Matches(r.Location, cp.Definition.TargetLocation))
                         cp.Current += 1;
                     break;
 
-                // Only extracted loot is kept, so a death credits nothing.
                 case ChallengeType.ExtractWithLootValue: if (r.Survived && r.LootValue >= cp.Target) cp.Current = cp.Target; break;
                 case ChallengeType.LootValueCumulative:  if (r.Survived) cp.Current += r.LootValue; break;
+
+                case ChallengeType.KillsAtDistance:
+                    cp.Current += r.KillDistances.Count(d => d >= cp.Definition.MinDistanceMeters);
+                    break;
+                case ChallengeType.KillsSuppressed:  cp.Current += r.SuppressedKills; break;
+                case ChallengeType.KillsWithOptic:   cp.Current += r.OpticKills;      break;
+                case ChallengeType.KillsIronSights:  cp.Current += r.IronSightKills;  break;
             }
 
             if (cp.Completed) gpEarned += cp.Definition?.GpReward ?? 0;
@@ -182,8 +190,6 @@ public class DailyChallengeService(
         return gpEarned;
     }
 
-    // Client state
-
     public DailyStateDto GetDailyState(MongoId sessionId)
     {
         CheckGlobalRestock();
@@ -192,12 +198,14 @@ public class DailyChallengeService(
 
         List<DailyChallengeProgress> challenges = [];
         bool bonusClaimed = false;
+        var rerollState = new PlayerDailyState();
         if (profile != null)
         {
             var state = GetOrCreateDailyState(sessionId, profile);
             WireDefinitions(state);
             challenges = state.Challenges;
             bonusClaimed = state.BonusClaimed;
+            rerollState = state;
         }
 
         return new DailyStateDto
@@ -211,7 +219,8 @@ public class DailyChallengeService(
                 Target        = cp.Definition?.Target ?? cp.Target,
                 Completed     = cp.Completed,
                 GpReward      = cp.Definition?.GpReward ?? 0,
-                RewardClaimed = cp.RewardClaimed
+                RewardClaimed = cp.RewardClaimed,
+                MinDistanceMeters = cp.Definition?.MinDistanceMeters ?? 0
             }).ToList(),
             ShopItems = _shopItems.Select(s => new ShopItemDto
             {
@@ -241,16 +250,18 @@ public class DailyChallengeService(
                 ? (_nextGlobalRestock - DateTime.UtcNow).TotalSeconds
                 : 0,
             DailyBonusGp = BonusGp(challenges),
-            DailyBonusClaimed = bonusClaimed
+            DailyBonusClaimed = bonusClaimed,
+            RerollEnabled = _config.EnableDailyReroll,
+            RerollAvailable = _config.EnableDailyReroll && !DailyRerollsExhausted(rerollState),
+            RerollCost = GetDailyRerollCost(rerollState),
+            RerollsUsed = rerollState.RerollsUsed,
+            RerollsMax = _config.DailyRerollMaxPerDay
         };
     }
 
-    // 50% of the day's total GP, rounded. Must match what the client's bonus card shows.
     private static int BonusGp(IEnumerable<DailyChallengeProgress> challenges) =>
         (int)Math.Round(challenges.Sum(c => c.Definition?.GpReward ?? 0) * 0.5,
             MidpointRounding.AwayFromZero);
-
-    // Claim complete-all daily bonus
 
     public string ClaimDailyBonus(MongoId sessionId)
     {
@@ -267,15 +278,13 @@ public class DailyChallengeService(
         int reward = BonusGp(state.Challenges);
         if (reward <= 0) return "no_reward";
 
-        gpBalance.Add(sessionId.ToString(), reward);
+        gpBalance.Add(sessionId.ToString(), collection.ScaleGp(sessionId.ToString(), modifiers.ScaleGp(reward)));
         state.BonusClaimed = true;
         SaveDailyState(sessionId, state);
 
         logger.Info($"[WeekendDrops] Daily complete-all bonus: +{reward} GP credited for {sessionId} (balance {gpBalance.Get(sessionId.ToString())})");
         return "ok";
     }
-
-    // Claim daily GP reward
 
     public string ClaimDailyReward(MongoId sessionId, string challengeId)
     {
@@ -293,7 +302,7 @@ public class DailyChallengeService(
         int reward = cp.Definition?.GpReward ?? 0;
         if (reward <= 0) return "no_reward";
 
-        gpBalance.Add(sessionId.ToString(), reward);
+        gpBalance.Add(sessionId.ToString(), collection.ScaleGp(sessionId.ToString(), modifiers.ScaleGp(reward)));
 
         cp.RewardClaimed = true;
         SaveDailyState(sessionId, state);
@@ -302,13 +311,10 @@ public class DailyChallengeService(
         return "ok";
     }
 
-    // Buy shop item
-
     public string BuyShopItem(MongoId sessionId, string itemId)
     {
         var shopItem = _shopItems.FirstOrDefault(s => s.Id == itemId);
         if (shopItem is null)    return "item_not_found";
-        // Their gpCost is unset, so without this they'd sell for the 1 GP floor.
         if (shopItem.BarterCost is { Count: > 0 }) return "not_for_sale";
         if (shopItem.Stock == 0) return "out_of_stock";
 
@@ -340,15 +346,12 @@ public class DailyChallengeService(
         return "ok";
     }
 
-    // The client has already consumed the junk, so this only validates and mails the reward.
     public string RedeemBarter(MongoId sessionId, string itemId)
     {
         var entry = _shopItems.FirstOrDefault(s => s.Id == itemId);
         if (entry is null)                          return "item_not_found";
         if (entry.BarterCost is not { Count: > 0 }) return "not_a_barter";
 
-        // A valid entry must ALWAYS be honoured: gating on stock or restock here ate the
-        // player's items and mailed nothing.
         mailSendService.SendSystemMessageToPlayer(
             sessionId,
             $"Trade-in: {entry.Name}",
@@ -360,14 +363,11 @@ public class DailyChallengeService(
         return "ok";
     }
 
-    // Never below 1. Used for both the displayed price and the amount charged, so they match.
     private int EffectiveCost(ShopItemDefinition item)
     {
         double mult = _config.ShopPriceMultiplier <= 0 ? 1.0 : _config.ShopPriceMultiplier;
         return Math.Max(1, (int)Math.Round(item.GpCost * mult, MidpointRounding.AwayFromZero));
     }
-
-    // Daily state management
 
     private readonly object _fileLock = new();
 
@@ -381,7 +381,6 @@ public class DailyChallengeService(
 
         var todayId = GetCurrentDailyId();
 
-        // In place and before the staleness check, so the rest of the set keeps its progress.
         if (state is not null && state.DailyId == todayId && ReplaceScavChallenges(state))
         {
             SaveDailyState(sessionId, state);
@@ -402,14 +401,12 @@ public class DailyChallengeService(
         return state;
     }
 
-    // Replacements start at 0, so a completed Scav quest is genuinely re-tasked.
     private bool ReplaceScavChallenges(PlayerDailyState state)
     {
         if (!_scavDisabled) return false;
 
         var rng     = new Random();
         var usedIds = state.Challenges.Select(c => c.DefinitionId).ToHashSet();
-        // Groups occupied by the non-Scav challenges being kept.
         var usedGroups = state.Challenges
             .Select(c => _allDaily.FirstOrDefault(d => d.Id == c.DefinitionId))
             .Where(d => d is not null && !ChallengeMetrics.IsScavOnly(d.Type))
@@ -423,14 +420,13 @@ public class DailyChallengeService(
             var def = _allDaily.FirstOrDefault(d => d.Id == cp.DefinitionId);
             if (def is null || !ChallengeMetrics.IsScavOnly(def.Type)) continue;
 
-            // Prefer an unused group, falling back to any unused id if the pool is too small.
             var fresh = _pool.Where(d => !usedIds.Contains(d.Id)
                                       && !usedGroups.Contains(ChallengeMetrics.Group(d.Type))).ToList();
             var pmc   = fresh.Where(d => ChallengeMetrics.Group(d.Type) == "pmc").ToList();
             var pickPool = pmc.Count > 0 ? pmc : fresh;
             if (pickPool.Count == 0)
                 pickPool = _pool.Where(d => !usedIds.Contains(d.Id)).ToList();
-            if (pickPool.Count == 0) continue;   // can't replace cleanly; stale check reassigns
+            if (pickPool.Count == 0) continue;
 
             var pick = pickPool[rng.Next(pickPool.Count)];
 
@@ -473,7 +469,7 @@ public class DailyChallengeService(
             .GroupBy(d => ChallengeMetrics.Group(d.Type))
             .Select(g => g.First());
         var selected = byGroup
-            .Concat(_pool.OrderBy(_ => rng.Next()))   // top-up pool if <5 groups
+            .Concat(_pool.OrderBy(_ => rng.Next()))
             .DistinctBy(d => d.Id)
             .Take(Math.Min(5, _pool.Count))
             .ToList();
@@ -484,6 +480,69 @@ public class DailyChallengeService(
             Target       = d.Target,
             Definition   = d
         }).ToList();
+
+        state.RerollsUsed = 0;
+    }
+
+    public int GetDailyRerollCost(PlayerDailyState state) =>
+        Math.Max(0, _config.DailyRerollCost + _config.DailyRerollCostStep * state.RerollsUsed);
+
+    public bool DailyRerollsExhausted(PlayerDailyState state) =>
+        _config.DailyRerollMaxPerDay > 0 && state.RerollsUsed >= _config.DailyRerollMaxPerDay;
+
+    public string RerollDailyChallenge(MongoId sessionId, string challengeId)
+    {
+        if (!_config.EnableDailyReroll) return "disabled";
+
+        var profile = profileHelper.GetPmcProfile(sessionId);
+        if (profile is null) return "not_found";
+
+        var state = GetOrCreateDailyState(sessionId, profile);
+        WireDefinitions(state);
+
+        var cp = state.Challenges.FirstOrDefault(c => c.DefinitionId == challengeId);
+        if (cp is null) return "not_found";
+        if (cp.Completed) return "already_done";
+        if (DailyRerollsExhausted(state)) return "no_rerolls_left";
+
+        var pick = PickDailyReplacement(state, cp.DefinitionId);
+        if (pick is null) return "no_replacement";
+
+        int cost = GetDailyRerollCost(state);
+        if (!gpBalance.TrySpend(sessionId.ToString(), cost)) return "insufficient_gp";
+
+        cp.DefinitionId  = pick.Id;
+        cp.Target        = pick.Target;
+        cp.Current       = 0;
+        cp.RewardClaimed = false;
+        cp.Definition    = pick;
+        state.RerollsUsed++;
+
+        state.BonusClaimed = false;
+
+        SaveDailyState(sessionId, state);
+        logger.Info($"[WeekendDrops] Player {sessionId} rerolled daily '{challengeId}' -> '{pick.Id}' " +
+                    $"for {cost} GP, {state.RerollsUsed} used today");
+        return "ok";
+    }
+
+    private DailyChallengeDefinition? PickDailyReplacement(PlayerDailyState state, string oldId)
+    {
+        var rng = new Random();
+        var usedIds = state.Challenges.Select(c => c.DefinitionId).ToHashSet();
+        var usedGroups = state.Challenges
+            .Where(c => c.DefinitionId != oldId)
+            .Select(c => _allDaily.FirstOrDefault(d => d.Id == c.DefinitionId))
+            .Where(d => d is not null)
+            .Select(d => ChallengeMetrics.Group(d!.Type))
+            .ToHashSet();
+
+        var candidates = _pool.Where(d => !usedIds.Contains(d.Id)).ToList();
+        if (candidates.Count == 0) return null;
+
+        var fresh = candidates.Where(d => !usedGroups.Contains(ChallengeMetrics.Group(d.Type))).ToList();
+        var pool = fresh.Count > 0 ? fresh : candidates;
+        return pool[rng.Next(pool.Count)];
     }
 
     public bool DebugAction(MongoId sessionId, string action)
@@ -529,8 +588,6 @@ public class DailyChallengeService(
         return true;
     }
 
-    // Debug: reset today's daily progress
-
     public void ResetDailyProgress(MongoId sessionId)
     {
         var profile = profileHelper.GetPmcProfile(sessionId);
@@ -563,8 +620,6 @@ public class DailyChallengeService(
         logger.Info($"[WeekendDrops] Debug: daily set rerolled for {sessionId}");
     }
 
-    // Reward builders
-
     private static List<Item> BuildShopRewardItems(ShopItemDefinition shop)
     {
         if (shop.Contents is { Count: > 0 })
@@ -589,8 +644,6 @@ public class DailyChallengeService(
         return [item];
     }
 
-    // Helpers
-
     private static string GetCurrentDailyId() => DateTime.UtcNow.ToString("yyyy-MM-dd");
 
     private static double SecondsUntilMidnight()
@@ -599,8 +652,6 @@ public class DailyChallengeService(
         return (now.Date.AddDays(1) - now).TotalSeconds;
     }
 
-    // A malformed or half-written file falls back to default with a named log line, so one
-    // bad save can't brick the mod at startup.
     private T? LoadJson<T>(string path)
     {
         if (!File.Exists(path)) return default;
@@ -615,8 +666,6 @@ public class DailyChallengeService(
         }
     }
 
-    // Restock cooldown persistence
-
     private string RestockStatePath => SysPath.Combine(_dataDir, "shop_restock.json");
 
     private void LoadRestockState()
@@ -625,7 +674,6 @@ public class DailyChallengeService(
         var saved = LoadJson<Dictionary<string, DateTime>>(RestockStatePath);
         if (saved is null) return;
 
-        // Drop entries whose cooldown already elapsed while the server was off.
         foreach (var kv in saved)
             if (kv.Value > DateTime.UtcNow)
                 _restockUntil[kv.Key] = kv.Value;
@@ -644,8 +692,6 @@ public class DailyChallengeService(
         }
     }
 
-    // Global restock (periodic stock refill)
-
     private string GlobalRestockPath => SysPath.Combine(_dataDir, "shop_global_restock.json");
 
     private void LoadGlobalRestockState()
@@ -659,7 +705,6 @@ public class DailyChallengeService(
     {
         if (_config.ShopGlobalRestockHours <= 0) return;
 
-        // First run, or the scheduled time has passed: refill and reschedule.
         if (_nextGlobalRestock == DateTime.MinValue)
         {
             _nextGlobalRestock = DateTime.UtcNow.AddHours(_config.ShopGlobalRestockHours);
@@ -697,8 +742,6 @@ public class DailyChallengeService(
         public DateTime NextRestock { get; set; }
     }
 
-    // Live stock persistence
-
     private string ShopStockPath => SysPath.Combine(_dataDir, "shop_stock.json");
 
     private void LoadShopStock()
@@ -709,7 +752,6 @@ public class DailyChallengeService(
         foreach (var s in _shopItems)
         {
             if (!saved.TryGetValue(s.Id, out var stock)) continue;
-            // -1 stays unlimited. The clamp below covers a max that was lowered in config.
             if (s.Stock < 0) continue;
             var max = _maxStock.TryGetValue(s.Id, out var m) ? m : s.Stock;
             s.Stock = stock < 0 ? 0 : Math.Min(stock, max);

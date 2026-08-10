@@ -1,4 +1,6 @@
 using System.Text.Json.Serialization;
+using SPTarkov.Server.Core.Models.Eft.Common;
+using SPTarkov.Server.Core.Models.Spt.Repeatable;
 
 namespace WeekendDrops.Models;
 
@@ -8,33 +10,46 @@ public enum ChallengeType
     KillPMCs,
     KillBoss,
     KillCultists,
-    KillPriest,   // the cultist boss, a subset of KillCultists
-    KillRaiders,  // WildSpawnType pmcBot
-    KillRogues,   // WildSpawnType exUsec
+    KillPriest,
+    KillRaiders,
+    KillRogues,
     MeleeKills,
-    KillsSingleRaid,        // any type, one raid
-    SurviveTimeSingleRaid,  // seconds; raids are ~30 min, so targets stay modest
+    KillsSingleRaid,
+    KillsCumulative,
+    SurviveTimeSingleRaid,
     KillHeadshots,
-    GrenadeKills,           // GrenadeFragment damage only, not mines or artillery
-    SurviveTimeCumulative,  // seconds across raids, wiped fully on death
+    KillHeadshotsSingleRaid,
+    GrenadeKills,
+
+    KillLegs,
+    KillArms,
+    KillStomach,
+    SurviveTimeCumulative,
     ExtractSuccessfully,
     ExtractFromLocation,
+    RaidsDone,
 
     KillPMCsSingleRaid,
     KillScavsSingleRaid,
 
     ScavExtract,
     ScavKills,
+    ScavKillsSingleRaid,
     ScavRaidsDone,
     ScavExtractFromLocation,
 
     ExtractWithLootValue,
     LootValueCumulative,
+
+    KillsAtDistance,
+
+    KillsSuppressed,
+    KillsWithOptic,
+    KillsIronSights,
 }
 
 public static class ChallengeMetrics
 {
-    // One challenge is drawn per group, so a group of its own means it shows up most weekends.
     public static string Group(ChallengeType t) => t switch
     {
         ChallengeType.KillPMCs                                             => "pmc",
@@ -42,33 +57,44 @@ public static class ChallengeMetrics
         ChallengeType.KillScavs                                            => "scav",
         ChallengeType.KillScavsSingleRaid                                  => "scav_spike",
 
-        // Rare spawns share one slot, or a weekend fills up with hunts that may never spawn.
         ChallengeType.KillBoss or ChallengeType.KillPriest
             or ChallengeType.KillCultists                                  => "hunt",
         ChallengeType.KillRaiders or ChallengeType.KillRogues              => "elite",
 
         ChallengeType.MeleeKills                                           => "melee",
         ChallengeType.KillsSingleRaid                                      => "singleraid",
+        ChallengeType.KillsCumulative                                      => "anykill",
         ChallengeType.SurviveTimeSingleRaid                                => "survive_raid",
         ChallengeType.SurviveTimeCumulative                                => "survive",
         ChallengeType.KillHeadshots                                        => "headshot",
+        ChallengeType.KillHeadshotsSingleRaid                              => "headshot_spike",
         ChallengeType.GrenadeKills                                         => "grenade",
+
+        ChallengeType.KillLegs or ChallengeType.KillArms
+            or ChallengeType.KillStomach                                   => "limb",
 
         ChallengeType.ExtractSuccessfully                                  => "extract",
         ChallengeType.ExtractFromLocation                                  => "extract_map",
+        ChallengeType.RaidsDone                                            => "raids",
 
         ChallengeType.ScavRaidsDone or ChallengeType.ScavExtract
             or ChallengeType.ScavKills                                     => "scavrun",
+        ChallengeType.ScavKillsSingleRaid                                  => "scavrun_spike",
         ChallengeType.ScavExtractFromLocation                              => "scavrun_map",
 
         ChallengeType.ExtractWithLootValue or ChallengeType.LootValueCumulative => "loot",
+
+        ChallengeType.KillsAtDistance                                      => "distance",
+        ChallengeType.KillsSuppressed                                      => "suppressed",
+        ChallengeType.KillsWithOptic or ChallengeType.KillsIronSights      => "sight",
+
         _                                                                  => t.ToString(),
     };
 
-    // Scav-run-only challenges. Dropped from the pools when Scav raids are disabled.
     public static bool IsScavOnly(ChallengeType t) => t switch
     {
         ChallengeType.ScavExtract or ChallengeType.ScavKills
+            or ChallengeType.ScavKillsSingleRaid
             or ChallengeType.ScavRaidsDone or ChallengeType.ScavExtractFromLocation => true,
         _ => false,
     };
@@ -85,19 +111,18 @@ public class ChallengeDefinition
     [JsonPropertyName("description")]
     public string Description { get; set; } = "";
 
-    // Kills, extracts, or seconds, depending on Type.
     [JsonPropertyName("target")]
     public int Target { get; set; }
 
-    // ExtractFromLocation only; null = any map.
     [JsonPropertyName("targetLocation")]
     public string? TargetLocation { get; set; }
 
-    // KillBoss only; null = any boss.
     [JsonPropertyName("targetBoss")]
     public string? TargetBoss { get; set; }
 
-    // 1 = easy, 2 = medium, 3 = hard.
+    [JsonPropertyName("minDistanceMeters")]
+    public int MinDistanceMeters { get; set; }
+
     [JsonPropertyName("difficulty")]
     public int Difficulty { get; set; } = 1;
 
@@ -118,7 +143,6 @@ public class ChallengeProgress
 
 public class PlayerWeekendState
 {
-    // ISO week string like "2026-W23".
     public string WeekendId { get; set; } = "";
 
     public string LastRaidId { get; set; } = "";
@@ -127,11 +151,10 @@ public class PlayerWeekendState
 
     public List<int> ClaimedTiers { get; set; } = [];
 
-    // Seconds; resets to 0 on death.
     public float SurvivalTimeBank { get; set; }
 
-    // The plan this set was built under. A mismatch on load means the plan changed, so the
-    // set rerolls.
+    public int RerollsUsed { get; set; }
+
     public int PlanCount { get; set; }
     public int PlanBudget { get; set; }
 }
@@ -141,7 +164,6 @@ public class ModConfig
     [JsonPropertyName("enabled")]
     public bool Enabled { get; set; } = true;
 
-    // DayOfWeek: 0 = Sunday.
     [JsonPropertyName("weekendStartDay")]
     public int WeekendStartDay { get; set; } = 5;
 
@@ -163,8 +185,6 @@ public class ModConfig
     [JsonPropertyName("dropExpiryHours")]
     public int DropExpiryHours { get; set; } = 72;
 
-    // Forces the weekend always-active, offers every contract with unlimited picks, and
-    // exposes the in-panel debug controls.
     [JsonPropertyName("debugMode")]
     public bool DebugMode { get; set; } = false;
 
@@ -174,20 +194,115 @@ public class ModConfig
     [JsonPropertyName("shopGlobalRestockHours")]
     public double ShopGlobalRestockHours { get; set; } = 24;
 
-    // 1.0 = prices as written. Applied to both the display and the charge.
     [JsonPropertyName("shopPriceMultiplier")]
     public double ShopPriceMultiplier { get; set; } = 1.0;
 
     [JsonPropertyName("kitWeaponDrops")]
     public bool KitWeaponDrops { get; set; } = true;
 
-    // Override for the auto-detection of LootNET.
     [JsonPropertyName("includeLootNet")]
     public bool IncludeLootNet { get; set; } = false;
 
-    // False drops Scav-run challenges from both the weekend and daily pools.
     [JsonPropertyName("enableScavChallenges")]
     public bool EnableScavChallenges { get; set; } = true;
+
+    [JsonPropertyName("enableWeekendReroll")]
+    public bool EnableWeekendReroll { get; set; } = true;
+
+    [JsonPropertyName("weekendRerollCost")]
+    public int WeekendRerollCost { get; set; } = 40;
+
+    [JsonPropertyName("weekendRerollCostStep")]
+    public int WeekendRerollCostStep { get; set; } = 20;
+
+    [JsonPropertyName("weekendRerollMaxPerWeekend")]
+    public int WeekendRerollMaxPerWeekend { get; set; } = 3;
+
+    [JsonPropertyName("enableDailyReroll")]
+    public bool EnableDailyReroll { get; set; } = true;
+
+    [JsonPropertyName("dailyRerollCost")]
+    public int DailyRerollCost { get; set; } = 25;
+
+    [JsonPropertyName("dailyRerollCostStep")]
+    public int DailyRerollCostStep { get; set; } = 25;
+
+    [JsonPropertyName("dailyRerollMaxPerDay")]
+    public int DailyRerollMaxPerDay { get; set; } = 2;
+}
+
+public enum WeekendModifierKind
+{
+    WeaponClass,
+    GpMultiplier,
+    XpMultiplier,
+    HeadshotKill,
+    MeleeKill,
+    GrenadeKill,
+    SuppressedKill,
+    LongRangeKill,
+}
+
+public static class WeekendModifierKinds
+{
+    public static bool IsPerKill(WeekendModifierKind k) => k switch
+    {
+        WeekendModifierKind.WeaponClass or WeekendModifierKind.HeadshotKill
+            or WeekendModifierKind.MeleeKill or WeekendModifierKind.GrenadeKill
+            or WeekendModifierKind.SuppressedKill or WeekendModifierKind.LongRangeKill => true,
+        _ => false,
+    };
+}
+
+public class WeekendModifier
+{
+    [JsonPropertyName("id")]
+    public string Id { get; set; } = "";
+
+    [JsonPropertyName("kind")]
+    public WeekendModifierKind Kind { get; set; } = WeekendModifierKind.WeaponClass;
+
+    [JsonPropertyName("weapClass")]
+    public string WeapClass { get; set; } = "";
+
+    [JsonPropertyName("multiplier")]
+    public double Multiplier { get; set; } = 2.0;
+
+    [JsonPropertyName("gpPerKill")]
+    public int? GpPerKill { get; set; }
+
+    [JsonPropertyName("maxKillsPerRaid")]
+    public int? MaxKillsPerRaid { get; set; }
+
+    [JsonPropertyName("minDistanceMeters")]
+    public int MinDistanceMeters { get; set; } = 100;
+
+    [JsonPropertyName("weight")]
+    public int Weight { get; set; } = 1;
+
+    [JsonPropertyName("name")]
+    public string Name { get; set; } = "";
+
+    [JsonPropertyName("description")]
+    public string Description { get; set; } = "";
+}
+
+public class ModifiersConfig
+{
+    [JsonPropertyName("enabled")]
+    public bool Enabled { get; set; } = true;
+
+    [JsonPropertyName("gpPerKill")]
+    public int GpPerKill { get; set; } = 12;
+
+    [JsonPropertyName("maxKillsPerRaid")]
+    public int MaxKillsPerRaid { get; set; } = 15;
+
+    [JsonPropertyName("noneWeight")]
+    public int NoneWeight { get; set; } = 4;
+
+    [JsonPropertyName("modifiers")]
+    public List<WeekendModifier> Modifiers { get; set; } = [];
 }
 
 public class DropPool
@@ -207,11 +322,9 @@ public class DropTier
     [JsonPropertyName("tierName")]
     public string TierName { get; set; } = "";
 
-    // Credited on top of the drop crate.
     [JsonPropertyName("gpReward")]
     public int GpReward { get; set; }
 
-    // One is picked at random per delivery.
     [JsonPropertyName("pools")]
     public List<DropPool> Pools { get; set; } = [];
 }

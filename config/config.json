@@ -18,5 +18,14 @@
 
   "enableScavChallenges": true,
 
+  "enableWeekendReroll": true,
+  "weekendRerollCost": 40,
+  "weekendRerollCostStep": 20,
+  "weekendRerollMaxPerWeekend": 3,
+  "enableDailyReroll": true,
+  "dailyRerollCost": 25,
+  "dailyRerollCostStep": 25,
+  "dailyRerollMaxPerDay": 2,
+
   "debugMode": false
 }

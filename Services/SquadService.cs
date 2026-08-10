@@ -2,11 +2,12 @@ using SPTarkov.DI.Annotations;
 using SPTarkov.Server.Core.Helpers;
 using SPTarkov.Server.Core.Models.Common;
 using WeekendDrops.Models;
+using SPTarkov.Server.Core.Helpers.Profile;
+using SPTarkov.Server.Core.Models.Eft.Match;
+using SPTarkov.Server.Core.Models.Eft.Profile;
 
 namespace WeekendDrops.Services;
 
-// Builds the Fika team board: one row per real profile with its GP earned this weekend.
-// Pure server-side read. Excludes headless/fresh accounts, like GpGiftService.ListFriends.
 [Injectable(InjectionType.Singleton)]
 public class SquadService(
     ProfileHelper profileHelper,
@@ -15,7 +16,6 @@ public class SquadService(
 {
     public SquadStateDto GetSquad(string sessionId)
     {
-        // Roll the "earned this weekend" tally if the period changed (idempotent).
         gpBalance.RollWeeklyPeriod(challengeService.GetCurrentWeekendId());
 
         var dto = new SquadStateDto();
@@ -31,8 +31,8 @@ public class SquadService(
             string? nick;
             try { nick = profileHelper.GetPmcProfile(id)?.Info?.Nickname; }
             catch { nick = null; }
-            if (string.IsNullOrWhiteSpace(nick)) continue;       // fresh accounts
-            if (FikaProfiles.IsHeadlessNickname(nick)) continue; // the Fika headless host
+            if (string.IsNullOrWhiteSpace(nick)) continue;
+            if (FikaProfiles.IsHeadlessNickname(nick)) continue;
 
             var (done, total) = challengeService.GetWeeklyProgress(id);
 
@@ -47,7 +47,6 @@ public class SquadService(
             });
         }
 
-        // Rivalry order: most GP earned this weekend first, balance breaks ties.
         dto.Rows.Sort((a, b) =>
         {
             int byEarned = b.GpEarnedWeekend.CompareTo(a.GpEarnedWeekend);

@@ -7,6 +7,11 @@ using SPTarkov.Server.Core.Models.Eft.Common.Tables;
 using SPTarkov.Server.Core.Models.Spt.Config;
 using SPTarkov.Server.Core.Models.Utils;
 using WeekendDrops;
+using SPTarkov.Common.Models.Logging;
+using SPTarkov.Server.Core.Constants;
+using SPTarkov.Server.Core.Generators.Loot;
+using SPTarkov.Server.Core.Helpers.Items;
+using SPTarkov.Server.Core.Models.Enums;
 
 namespace WeekendDrops.Patches;
 
@@ -51,8 +56,6 @@ public static class WeaponKitPatch
     {
         if (_itemHelper is null || __result is null) return;
 
-        // WeekendDrops crates only; this generator runs for every vanilla / third-party
-        // RandomLootContainer too.
         if (!WdCrateRegistry.IsOurs(__0)) return;
 
         foreach (var group in __result)
@@ -105,7 +108,7 @@ public static class WeaponKitPatch
                     ParentId = host.Id,
                     SlotId = slotName,
                 });
-                return; // one fill per slot-type
+                return;
             }
         }
     }
@@ -123,7 +126,6 @@ public static class WeaponKitPatch
             var db = _itemHelper!.GetItem(tpl).Value;
             if (db?.Properties is null) continue;
 
-            // Reject anything that itself needs sub-mods to be a valid item.
             var needsChildren = db.Properties.Slots?.Any(s => s.Required == true) ?? false;
             if (needsChildren) continue;
 

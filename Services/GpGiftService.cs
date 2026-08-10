@@ -1,25 +1,25 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using SysPath = System.IO.Path;
 using SPTarkov.DI.Annotations;
 using SPTarkov.Server.Core.Helpers;
 using SPTarkov.Server.Core.Models.Common;
 using WeekendDrops.Models;
+using SPTarkov.Server.Core.Helpers.Profile;
+using SPTarkov.Server.Core.Models.Eft.Common.Tables;
+using SPTarkov.Server.Core.Models.Eft.Match;
+using SPTarkov.Server.Core.Models.Eft.Profile;
 
 namespace WeekendDrops.Services;
 
-// Pure server-side balance transfer, no stash edits (PvE would clobber those). Credited at
-// send time; the recipient's toast is queued and drained on their next /state poll.
 [Injectable(InjectionType.Singleton)]
 public class GpGiftService
 {
     private readonly ProfileHelper _profileHelper;
     private readonly GpBalanceService _gpBalance;
 
-    private readonly string _file = SysPath.Combine(
-        AppContext.BaseDirectory, "user", "mods", "WeekendDrops", "data", "gp_gifts.json");
+    private readonly string _file = WdPaths.Data("gp_gifts.json");
 
     private readonly object _lock = new();
-    // recipient sessionId -> queued gifts.
     private Dictionary<string, List<PendingGift>> _pending = new();
 
     private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
@@ -31,7 +31,6 @@ public class GpGiftService
         Load();
     }
 
-    // Excludes the sender and any fresh or headless account. Balances are never exposed.
     public List<GiftFriendDto> ListFriends(string sessionId)
     {
         var result = new List<GiftFriendDto>();
@@ -48,7 +47,7 @@ public class GpGiftService
             try { nick = _profileHelper.GetPmcProfile(id)?.Info?.Nickname; }
             catch { nick = null; }
             if (string.IsNullOrWhiteSpace(nick)) continue;
-            if (FikaProfiles.IsHeadlessNickname(nick)) continue; // never gift to the headless host
+            if (FikaProfiles.IsHeadlessNickname(nick)) continue;
 
             result.Add(new GiftFriendDto { Id = idStr, Nickname = nick });
         }
@@ -57,8 +56,6 @@ public class GpGiftService
         return result;
     }
 
-    // Never trusts the client for target or amount. Returns ok, bad_amount, bad_target
-    // or insufficient_gp.
     public string SendGift(string fromId, string toId, int amount)
     {
         if (amount <= 0) return "bad_amount";
@@ -83,7 +80,6 @@ public class GpGiftService
         return "ok";
     }
 
-    // Gifts waiting for this recipient, cleared on read so the next /state poll shows each once.
     public List<ReceivedGiftDto> TakePending(string sessionId)
     {
         lock (_lock)
@@ -129,7 +125,7 @@ public class GpGiftService
             Directory.CreateDirectory(SysPath.GetDirectoryName(_file)!);
             File.WriteAllText(_file, JsonSerializer.Serialize(_pending, JsonOptions));
         }
-        catch { /* best-effort; the queue still lives in memory this session */ }
+        catch {  }
     }
 
     private class PendingGift

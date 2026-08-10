@@ -1,0 +1,252 @@
+@page "/weekenddrops"
+@layout MainLayout
+@inject WebConfigService Cfg
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="pt-6">
+
+    @if (Cfg.Config.DebugMode)
+    {
+        <MudAlert Severity="Severity.Warning" Dense Variant="Variant.Outlined" Class="mb-4">
+            Debug mode is on: the weekend is forced open, every bounty is offered with unlimited
+            picks, and the in-game debug controls are visible. Turn it off for normal play.
+        </MudAlert>
+    }
+
+    @* When the weekend runs is the setting people come here to change, so it leads. *@
+    <MudPaper Class="pa-6 mb-4 wd-card" Elevation="0" Style="border: 1px solid #323234;">
+        <MudText Typo="Typo.h5">When is the weekend?</MudText>
+        <MudText Typo="Typo.body2" Style="color: #9A9AA2;" Class="mt-1 mb-4">
+            Server local time. Outside this window the Weekly tab is closed and challenges do not
+            progress. Currently <b style="color:#CD8532;">@Cfg.ScheduleSummary()</b>.
+        </MudText>
+
+        <MudGrid Spacing="3">
+            <MudItem xs="12" sm="3">
+                <MudSelect T="int" Label="Opens" Value="Cfg.Config.WeekendStartDay"
+                           ValueChanged="v => Set(() => Cfg.Config.WeekendStartDay = v)"
+                           Variant="Variant.Outlined" Dense="true">
+                    @foreach (var d in Days) { <MudSelectItem T="int" Value="@d.Key">@d.Value</MudSelectItem> }
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12" sm="3">
+                <MudSelect T="int" Label="at" Value="Cfg.Config.WeekendStartHour"
+                           ValueChanged="v => Set(() => Cfg.Config.WeekendStartHour = v)"
+                           Variant="Variant.Outlined" Dense="true">
+                    @foreach (var h in Hours) { <MudSelectItem T="int" Value="@h">@($"{h:00}:00")</MudSelectItem> }
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12" sm="3">
+                <MudSelect T="int" Label="Closes" Value="Cfg.Config.WeekendEndDay"
+                           ValueChanged="v => Set(() => Cfg.Config.WeekendEndDay = v)"
+                           Variant="Variant.Outlined" Dense="true">
+                    @foreach (var d in Days) { <MudSelectItem T="int" Value="@d.Key">@d.Value</MudSelectItem> }
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12" sm="3">
+                <MudSelect T="int" Label="at" Value="Cfg.Config.WeekendEndHour"
+                           ValueChanged="v => Set(() => Cfg.Config.WeekendEndHour = v)"
+                           Variant="Variant.Outlined" Dense="true">
+                    @foreach (var h in Hours) { <MudSelectItem T="int" Value="@h">@($"{h:00}:00")</MudSelectItem> }
+                </MudSelect>
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+
+    <MudPaper Class="pa-6 mb-4 wd-card" Elevation="0" Style="border: 1px solid #323234;">
+        <MudText Typo="Typo.h5">Weekly challenges</MudText>
+        <MudText Typo="Typo.body2" Style="color: #9A9AA2;" Class="mt-1 mb-4">
+            Challenges are worth 1, 2 or 3 difficulty points. The budget is the total the weekend's
+            set adds up to, which is also what the tier rewards are measured against.
+            <span style="color:#CD8532;">@Cfg.BudgetSummary()</span>
+        </MudText>
+
+        <MudGrid Spacing="4">
+            <MudItem xs="12" sm="6">
+                <MudText Typo="Typo.body2" Class="mb-1">Challenges per weekend: <b>@Cfg.Config.ChallengesPerWeekend</b></MudText>
+                <MudSlider T="int" Value="Cfg.Config.ChallengesPerWeekend"
+                           ValueChanged="v => Set(() => Cfg.Config.ChallengesPerWeekend = v)"
+                           Min="3" Max="14" Step="1" Color="Color.Primary"/>
+                <MudText Typo="Typo.caption" Style="color: #6E6E76;">
+                    Capped by how many distinct challenge groups the pool has, so asking for more
+                    than it can fill is clamped and logged rather than repeating categories.
+                </MudText>
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudText Typo="Typo.body2" Class="mb-1">Difficulty budget: <b>@Cfg.Config.WeekendDifficultyBudget</b></MudText>
+                <MudSlider T="int" Value="Cfg.Config.WeekendDifficultyBudget"
+                           ValueChanged="v => Set(() => Cfg.Config.WeekendDifficultyBudget = v)"
+                           Min="3" Max="42" Step="1" Color="Color.Primary"/>
+                <MudText Typo="Typo.caption" Style="color: #6E6E76;">
+                    Must land between the challenge count (all easy) and three times it (all hard).
+                </MudText>
+            </MudItem>
+        </MudGrid>
+
+        <MudDivider Class="my-5"/>
+
+        <MudSwitch T="bool" Value="Cfg.Config.EnableScavChallenges"
+                   ValueChanged="v => Set(() => Cfg.Config.EnableScavChallenges = v)"
+                   Color="Color.Primary" Label="Include Scav-run challenges"/>
+        <MudText Typo="Typo.caption" Style="color: #6E6E76;" Class="d-block mb-3 ml-11">
+            Off removes them from both the weekend and daily pools. Players can also switch these
+            off for themselves from the in-game panel.
+        </MudText>
+
+        <MudSwitch T="bool" Value="Cfg.Config.KitWeaponDrops"
+                   ValueChanged="v => Set(() => Cfg.Config.KitWeaponDrops = v)"
+                   Color="Color.Primary" Label="Crate weapons arrive kitted"/>
+        <MudText Typo="Typo.caption" Style="color: #6E6E76;" Class="d-block ml-11">
+            Off gives the bare default preset instead of an attachment-fitted gun.
+        </MudText>
+    </MudPaper>
+
+    <MudPaper Class="pa-6 mb-4 wd-card" Elevation="0" Style="border: 1px solid #323234;">
+        <MudText Typo="Typo.h5">Rerolling a challenge</MudText>
+        <MudText Typo="Typo.body2" Style="color: #9A9AA2;" Class="mt-1 mb-4">
+            Lets players pay GP to swap a weekend challenge they cannot realistically do. The
+            replacement is always worth the same difficulty points, so a reroll can never put a
+            tier reward out of reach.
+        </MudText>
+
+        <MudSwitch T="bool" Value="Cfg.Config.EnableWeekendReroll"
+                   ValueChanged="v => Set(() => Cfg.Config.EnableWeekendReroll = v)"
+                   Color="Color.Primary" Label="Allow rerolls"/>
+
+        @if (Cfg.Config.EnableWeekendReroll)
+        {
+            <MudGrid Spacing="3" Class="mt-3">
+                <MudItem xs="12" sm="4">
+                    <MudNumericField T="int" Label="First reroll costs" Value="Cfg.Config.WeekendRerollCost"
+                                     ValueChanged="v => Set(() => Cfg.Config.WeekendRerollCost = v)"
+                                     Min="0" Max="10000" Variant="Variant.Outlined" Margin="Margin.Dense" Adornment="Adornment.End" AdornmentText="GP"/>
+                </MudItem>
+                <MudItem xs="12" sm="4">
+                    <MudNumericField T="int" Label="Each one after costs" Value="Cfg.Config.WeekendRerollCostStep"
+                                     ValueChanged="v => Set(() => Cfg.Config.WeekendRerollCostStep = v)"
+                                     Min="0" Max="10000" Variant="Variant.Outlined" Margin="Margin.Dense" Adornment="Adornment.End" AdornmentText="GP more"/>
+                </MudItem>
+                <MudItem xs="12" sm="4">
+                    <MudNumericField T="int" Label="Max per weekend" Value="Cfg.Config.WeekendRerollMaxPerWeekend"
+                                     ValueChanged="v => Set(() => Cfg.Config.WeekendRerollMaxPerWeekend = v)"
+                                     Min="0" Max="50" Variant="Variant.Outlined" Margin="Margin.Dense" HelperText="0 = unlimited"/>
+                </MudItem>
+            </MudGrid>
+
+            <MudText Typo="Typo.caption" Style="color: #6E6E76;" Class="mt-2 d-block">
+                @RerollPriceLadder()
+            </MudText>
+        }
+    </MudPaper>
+
+    <MudPaper Class="pa-6 mb-4 wd-card" Elevation="0" Style="border: 1px solid #323234;">
+        <MudText Typo="Typo.h5">GP shop</MudText>
+        <MudText Typo="Typo.body2" Style="color: #9A9AA2;" Class="mt-1 mb-4">
+            Per-player stock refreshes on the first timer; the second rerolls what the shop offers
+            everyone.
+        </MudText>
+
+        <MudGrid Spacing="3">
+            <MudItem xs="12" sm="4">
+                <MudNumericField T="double" Label="Restock every" Value="Cfg.Config.ShopRestockHours"
+                                 ValueChanged="v => Set(() => Cfg.Config.ShopRestockHours = v)"
+                                 Min="0.1" Max="168" Variant="Variant.Outlined" Margin="Margin.Dense" Adornment="Adornment.End" AdornmentText="hours"/>
+            </MudItem>
+            <MudItem xs="12" sm="4">
+                <MudNumericField T="double" Label="New selection every" Value="Cfg.Config.ShopGlobalRestockHours"
+                                 ValueChanged="v => Set(() => Cfg.Config.ShopGlobalRestockHours = v)"
+                                 Min="0.1" Max="336" Variant="Variant.Outlined" Margin="Margin.Dense" Adornment="Adornment.End" AdornmentText="hours"/>
+            </MudItem>
+            <MudItem xs="12" sm="4">
+                <MudNumericField T="double" Label="Price multiplier" Value="Cfg.Config.ShopPriceMultiplier"
+                                 ValueChanged="v => Set(() => Cfg.Config.ShopPriceMultiplier = v)"
+                                 Min="0.1" Max="10" Step="0.1" Variant="Variant.Outlined" Margin="Margin.Dense"
+                                 HelperText="1.0 = prices as written"/>
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+
+    <MudPaper Class="pa-6 mb-4 wd-card" Elevation="0" Style="border: 1px solid #323234;">
+        <MudText Typo="Typo.h5">Bounties and drops</MudText>
+
+        <MudGrid Spacing="3" Class="mt-1">
+            <MudItem xs="12" sm="6">
+                <MudNumericField T="int" Label="Reward crates expire after" Value="Cfg.Config.DropExpiryHours"
+                                 ValueChanged="v => Set(() => Cfg.Config.DropExpiryHours = v)"
+                                 Min="1" Max="720" Variant="Variant.Outlined" Margin="Margin.Dense" Adornment="Adornment.End" AdornmentText="hours"
+                                 HelperText="How long a mailed crate stays collectable"/>
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                @if (Cfg.ContractsReadable)
+                {
+                    <MudNumericField T="int" Label="Max bounties injected per raid" Value="Cfg.MaxContractsPerRaid"
+                                     ValueChanged="v => Set(() => Cfg.MaxContractsPerRaid = v)"
+                                     Min="1" Max="10" Variant="Variant.Outlined" Margin="Margin.Dense"
+                                     HelperText="Fika: caps how many players' crews spawn on one map"/>
+                }
+                else
+                {
+                    <MudAlert Severity="Severity.Warning" Dense Variant="Variant.Outlined">
+                        <span class="wd-mono">contracts.json</span> could not be read, so its settings are hidden.
+                    </MudAlert>
+                }
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+
+    <MudPaper Class="pa-6 wd-card" Elevation="0" Style="border: 1px solid #323234;">
+        <MudText Typo="Typo.h5">Troubleshooting</MudText>
+
+        <MudSwitch T="bool" Value="Cfg.Config.DebugMode"
+                   ValueChanged="v => Set(() => Cfg.Config.DebugMode = v)"
+                   Color="Color.Warning" Label="Debug mode" Class="mt-2"/>
+        <MudText Typo="Typo.caption" Style="color: #6E6E76;" Class="d-block ml-11 mb-4">
+            Forces the weekend open, offers every bounty with unlimited picks, and shows the debug
+            controls in the game panel.
+        </MudText>
+
+        <MudSwitch T="bool" Value="Cfg.Config.Enabled"
+                   ValueChanged="v => Set(() => Cfg.Config.Enabled = v)"
+                   Color="Color.Primary" Label="Mod enabled"/>
+
+        <MudDivider Class="my-4"/>
+        <MudText Typo="Typo.caption" Style="color: #6E6E76;">
+            Editing <span class="wd-mono">config/config.json</span> and
+            <span class="wd-mono">config/contracts.json</span>. Challenge lists, crate pools, the
+            shop stock and bounty definitions are separate files and are not edited here.
+        </MudText>
+    </MudPaper>
+
+</MudContainer>
+
+@code {
+    [CascadingParameter] private MainLayout? Layout { get; set; }
+
+    private static readonly Dictionary<int, string> Days = new()
+    {
+        [0] = "Sunday", [1] = "Monday", [2] = "Tuesday", [3] = "Wednesday",
+        [4] = "Thursday", [5] = "Friday", [6] = "Saturday",
+    };
+
+    private static readonly int[] Hours = Enumerable.Range(0, 24).ToArray();
+
+    protected override void OnInitialized() => Cfg.Load();
+
+    // One place to mark dirty, so no setter can quietly skip it.
+    private void Set(Action apply)
+    {
+        apply();
+        Layout?.MarkDirty();
+    }
+
+    private string RerollPriceLadder()
+    {
+        int max = Cfg.Config.WeekendRerollMaxPerWeekend;
+        int show = max > 0 ? Math.Min(max, 5) : 4;
+        var prices = Enumerable.Range(0, show)
+            .Select(i => $"{Math.Max(0, Cfg.Config.WeekendRerollCost + Cfg.Config.WeekendRerollCostStep * i)} GP");
+        var ladder = string.Join(", then ", prices);
+        return max > 0
+            ? $"Costs this weekend: {ladder}. Then no more until the next weekend."
+            : $"Costs: {ladder}, and so on without limit.";
+    }
+}

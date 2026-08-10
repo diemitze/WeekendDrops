@@ -1,0 +1,150 @@
+{
+  "enabled": true,
+  "gpPerKill": 12,
+  "maxKillsPerRaid": 15,
+  "noneWeight": 8,
+  "modifiers": [
+    {
+      "id": "mod_shotgun",
+      "weapClass": "shotgun",
+      "name": "BUCKSHOT WEEKEND",
+      "description": "Shotgun kills pay GP.",
+      "kind": "WeaponClass",
+      "weight": 2
+    },
+    {
+      "id": "mod_pistol",
+      "weapClass": "pistol",
+      "name": "SIDEARM WEEKEND",
+      "description": "Pistol kills pay GP.",
+      "kind": "WeaponClass",
+      "weight": 2
+    },
+    {
+      "id": "mod_smg",
+      "weapClass": "smg",
+      "name": "CLOSE QUARTERS",
+      "description": "SMG kills pay GP.",
+      "kind": "WeaponClass",
+      "weight": 2
+    },
+    {
+      "id": "mod_sniper",
+      "weapClass": "sniperRifle",
+      "name": "ONE SHOT",
+      "description": "Bolt-action rifle kills pay GP.",
+      "kind": "WeaponClass",
+      "weight": 2
+    },
+    {
+      "id": "mod_marksman",
+      "weapClass": "marksmanRifle",
+      "name": "DESIGNATED MARKSMAN",
+      "description": "Marksman rifle kills pay GP.",
+      "kind": "WeaponClass",
+      "weight": 2
+    },
+    {
+      "id": "mod_carbine",
+      "weapClass": "assaultCarbine",
+      "name": "CARBINE WEEKEND",
+      "description": "Carbine kills pay GP.",
+      "kind": "WeaponClass",
+      "weight": 2
+    },
+    {
+      "id": "mod_machinegun",
+      "weapClass": "machinegun",
+      "name": "SUPPRESSING FIRE",
+      "description": "Machine gun kills pay GP.",
+      "kind": "WeaponClass",
+      "weight": 2
+    },
+    {
+      "id": "mod_headshot",
+      "kind": "HeadshotKill",
+      "name": "PRECISION WEEKEND",
+      "description": "Headshot kills pay GP, whatever the weapon.",
+      "gpPerKill": 20,
+      "maxKillsPerRaid": 12,
+      "weight": 2
+    },
+    {
+      "id": "mod_melee",
+      "kind": "MeleeKill",
+      "name": "COLD STEEL",
+      "description": "Melee kills pay GP.",
+      "gpPerKill": 60,
+      "maxKillsPerRaid": 6,
+      "weight": 1
+    },
+    {
+      "id": "mod_grenade",
+      "kind": "GrenadeKill",
+      "name": "FRAG OUT",
+      "description": "Grenade kills pay GP.",
+      "gpPerKill": 45,
+      "maxKillsPerRaid": 8,
+      "weight": 1
+    },
+    {
+      "id": "mod_suppressed",
+      "kind": "SuppressedKill",
+      "name": "QUIET PROFESSIONAL",
+      "description": "Kills with a suppressed weapon pay GP.",
+      "gpPerKill": 18,
+      "maxKillsPerRaid": 12,
+      "weight": 2
+    },
+    {
+      "id": "mod_longshot",
+      "kind": "LongRangeKill",
+      "name": "LONG SHOT",
+      "description": "Kills from 150m or further pay GP.",
+      "minDistanceMeters": 150,
+      "gpPerKill": 30,
+      "maxKillsPerRaid": 10,
+      "weight": 2
+    },
+    {
+      "id": "mod_bonus_gp",
+      "kind": "GpMultiplier",
+      "multiplier": 1.5,
+      "weight": 3,
+      "name": "HAZARD PAY",
+      "description": "All GP rewards pay 1.5x."
+    },
+    {
+      "id": "mod_triple_gp",
+      "kind": "GpMultiplier",
+      "multiplier": 3.0,
+      "weight": 1,
+      "name": "PAYDAY",
+      "description": "All GP rewards pay triple."
+    },
+    {
+      "id": "mod_bonus_xp",
+      "kind": "XpMultiplier",
+      "multiplier": 1.5,
+      "weight": 3,
+      "name": "FIELD TRAINING",
+      "description": "Raids pay 1.5x XP."
+    },
+    {
+      "id": "mod_double_gp",
+      "kind": "GpMultiplier",
+      "multiplier": 2.0,
+      "weight": 2,
+      "name": "DOUBLE PAY",
+      "description": "All GP rewards pay double."
+    },
+    {
+      "id": "mod_double_xp",
+      "kind": "XpMultiplier",
+      "multiplier": 2.0,
+      "weight": 2,
+      "name": "DOUBLE XP",
+      "description": "Raids pay double XP."
+    }
+  ]
+}

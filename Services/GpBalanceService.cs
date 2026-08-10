@@ -1,19 +1,17 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using SysPath = System.IO.Path;
 using SPTarkov.DI.Annotations;
+using SPTarkov.Server.Core.Models.Eft.Common.Tables;
+using SPTarkov.Server.Core.Models.Spt.Config;
 
 namespace WeekendDrops.Services;
 
 [Injectable(InjectionType.Singleton)]
 public class GpBalanceService
 {
-    private readonly string _file = SysPath.Combine(
-        AppContext.BaseDirectory, "user", "mods", "WeekendDrops", "data", "gp_balances.json");
+    private readonly string _file = WdPaths.Data("gp_balances.json");
 
-    // Per-profile tally for the Fika team board, stamped with a weekend period so it resets each
-    // cycle. Gift transfers are excluded, or friends could sling GP back and forth to farm it.
-    private readonly string _weeklyFile = SysPath.Combine(
-        AppContext.BaseDirectory, "user", "mods", "WeekendDrops", "data", "gp_weekly_earned.json");
+    private readonly string _weeklyFile = WdPaths.Data("gp_weekly_earned.json");
 
     private readonly object _lock = new();
     private Dictionary<string, int> _balances = new();
@@ -41,13 +39,11 @@ public class GpBalanceService
         }
     }
 
-    // GP a profile has earned in the current weekend period (0 if none / not this period).
     public int GetWeeklyEarned(string sessionId)
     {
         lock (_lock) return _weeklyEarned.TryGetValue(sessionId, out var v) ? v : 0;
     }
 
-    // The period id is global, so one stamp guards the whole dict. Idempotent.
     public void RollWeeklyPeriod(string currentWeekendId)
     {
         if (string.IsNullOrEmpty(currentWeekendId)) return;
@@ -73,7 +69,6 @@ public class GpBalanceService
         }
     }
 
-    // One lock over both sides, so a race can't dupe or lose coins. False touches nothing.
     public bool TryTransfer(string fromId, string toId, int amount)
     {
         if (amount <= 0 || string.IsNullOrEmpty(fromId) || string.IsNullOrEmpty(toId) || fromId == toId)
@@ -107,7 +102,7 @@ public class GpBalanceService
             Directory.CreateDirectory(SysPath.GetDirectoryName(_file)!);
             File.WriteAllText(_file, JsonSerializer.Serialize(_balances, JsonOptions));
         }
-        catch { /* best-effort; balance still lives in memory this session */ }
+        catch {  }
     }
 
     private void LoadWeekly()
@@ -131,7 +126,7 @@ public class GpBalanceService
             File.WriteAllText(_weeklyFile, JsonSerializer.Serialize(
                 new WeeklyEarnedStore { Period = _weeklyPeriod, Earned = _weeklyEarned }, JsonOptions));
         }
-        catch { /* best-effort; the tally still lives in memory this session */ }
+        catch {  }
     }
 
     private class WeeklyEarnedStore

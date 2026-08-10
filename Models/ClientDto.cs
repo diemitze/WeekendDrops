@@ -1,5 +1,7 @@
 using System.Text.Json.Serialization;
 using SPTarkov.Server.Core.Models.Utils;
+using SPTarkov.Server.Core.Models.Eft.Common;
+using SPTarkov.Server.Core.Models.Enums;
 
 namespace WeekendDrops.Models;
 
@@ -8,7 +10,6 @@ public class ChallengeDto
     [JsonPropertyName("id")]
     public string Id { get; set; } = "";
 
-    // Sent as a string, not the enum: the router's serializer has no enum converter.
     [JsonPropertyName("type")]
     public string Type { get; set; } = "";
 
@@ -26,6 +27,9 @@ public class ChallengeDto
 
     [JsonPropertyName("difficulty")]
     public int Difficulty { get; set; }
+
+    [JsonPropertyName("minDistanceMeters")]
+    public int MinDistanceMeters { get; set; }
 }
 
 public class WeekendStateDto
@@ -57,16 +61,61 @@ public class WeekendStateDto
     [JsonPropertyName("scheduleText")]
     public string ScheduleText { get; set; } = "";
 
-    // Gates the client's debug controls, which the server would otherwise reject.
     [JsonPropertyName("debugMode")]
     public bool DebugMode { get; set; }
 
-    // Drained on read, so each gift appears exactly once. The GP is already in GpCoins.
     [JsonPropertyName("pendingGifts")]
     public List<ReceivedGiftDto> PendingGifts { get; set; } = [];
+
+    [JsonPropertyName("modifier")]
+    public WeekendModifierDto? Modifier { get; set; }
+
+    [JsonPropertyName("rerollEnabled")]
+    public bool RerollEnabled { get; set; }
+
+    [JsonPropertyName("rerollAvailable")]
+    public bool RerollAvailable { get; set; }
+
+    [JsonPropertyName("rerollCost")]
+    public int RerollCost { get; set; }
+
+    [JsonPropertyName("rerollsUsed")]
+    public int RerollsUsed { get; set; }
+
+    [JsonPropertyName("rerollsMax")]
+    public int RerollsMax { get; set; }
 }
 
-// The announcement only: the coins are already in the balance.
+public class WeekendModifierDto
+{
+    [JsonPropertyName("id")]
+    public string Id { get; set; } = "";
+
+    [JsonPropertyName("kind")]
+    public string Kind { get; set; } = "";
+
+    [JsonPropertyName("weapClass")]
+    public string WeapClass { get; set; } = "";
+
+    [JsonPropertyName("multiplier")]
+    public double Multiplier { get; set; }
+
+    [JsonPropertyName("name")]
+    public string Name { get; set; } = "";
+
+    [JsonPropertyName("description")]
+    public string Description { get; set; } = "";
+
+    [JsonPropertyName("gpPerKill")]
+    public int GpPerKill { get; set; }
+
+    [JsonPropertyName("maxKillsPerRaid")]
+    public int MaxKillsPerRaid { get; set; }
+
+    [JsonPropertyName("minDistanceMeters")]
+    public int MinDistanceMeters { get; set; }
+}
+
 public class ReceivedGiftDto
 {
     [JsonPropertyName("fromNickname")]
@@ -91,7 +140,6 @@ public class FriendsStateDto
     public List<GiftFriendDto> Friends { get; set; } = [];
 }
 
-// Unlike the gift picker, this exposes balances and earnings.
 public class SquadRowDto
 {
     [JsonPropertyName("nickname")]
@@ -153,6 +201,9 @@ public class DailyChallengeDto
 
     [JsonPropertyName("rewardClaimed")]
     public bool RewardClaimed { get; set; }
+
+    [JsonPropertyName("minDistanceMeters")]
+    public int MinDistanceMeters { get; set; }
 }
 
 public class ShopItemDto
@@ -172,23 +223,18 @@ public class ShopItemDto
     [JsonPropertyName("stock")]
     public int Stock { get; set; }
 
-    // Drawn as the card icon.
     [JsonPropertyName("templateId")]
     public string TemplateId { get; set; } = "";
 
-    // When non-empty, the purchase delivers these items instead of TemplateId.
     [JsonPropertyName("contents")]
     public List<ShopContentDto> Contents { get; set; } = [];
 
-    // When non-empty, this entry is a Trade-in: hand these over to receive Contents.
     [JsonPropertyName("barterCost")]
     public List<ShopContentDto> BarterCost { get; set; } = [];
 
-    // 0 = available now.
     [JsonPropertyName("restockSeconds")]
     public double RestockSeconds { get; set; }
 
-    // Plays the full-screen ceremony on purchase instead of the toast.
     [JsonPropertyName("trophy")]
     public bool Trophy { get; set; }
 }
@@ -213,17 +259,29 @@ public class DailyStateDto
     [JsonPropertyName("nextResetSeconds")]
     public double NextResetSeconds { get; set; }
 
-    // 0 = disabled.
     [JsonPropertyName("globalRestockSeconds")]
     public double GlobalRestockSeconds { get; set; }
 
-    // Paid for clearing the whole daily set: 50% of the set's total GP.
     [JsonPropertyName("dailyBonusGp")]
     public int DailyBonusGp { get; set; }
 
-    // Authoritative, so the client's button state survives a restart.
     [JsonPropertyName("dailyBonusClaimed")]
     public bool DailyBonusClaimed { get; set; }
+
+    [JsonPropertyName("rerollEnabled")]
+    public bool RerollEnabled { get; set; }
+
+    [JsonPropertyName("rerollAvailable")]
+    public bool RerollAvailable { get; set; }
+
+    [JsonPropertyName("rerollCost")]
+    public int RerollCost { get; set; }
+
+    [JsonPropertyName("rerollsUsed")]
+    public int RerollsUsed { get; set; }
+
+    [JsonPropertyName("rerollsMax")]
+    public int RerollsMax { get; set; }
 }
 
 public class StringIdRequest : IRequestData
@@ -232,8 +290,6 @@ public class StringIdRequest : IRequestData
     public string Id { get; set; } = "";
 }
 
-// The F12 toggles the server can't infer. Carried in the body, since SPT's router drops the
-// query string. Sticky server-side.
 public class ClientFlagsRequest : IRequestData
 {
     [JsonPropertyName("noScav")]
@@ -260,15 +316,12 @@ public class ContractDto
     [JsonPropertyName("objectiveText")]
     public string ObjectiveText { get; set; } = "";
 
-    // Supports a {map} token substituted client-side.
     [JsonPropertyName("flavor")]
     public string Flavor { get; set; } = "";
 
-    // Resolved BossZone, e.g. "ZoneScavBase". Accepted contract only; the client prettifies it.
     [JsonPropertyName("zone")]
     public string Zone { get; set; } = "";
 
-    // WildSpawnType roles the client kill hook matches against.
     [JsonPropertyName("objectiveRoles")]
     public List<string> ObjectiveRoles { get; set; } = [];
 
@@ -278,7 +331,6 @@ public class ContractDto
     [JsonPropertyName("gpReward")]
     public int GpReward { get; set; }
 
-    // Sent on the active card only. Supports a {map} token.
     [JsonPropertyName("dialog")]
     public string Dialog { get; set; } = "";
 
@@ -288,16 +340,12 @@ public class ContractDto
     [JsonPropertyName("active")]
     public bool Active { get; set; }
 
-    // Identifying fields are redacted server-side, so a sealed board can't be datamined.
-    // GP reward and type stay visible.
     [JsonPropertyName("sealed")]
     public bool Sealed { get; set; }
 
-    // 0 = available now.
     [JsonPropertyName("cooldownSeconds")]
     public double CooldownSeconds { get; set; }
 
-    // Supply Run: the client forces the raid airdrop to land at (airdropX, airdropZ).
     [JsonPropertyName("triggerAirdrop")]
     public bool TriggerAirdrop { get; set; }
 
@@ -310,29 +358,24 @@ public class ContractDto
     [JsonPropertyName("airdropZ")]
     public float AirdropZ { get; set; }
 
-    // Active contract only. Empty = no hideout for this map, so a bossZone spawn.
     [JsonPropertyName("hideoutPosts")]
     public List<Vec3> HideoutPosts { get; set; } = [];
 }
 
 public class ContractsStateDto
 {
-    // Only what's offered this period, not the whole config pool.
     [JsonPropertyName("contracts")]
     public List<ContractDto> Contracts { get; set; } = [];
 
     [JsonPropertyName("activeContractId")]
     public string ActiveContractId { get; set; } = "";
 
-    // False once the pick for this period is spent, by accepting or abandoning.
     [JsonPropertyName("pickAvailable")]
     public bool PickAvailable { get; set; }
 
-    // Until the board re-rolls, which matches the daily reset.
     [JsonPropertyName("nextRefreshSeconds")]
     public double NextRefreshSeconds { get; set; }
 
-    // In debugMode the board lists every contract and picks are unlimited.
     [JsonPropertyName("debugMode")]
     public bool DebugMode { get; set; }
 }
@@ -342,11 +385,9 @@ public class ContractResultRequest : IRequestData
     [JsonPropertyName("contractId")]
     public string ContractId { get; set; } = "";
 
-    // Validated against the contract's target map.
     [JsonPropertyName("location")]
     public string Location { get; set; } = "";
 
-    // Checked by contracts with requireExtract.
     [JsonPropertyName("survived")]
     public bool Survived { get; set; }
 }
@@ -386,20 +427,123 @@ public class RaidResultRequest : IRequestData
     [JsonPropertyName("grenadeKills")]
     public int GrenadeKills { get; set; }
 
+    [JsonPropertyName("legKills")]
+    public int LegKills { get; set; }
+
+    [JsonPropertyName("armKills")]
+    public int ArmKills { get; set; }
+
+    [JsonPropertyName("stomachKills")]
+    public int StomachKills { get; set; }
+
+    [JsonPropertyName("modifierKills")]
+    public int ModifierKills { get; set; }
+
+    [JsonPropertyName("suppressedKills")]
+    public int SuppressedKills { get; set; }
+
+    [JsonPropertyName("opticKills")]
+    public int OpticKills { get; set; }
+
+    [JsonPropertyName("ironSightKills")]
+    public int IronSightKills { get; set; }
+
+    [JsonPropertyName("killDistances")]
+    public List<int> KillDistances { get; set; } = [];
+
     [JsonPropertyName("lootValue")]
     public int LootValue { get; set; }
 
-    // ExitStatus.Survived or Runner.
     [JsonPropertyName("survived")]
     public bool Survived { get; set; }
 
     [JsonPropertyName("survivedSeconds")]
     public float SurvivedSeconds { get; set; }
 
-    // GameWorld.LocationId, for ExtractFromLocation challenges.
     [JsonPropertyName("location")]
     public string Location { get; set; } = "";
 
     [JsonPropertyName("isScavRaid")]
     public bool IsScavRaid { get; set; }
+}
+
+public class CollectionItemDto
+{
+    [JsonPropertyName("templateId")]
+    public string TemplateId { get; set; } = "";
+
+    [JsonPropertyName("donated")]
+    public bool Donated { get; set; }
+
+    [JsonPropertyName("questItem")]
+    public bool QuestItem { get; set; }
+}
+
+public class CollectionMilestoneDto
+{
+    [JsonPropertyName("required")]
+    public int Required { get; set; }
+
+    [JsonPropertyName("gpReward")]
+    public int GpReward { get; set; }
+
+    [JsonPropertyName("perk")]
+    public string Perk { get; set; } = "";
+
+    [JsonPropertyName("perkValue")]
+    public double PerkValue { get; set; }
+
+    [JsonPropertyName("description")]
+    public string Description { get; set; } = "";
+
+    [JsonPropertyName("reached")]
+    public bool Reached { get; set; }
+}
+
+public class CollectionSetDto
+{
+    [JsonPropertyName("id")]
+    public string Id { get; set; } = "";
+
+    [JsonPropertyName("name")]
+    public string Name { get; set; } = "";
+
+    [JsonPropertyName("description")]
+    public string Description { get; set; } = "";
+
+    [JsonPropertyName("gpPerItem")]
+    public int GpPerItem { get; set; }
+
+    [JsonPropertyName("donated")]
+    public int Donated { get; set; }
+
+    [JsonPropertyName("total")]
+    public int Total { get; set; }
+
+    [JsonPropertyName("items")]
+    public List<CollectionItemDto> Items { get; set; } = [];
+
+    [JsonPropertyName("milestones")]
+    public List<CollectionMilestoneDto> Milestones { get; set; } = [];
+}
+
+public class CollectionStateDto
+{
+    [JsonPropertyName("enabled")]
+    public bool Enabled { get; set; }
+
+    [JsonPropertyName("requireFoundInRaid")]
+    public bool RequireFoundInRaid { get; set; }
+
+    [JsonPropertyName("sets")]
+    public List<CollectionSetDto> Sets { get; set; } = [];
+
+    [JsonPropertyName("prestigeGp")]
+    public int PrestigeGp { get; set; }
+
+    [JsonPropertyName("prestigePieces")]
+    public int PrestigePieces { get; set; }
+
+    [JsonPropertyName("prestigeSets")]
+    public int PrestigeSets { get; set; }
 }
