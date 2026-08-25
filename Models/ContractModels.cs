@@ -1,4 +1,4 @@
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 using SPTarkov.Server.Core.Models.Eft.Common;
 using SPTarkov.Server.Core.Models.Eft.Common.Tables;
 
@@ -155,6 +155,10 @@ public class ContractDefinition
 
     [JsonIgnore]
     public List<Vec3> ResolvedPosts { get; set; } = [];
+
+    /// The zone ResolvedPosts were authored for. Injecting them into any other zone puts
+    /// the crew hundreds of metres outside it, where most of them never spawn.
+    public string? ResolvedPostsZone { get; set; }
 }
 
 public class ContractsConfig

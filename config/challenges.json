@@ -175,13 +175,6 @@
     "difficulty": 3
   },
   {
-    "id": "kill_scavs_singleraid_30",
-    "type": "KillScavsSingleRaid",
-    "description": "Kill 15 Scavs in a single raid",
-    "target": 15,
-    "difficulty": 3
-  },
-  {
     "id": "kill_pmcs_40",
     "type": "KillPMCs",
     "description": "Kill 40 PMCs",
@@ -469,68 +462,12 @@
     "difficulty": 3
   },
   {
-    "id": "extract_customs_3",
-    "type": "ExtractFromLocation",
-    "description": "Extract from Customs 3 times",
-    "target": 3,
-    "targetLocation": "bigmap",
-    "difficulty": 2
-  },
-  {
-    "id": "extract_woods_3",
-    "type": "ExtractFromLocation",
-    "description": "Extract from Woods 3 times",
-    "target": 3,
-    "targetLocation": "Woods",
-    "difficulty": 2
-  },
-  {
-    "id": "extract_shoreline_3",
-    "type": "ExtractFromLocation",
-    "description": "Extract from Shoreline 3 times",
-    "target": 3,
-    "targetLocation": "Shoreline",
-    "difficulty": 2
-  },
-  {
     "id": "extract_interchange_2",
     "type": "ExtractFromLocation",
     "description": "Extract from Interchange 2 times",
     "target": 2,
     "targetLocation": "Interchange",
     "difficulty": 2
-  },
-  {
-    "id": "extract_factory_5",
-    "type": "ExtractFromLocation",
-    "description": "Extract from Factory 5 times",
-    "target": 5,
-    "targetLocation": "factory4_day",
-    "difficulty": 2
-  },
-  {
-    "id": "extract_reserve_3",
-    "type": "ExtractFromLocation",
-    "description": "Extract from Reserve 3 times",
-    "target": 3,
-    "targetLocation": "RezervBase",
-    "difficulty": 3
-  },
-  {
-    "id": "extract_lighthouse_3",
-    "type": "ExtractFromLocation",
-    "description": "Extract from Lighthouse 3 times",
-    "target": 3,
-    "targetLocation": "Lighthouse",
-    "difficulty": 3
-  },
-  {
-    "id": "extract_streets_3",
-    "type": "ExtractFromLocation",
-    "description": "Extract from Streets of Tarkov 3 times",
-    "target": 3,
-    "targetLocation": "TarkovStreets",
-    "difficulty": 3
   },
   {
     "id": "grenade_kills_5",
@@ -559,13 +496,6 @@
     "description": "Kill 40 Scavs",
     "target": 40,
     "difficulty": 2
-  },
-  {
-    "id": "scav_spree_20",
-    "type": "KillScavsSingleRaid",
-    "description": "Kill 10 Scavs in a single raid",
-    "target": 10,
-    "difficulty": 3
   },
   {
     "id": "loot_extract_300k",
@@ -660,13 +590,6 @@
     "description": "Kill 12 Scavs in a single raid",
     "target": 12,
     "difficulty": 2
-  },
-  {
-    "id": "scav_spree_25",
-    "type": "KillScavsSingleRaid",
-    "description": "Kill 12 Scavs in a single raid",
-    "target": 12,
-    "difficulty": 3
   },
   {
     "id": "headshot_8",
@@ -1080,27 +1003,6 @@
     "difficulty": 3
   },
   {
-    "id": "kill_raiders_or_boss_1",
-    "type": "KillBoss",
-    "description": "Track down and kill any boss",
-    "target": 1,
-    "difficulty": 3
-  },
-  {
-    "id": "kill_bosses_2x",
-    "type": "KillBoss",
-    "description": "Kill 2 bosses",
-    "target": 2,
-    "difficulty": 3
-  },
-  {
-    "id": "kill_priest_easy",
-    "type": "KillPriest",
-    "description": "Kill the cultist Priest",
-    "target": 1,
-    "difficulty": 3
-  },
-  {
     "id": "survive_single_8",
     "type": "SurviveTimeSingleRaid",
     "description": "Survive 8 minutes in a single raid",
@@ -1120,13 +1022,6 @@
     "description": "Survive 25 minutes in a single raid",
     "target": 1500,
     "difficulty": 3
-  },
-  {
-    "id": "pmc_spike_2",
-    "type": "KillPMCsSingleRaid",
-    "description": "Kill 2 PMCs in a single raid",
-    "target": 2,
-    "difficulty": 2
   },
   {
     "id": "pmc_spike_5",
@@ -1236,13 +1131,6 @@
     "description": "Kill 8 Scavs",
     "target": 8,
     "difficulty": 1
-  },
-  {
-    "id": "headshots_12",
-    "type": "KillHeadshots",
-    "description": "Get 12 headshot kills",
-    "target": 12,
-    "difficulty": 3
   },
   {
     "id": "extract_lighthouse_2",
@@ -1589,6 +1477,595 @@
     "type": "KillsIronSights",
     "description": "Kill 30 enemies on iron sights",
     "target": 30,
+    "difficulty": 3
+  },
+  {
+    "id": "extract_lab_1",
+    "type": "ExtractFromLocation",
+    "description": "Extract from The Lab",
+    "target": 1,
+    "targetLocation": "lab",
+    "difficulty": 2
+  },
+  {
+    "id": "extract_lab_3",
+    "type": "ExtractFromLocation",
+    "description": "Extract from The Lab 3 times",
+    "target": 3,
+    "targetLocation": "lab",
+    "difficulty": 3
+  },
+  {
+    "id": "extract_labyrinth_2",
+    "type": "ExtractFromLocation",
+    "description": "Extract from the Labyrinth 2 times",
+    "target": 2,
+    "targetLocation": "labyrinth",
+    "difficulty": 3
+  },
+  {
+    "id": "scav_extract_groundzero_2w",
+    "type": "ScavExtractFromLocation",
+    "description": "Extract from Ground Zero as a Scav 2 times",
+    "target": 2,
+    "targetLocation": "groundzero",
+    "difficulty": 2
+  },
+  {
+    "id": "distance_kills_150m_15",
+    "type": "KillsAtDistance",
+    "description": "Kill 15 enemies from 150m or further",
+    "target": 15,
+    "minDistanceMeters": 150,
+    "difficulty": 3
+  },
+  {
+    "id": "distance_kills_250m_10",
+    "type": "KillsAtDistance",
+    "description": "Kill 10 enemies from 250m or further",
+    "target": 10,
+    "minDistanceMeters": 250,
+    "difficulty": 3
+  },
+  {
+    "id": "distance_kills_400m_3",
+    "type": "KillsAtDistance",
+    "description": "Kill 3 enemies from 400m or further",
+    "target": 3,
+    "minDistanceMeters": 400,
+    "difficulty": 3
+  },
+  {
+    "id": "suppressed_kills_10",
+    "type": "KillsSuppressed",
+    "description": "Kill 10 enemies with a suppressed weapon",
+    "target": 10,
+    "difficulty": 1
+  },
+  {
+    "id": "suppressed_kills_50",
+    "type": "KillsSuppressed",
+    "description": "Kill 50 enemies with a suppressed weapon",
+    "target": 50,
+    "difficulty": 3
+  },
+  {
+    "id": "optic_kills_15",
+    "type": "KillsWithOptic",
+    "description": "Kill 15 enemies with an optic mounted",
+    "target": 15,
+    "difficulty": 1
+  },
+  {
+    "id": "optic_kills_75",
+    "type": "KillsWithOptic",
+    "description": "Kill 75 enemies with an optic mounted",
+    "target": 75,
+    "difficulty": 3
+  },
+  {
+    "id": "ironsight_kills_10",
+    "type": "KillsIronSights",
+    "description": "Kill 10 enemies on iron sights",
+    "target": 10,
+    "difficulty": 1
+  },
+  {
+    "id": "ironsight_kills_50",
+    "type": "KillsIronSights",
+    "description": "Kill 50 enemies on iron sights",
+    "target": 50,
+    "difficulty": 3
+  },
+  {
+    "id": "melee_kills_3",
+    "type": "MeleeKills",
+    "description": "Bring a knife to a gunfight: get 3 melee kills",
+    "target": 3,
+    "difficulty": 2
+  },
+  {
+    "id": "melee_kills_10",
+    "type": "MeleeKills",
+    "description": "Bring a knife to a gunfight: get 10 melee kills",
+    "target": 10,
+    "difficulty": 3
+  },
+  {
+    "id": "headshot_raid_4",
+    "type": "KillHeadshotsSingleRaid",
+    "description": "Land 4 headshot kills in a single raid",
+    "target": 4,
+    "difficulty": 1
+  },
+  {
+    "id": "headshot_raid_10",
+    "type": "KillHeadshotsSingleRaid",
+    "description": "Land 10 headshot kills in a single raid",
+    "target": 10,
+    "difficulty": 3
+  },
+  {
+    "id": "survive_single_40",
+    "type": "SurviveTimeSingleRaid",
+    "description": "Survive 40 minutes in a single raid",
+    "target": 2400,
+    "difficulty": 3
+  },
+  {
+    "id": "kills_single_raid_12",
+    "type": "KillsSingleRaid",
+    "description": "Kill 12 enemies in a single raid",
+    "target": 12,
+    "difficulty": 2
+  },
+  {
+    "id": "kills_single_raid_30",
+    "type": "KillsSingleRaid",
+    "description": "Kill 30 enemies in a single raid",
+    "target": 30,
+    "difficulty": 3
+  },
+  {
+    "id": "leg_kills_5",
+    "type": "KillLegs",
+    "description": "Kill 5 enemies with leg damage",
+    "target": 5,
+    "difficulty": 1
+  },
+  {
+    "id": "leg_kills_25",
+    "type": "KillLegs",
+    "description": "Kill 25 enemies with leg damage",
+    "target": 25,
+    "difficulty": 3
+  },
+  {
+    "id": "arm_kills_3",
+    "type": "KillArms",
+    "description": "Kill 3 enemies with arm damage",
+    "target": 3,
+    "difficulty": 2
+  },
+  {
+    "id": "arm_kills_10",
+    "type": "KillArms",
+    "description": "Kill 10 enemies with arm damage",
+    "target": 10,
+    "difficulty": 3
+  },
+  {
+    "id": "stomach_kills_5",
+    "type": "KillStomach",
+    "description": "Kill 5 enemies with stomach damage",
+    "target": 5,
+    "difficulty": 1
+  },
+  {
+    "id": "stomach_kills_25",
+    "type": "KillStomach",
+    "description": "Kill 25 enemies with stomach damage",
+    "target": 25,
+    "difficulty": 3
+  },
+  {
+    "id": "any_kills_25",
+    "type": "KillsCumulative",
+    "description": "Kill 25 enemies",
+    "target": 25,
+    "difficulty": 1
+  },
+  {
+    "id": "any_kills_300",
+    "type": "KillsCumulative",
+    "description": "Kill 300 enemies",
+    "target": 300,
+    "difficulty": 3
+  },
+  {
+    "id": "raids_done_3",
+    "type": "RaidsDone",
+    "description": "Finish 3 raids, dead or alive",
+    "target": 3,
+    "difficulty": 1
+  },
+  {
+    "id": "raids_done_35",
+    "type": "RaidsDone",
+    "description": "Finish 35 raids, dead or alive",
+    "target": 35,
+    "difficulty": 3
+  },
+  {
+    "id": "scavrun_spree_3",
+    "type": "ScavKillsSingleRaid",
+    "description": "Kill 3 enemies in a single Scav run",
+    "target": 3,
+    "difficulty": 1
+  },
+  {
+    "id": "scavrun_spree_15",
+    "type": "ScavKillsSingleRaid",
+    "description": "Kill 15 enemies in a single Scav run",
+    "target": 15,
+    "difficulty": 3
+  },
+  {
+    "id": "grenade_kills_4",
+    "type": "GrenadeKills",
+    "description": "Kill 4 enemies with grenades",
+    "target": 4,
+    "difficulty": 1
+  },
+  {
+    "id": "grenade_kills_30",
+    "type": "GrenadeKills",
+    "description": "Kill 30 enemies with grenades",
+    "target": 30,
+    "difficulty": 3
+  },
+  {
+    "id": "loot_extract_1m",
+    "type": "ExtractWithLootValue",
+    "description": "Extract with ₽1,000,000 of loot in one raid",
+    "target": 1000000,
+    "requiresLootNet": true,
+    "difficulty": 3
+  },
+  {
+    "id": "loot_haul_10m",
+    "type": "LootValueCumulative",
+    "description": "Haul out ₽10,000,000 of loot this weekend",
+    "target": 10000000,
+    "requiresLootNet": true,
+    "difficulty": 3
+  },
+  {
+    "id": "kill_raiders_10",
+    "type": "KillRaiders",
+    "description": "Kill 10 Raiders",
+    "target": 10,
+    "difficulty": 3
+  },
+  {
+    "id": "kill_rogues_8",
+    "type": "KillRogues",
+    "description": "Kill 8 Rogues",
+    "target": 8,
+    "difficulty": 3
+  },
+  {
+    "id": "kill_cultists_8",
+    "type": "KillCultists",
+    "description": "Kill 8 cultists",
+    "target": 8,
+    "difficulty": 3
+  },
+  {
+    "id": "kill_bosses_8",
+    "type": "KillBoss",
+    "description": "Kill 8 bosses",
+    "target": 8,
+    "difficulty": 3
+  },
+  {
+    "id": "survive_180min",
+    "type": "SurviveTimeCumulative",
+    "description": "Survive 180 minutes total in-raid (resets on death)",
+    "target": 10800,
+    "difficulty": 3
+  },
+  {
+    "id": "scav_extract_20",
+    "type": "ScavExtract",
+    "description": "Extract as a Scav 20 times",
+    "target": 20,
+    "difficulty": 3
+  },
+  {
+    "id": "scav_raids_30",
+    "type": "ScavRaidsDone",
+    "description": "Complete 30 Scav raids",
+    "target": 30,
+    "difficulty": 3
+  },
+  {
+    "id": "extract_40",
+    "type": "ExtractSuccessfully",
+    "description": "Extract successfully 40 times",
+    "target": 40,
+    "difficulty": 3
+  },
+  {
+    "id": "assaultrifle_kills_40",
+    "type": "KillsWithWeaponClass",
+    "description": "Kill 40 enemies with an assault rifle",
+    "target": 40,
+    "targetWeaponClass": "assaultRifle",
+    "difficulty": 1
+  },
+  {
+    "id": "assaultrifle_kills_100",
+    "type": "KillsWithWeaponClass",
+    "description": "Kill 100 enemies with an assault rifle",
+    "target": 100,
+    "targetWeaponClass": "assaultRifle",
+    "difficulty": 3
+  },
+  {
+    "id": "carbine_kills_25",
+    "type": "KillsWithWeaponClass",
+    "description": "Kill 25 enemies with an assault carbine",
+    "target": 25,
+    "targetWeaponClass": "assaultCarbine",
+    "difficulty": 2
+  },
+  {
+    "id": "carbine_kills_50",
+    "type": "KillsWithWeaponClass",
+    "description": "Kill 50 enemies with an assault carbine",
+    "target": 50,
+    "targetWeaponClass": "assaultCarbine",
+    "difficulty": 3
+  },
+  {
+    "id": "smg_kills_25",
+    "type": "KillsWithWeaponClass",
+    "description": "Kill 25 enemies with an SMG",
+    "target": 25,
+    "targetWeaponClass": "smg",
+    "difficulty": 2
+  },
+  {
+    "id": "smg_kills_50",
+    "type": "KillsWithWeaponClass",
+    "description": "Kill 50 enemies with an SMG",
+    "target": 50,
+    "targetWeaponClass": "smg",
+    "difficulty": 3
+  },
+  {
+    "id": "shotgun_kills_15",
+    "type": "KillsWithWeaponClass",
+    "description": "Kill 15 enemies with a shotgun",
+    "target": 15,
+    "targetWeaponClass": "shotgun",
+    "difficulty": 2
+  },
+  {
+    "id": "shotgun_kills_30",
+    "type": "KillsWithWeaponClass",
+    "description": "Kill 30 enemies with a shotgun",
+    "target": 30,
+    "targetWeaponClass": "shotgun",
+    "difficulty": 3
+  },
+  {
+    "id": "pistol_kills_10",
+    "type": "KillsWithWeaponClass",
+    "description": "Kill 10 enemies with a pistol",
+    "target": 10,
+    "targetWeaponClass": "pistol",
+    "difficulty": 2
+  },
+  {
+    "id": "pistol_kills_25",
+    "type": "KillsWithWeaponClass",
+    "description": "Kill 25 enemies with a pistol",
+    "target": 25,
+    "targetWeaponClass": "pistol",
+    "difficulty": 3
+  },
+  {
+    "id": "marksman_kills_15",
+    "type": "KillsWithWeaponClass",
+    "description": "Kill 15 enemies with a marksman rifle",
+    "target": 15,
+    "targetWeaponClass": "marksmanRifle",
+    "difficulty": 2
+  },
+  {
+    "id": "marksman_kills_35",
+    "type": "KillsWithWeaponClass",
+    "description": "Kill 35 enemies with a marksman rifle",
+    "target": 35,
+    "targetWeaponClass": "marksmanRifle",
+    "difficulty": 3
+  },
+  {
+    "id": "sniper_kills_8",
+    "type": "KillsWithWeaponClass",
+    "description": "Kill 8 enemies with a bolt-action rifle",
+    "target": 8,
+    "targetWeaponClass": "sniperRifle",
+    "difficulty": 2
+  },
+  {
+    "id": "sniper_kills_20",
+    "type": "KillsWithWeaponClass",
+    "description": "Kill 20 enemies with a bolt-action rifle",
+    "target": 20,
+    "targetWeaponClass": "sniperRifle",
+    "difficulty": 3
+  },
+  {
+    "id": "machinegun_kills_15",
+    "type": "KillsWithWeaponClass",
+    "description": "Kill 15 enemies with a machine gun",
+    "target": 15,
+    "targetWeaponClass": "machinegun",
+    "difficulty": 2
+  },
+  {
+    "id": "machinegun_kills_30",
+    "type": "KillsWithWeaponClass",
+    "description": "Kill 30 enemies with a machine gun",
+    "target": 30,
+    "targetWeaponClass": "machinegun",
+    "difficulty": 3
+  },
+  {
+    "id": "kill_killa_1",
+    "type": "KillBoss",
+    "description": "Hunt down and kill Killa",
+    "target": 1,
+    "targetBoss": "bossKilla",
+    "difficulty": 2
+  },
+  {
+    "id": "kill_killa_2",
+    "type": "KillBoss",
+    "description": "Hunt down and kill Killa twice",
+    "target": 2,
+    "targetBoss": "bossKilla",
+    "difficulty": 3
+  },
+  {
+    "id": "kill_reshala_1",
+    "type": "KillBoss",
+    "description": "Hunt down and kill Reshala",
+    "target": 1,
+    "targetBoss": "bossBully",
+    "difficulty": 2
+  },
+  {
+    "id": "kill_glukhar_1",
+    "type": "KillBoss",
+    "description": "Hunt down and kill Glukhar",
+    "target": 1,
+    "targetBoss": "bossGluhar",
+    "difficulty": 3
+  },
+  {
+    "id": "kill_sanitar_1",
+    "type": "KillBoss",
+    "description": "Hunt down and kill Sanitar",
+    "target": 1,
+    "targetBoss": "bossSanitar",
+    "difficulty": 2
+  },
+  {
+    "id": "kill_tagilla_1",
+    "type": "KillBoss",
+    "description": "Hunt down and kill Tagilla",
+    "target": 1,
+    "targetBoss": "bossTagilla",
+    "difficulty": 2
+  },
+  {
+    "id": "kill_tagilla_2",
+    "type": "KillBoss",
+    "description": "Hunt down and kill Tagilla twice",
+    "target": 2,
+    "targetBoss": "bossTagilla",
+    "difficulty": 3
+  },
+  {
+    "id": "kill_shturman_1",
+    "type": "KillBoss",
+    "description": "Hunt down and kill Shturman",
+    "target": 1,
+    "targetBoss": "bossKojaniy",
+    "difficulty": 2
+  },
+  {
+    "id": "kill_zryachiy_1",
+    "type": "KillBoss",
+    "description": "Hunt down and kill Zryachiy",
+    "target": 1,
+    "targetBoss": "bossZryachiy",
+    "difficulty": 3
+  },
+  {
+    "id": "kill_kaban_1",
+    "type": "KillBoss",
+    "description": "Hunt down and kill Kaban",
+    "target": 1,
+    "targetBoss": "bossBoar",
+    "difficulty": 3
+  },
+  {
+    "id": "kill_kolontay_1",
+    "type": "KillBoss",
+    "description": "Hunt down and kill Kolontay",
+    "target": 1,
+    "targetBoss": "bossKolontay",
+    "difficulty": 3
+  },
+  {
+    "id": "kill_partisan_1",
+    "type": "KillBoss",
+    "description": "Hunt down and kill Partisan",
+    "target": 1,
+    "targetBoss": "bossPartisan",
+    "difficulty": 3
+  },
+  {
+    "id": "kill_knight_1",
+    "type": "KillBoss",
+    "description": "Hunt down and kill Knight of the Goons",
+    "target": 1,
+    "targetBoss": "bossKnight",
+    "difficulty": 3
+  },
+  {
+    "id": "distance_raid_100m_5",
+    "type": "KillsAtDistanceSingleRaid",
+    "description": "Kill 5 enemies from 100m or further in a single raid",
+    "target": 5,
+    "minDistanceMeters": 100,
+    "difficulty": 2
+  },
+  {
+    "id": "distance_raid_150m_4",
+    "type": "KillsAtDistanceSingleRaid",
+    "description": "Kill 4 enemies from 150m or further in a single raid",
+    "target": 4,
+    "minDistanceMeters": 150,
+    "difficulty": 2
+  },
+  {
+    "id": "distance_raid_200m_3",
+    "type": "KillsAtDistanceSingleRaid",
+    "description": "Kill 3 enemies from 200m or further in a single raid",
+    "target": 3,
+    "minDistanceMeters": 200,
+    "difficulty": 3
+  },
+  {
+    "id": "distance_raid_250m_2",
+    "type": "KillsAtDistanceSingleRaid",
+    "description": "Kill 2 enemies from 250m or further in a single raid",
+    "target": 2,
+    "minDistanceMeters": 250,
+    "difficulty": 3
+  },
+  {
+    "id": "distance_raid_300m_2",
+    "type": "KillsAtDistanceSingleRaid",
+    "description": "Kill 2 enemies from 300m or further in a single raid",
+    "target": 2,
+    "minDistanceMeters": 300,
     "difficulty": 3
   }
 ]

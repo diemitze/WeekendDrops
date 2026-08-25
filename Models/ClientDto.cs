@@ -1,4 +1,4 @@
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 using SPTarkov.Server.Core.Models.Utils;
 using SPTarkov.Server.Core.Models.Eft.Common;
 using SPTarkov.Server.Core.Models.Enums;
@@ -30,6 +30,12 @@ public class ChallengeDto
 
     [JsonPropertyName("minDistanceMeters")]
     public int MinDistanceMeters { get; set; }
+
+    [JsonPropertyName("targetWeaponClass")]
+    public string TargetWeaponClass { get; set; } = "";
+
+    [JsonPropertyName("targetBoss")]
+    public string TargetBoss { get; set; } = "";
 }
 
 public class WeekendStateDto
@@ -204,6 +210,12 @@ public class DailyChallengeDto
 
     [JsonPropertyName("minDistanceMeters")]
     public int MinDistanceMeters { get; set; }
+
+    [JsonPropertyName("targetWeaponClass")]
+    public string TargetWeaponClass { get; set; } = "";
+
+    [JsonPropertyName("targetBoss")]
+    public string TargetBoss { get; set; } = "";
 }
 
 public class ShopItemDto
@@ -288,6 +300,15 @@ public class StringIdRequest : IRequestData
 {
     [JsonPropertyName("id")]
     public string Id { get; set; } = "";
+}
+
+public class SeedRecordRequest : IRequestData
+{
+    [JsonPropertyName("id")]
+    public string Id { get; set; } = "";
+
+    [JsonPropertyName("value")]
+    public double Value { get; set; }
 }
 
 public class ClientFlagsRequest : IRequestData
@@ -450,6 +471,15 @@ public class RaidResultRequest : IRequestData
 
     [JsonPropertyName("killDistances")]
     public List<int> KillDistances { get; set; } = [];
+
+    [JsonPropertyName("weaponClassKills")]
+    public Dictionary<string, int> WeaponClassKills { get; set; } = [];
+
+    [JsonPropertyName("bossRoles")]
+    public List<string> BossRoles { get; set; } = [];
+
+    [JsonPropertyName("longestKill")]
+    public int LongestKill { get; set; }
 
     [JsonPropertyName("lootValue")]
     public int LootValue { get; set; }

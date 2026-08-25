@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using SPTarkov.DI.Annotations;
 using SPTarkov.Server.Core.DI;
 using SPTarkov.Server.Core.Models.Common;
@@ -60,6 +60,14 @@ public class WeekendDropsRouter(JsonUtil jsonUtil, WeekendDropsCallback callback
             "/weekenddrops/debug",
             async (url, info, sessionId, output, cancellationToken) => await callback.DebugAction(sessionId, info.Id)
         ),
+        new RouteAction<EmptyRequestData>(
+            "/weekenddrops/records",
+            async (url, info, sessionId, output, cancellationToken) => await callback.GetRecords(sessionId)
+        ),
+        new RouteAction<SeedRecordRequest>(
+            "/weekenddrops/seedrecord",
+            async (url, info, sessionId, output, cancellationToken) => await callback.SeedRecord(sessionId, info)
+        ),
         new RouteAction<RaidResultRequest>(
             "/weekenddrops/raidend",
             async (url, info, sessionId, output, cancellationToken) => await callback.ReportRaidResult(sessionId, info)
@@ -115,6 +123,7 @@ public class WeekendDropsCallback(
     ContractService contractService,
     GpBalanceService gpBalance,
     GpGiftService giftService,
+    PersonalBestService records,
     SquadService squadService,
     CollectionService collection)
 {
@@ -278,7 +287,24 @@ public class WeekendDropsCallback(
     {
         int gpEarned = challengeService.ApplyRaidResult(sessionId, info)
                      + dailyService.ApplyRaidResult(sessionId, info);
-        var json = JsonSerializer.Serialize(new { result = true, gpEarned }, JsonOptions);
+
+        var beaten = records.ApplyRaidResult(sessionId, info);
+        gpEarned += beaten.Sum(b => b.GpEarned);
+
+        var json = JsonSerializer.Serialize(new { result = true, gpEarned, records = beaten }, JsonOptions);
+        return new ValueTask<string>(httpResponseUtil.GetBody(json));
+    }
+
+    public ValueTask<string> GetRecords(MongoId sessionId)
+    {
+        var json = JsonSerializer.Serialize(records.GetState(sessionId), JsonOptions);
+        return new ValueTask<string>(httpResponseUtil.GetBody(json));
+    }
+
+    public ValueTask<string> SeedRecord(MongoId sessionId, SeedRecordRequest info)
+    {
+        records.Seed(sessionId, info.Id, info.Value);
+        var json = JsonSerializer.Serialize(new { result = true }, JsonOptions);
         return new ValueTask<string>(httpResponseUtil.GetBody(json));
     }
 

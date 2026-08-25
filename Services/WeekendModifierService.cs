@@ -89,9 +89,6 @@ public class WeekendModifierService(ISptLogger<WeekendModifierService> logger)
     private static bool Valid(WeekendModifier m) =>
         m.Kind != WeekendModifierKind.WeaponClass || !string.IsNullOrEmpty(m.WeapClass);
 
-    public string ActiveWeapClass =>
-        Active is { Kind: WeekendModifierKind.WeaponClass } m ? m.WeapClass : "";
-
     public int RateFor(WeekendModifier m) => Math.Max(0, m.GpPerKill ?? _modifiers.GpPerKill);
     public int CapFor(WeekendModifier m) => Math.Max(0, m.MaxKillsPerRaid ?? _modifiers.MaxKillsPerRaid);
 

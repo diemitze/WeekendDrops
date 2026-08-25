@@ -286,6 +286,8 @@ public class WeekendChallengeService(
                 }
             }
 
+            var recipe = BuildRecipe(poolDef, rewardTplPool, tier.TierName);
+
             foreach (var crateTpl in tier.Pools.SelectMany(p => p.ItemIds).Distinct())
             {
                 var details = new RewardDetails
@@ -295,7 +297,7 @@ public class WeekendChallengeService(
                     RewardTplPool = rewardTplPool,
                 };
                 inventory.RandomLootContainers[new MongoId(crateTpl)] = details;
-                Patches.WdCrateRegistry.Register(details);
+                Patches.WdCrateRegistry.Register(details, recipe);
             }
         }
 
@@ -306,6 +308,47 @@ public class WeekendChallengeService(
             logger.Debug(
                 $"[WeekendDrops] Optional crate items: {wttAdded} of {OptionalItemsTotal} in the database, " +
                 $"{wttSkipped} skipped (WTT-ContentBackport {(ModPresence.ContentBackportInstalled ? "installed" : "not installed")})");
+    }
+
+    /// Splits a tier's pool by group and flattens its slot list to one entry per reward
+    /// draw. Chance-gated slots stay unrolled here; the patch rolls them per crate.
+    private Patches.CrateRecipe BuildRecipe(
+        CratePoolTier poolDef, Dictionary<MongoId, double> pool, string tierName)
+    {
+        var groups = new Dictionary<string, List<KeyValuePair<MongoId, double>>>();
+        foreach (var kv in pool)
+        {
+            var g = Patches.CrateGroups.Of(itemHelper, kv.Key);
+            if (!groups.TryGetValue(g, out var list)) groups[g] = list = [];
+            list.Add(kv);
+        }
+
+        var slots = new List<Patches.CrateSlotPlan>();
+        foreach (var slot in poolDef.Slots)
+            for (var i = 0; i < slot.Count; i++)
+                slots.Add(new Patches.CrateSlotPlan
+                {
+                    Group    = slot.Group,
+                    Chance   = slot.Chance,
+                    Fallback = slot.Fallback,
+                });
+
+        if (poolDef.Slots.Count > 0 && slots.Count != poolDef.RewardCount)
+            logger.Warning(
+                $"[WeekendDrops] Crate tier '{tierName}' recipe fills {slots.Count} slot(s) but rewardCount is " +
+                $"{poolDef.RewardCount} - any extra draws come from the whole pool");
+
+        foreach (var slot in poolDef.Slots)
+            if (!groups.ContainsKey(slot.Group))
+                logger.Warning(
+                    $"[WeekendDrops] Crate tier '{tierName}' asks for '{slot.Group}' but its pool has no such items");
+
+        return new Patches.CrateRecipe
+        {
+            Slots   = slots,
+            Groups  = groups,
+            ModTier = poolDef.ModTier,
+        };
     }
 
     public int OptionalItemsAvailable { get; private set; }
@@ -344,7 +387,7 @@ public class WeekendChallengeService(
                 RewardTplPool = rewardTplPool,
             };
             inventory.RandomLootContainers[new MongoId(crateTpl)] = details;
-            Patches.WdCrateRegistry.Register(details);
+            Patches.WdCrateRegistry.Register(details, BuildRecipe(poolDef, rewardTplPool, crateTpl));
             registered++;
         }
 
@@ -378,59 +421,11 @@ public class WeekendChallengeService(
 
         foreach (var cp in state.Challenges.Where(c => !c.Completed))
         {
-            switch (cp.Definition?.Type)
-            {
-                case ChallengeType.KillScavs:            cp.Current += r.ScavKills; break;
-                case ChallengeType.KillPMCs:             cp.Current += r.PmcKills;  break;
-                case ChallengeType.KillBoss:             cp.Current += r.BossKills; break;
-                case ChallengeType.KillCultists:         cp.Current += r.CultistKills; break;
-                case ChallengeType.KillPriest:           cp.Current += r.PriestKills;  break;
-                case ChallengeType.KillRaiders:          cp.Current += r.RaiderKills;  break;
-                case ChallengeType.KillRogues:           cp.Current += r.RogueKills;   break;
-                case ChallengeType.MeleeKills:           cp.Current += r.MeleeKills;   break;
-                case ChallengeType.KillsSingleRaid:      if (totalKills >= cp.Target) cp.Current = cp.Target; break;
-                case ChallengeType.KillsCumulative:      cp.Current += totalKills; break;
-                case ChallengeType.SurviveTimeSingleRaid: if (r.Survived && r.SurvivedSeconds >= cp.Target) cp.Current = cp.Target; break;
-                case ChallengeType.KillHeadshots:        cp.Current += r.Headshots; break;
-                case ChallengeType.KillHeadshotsSingleRaid: if (r.Headshots >= cp.Target) cp.Current = cp.Target; break;
-                case ChallengeType.GrenadeKills:         cp.Current += r.GrenadeKills; break;
-                case ChallengeType.KillLegs:             cp.Current += r.LegKills; break;
-                case ChallengeType.KillArms:             cp.Current += r.ArmKills; break;
-                case ChallengeType.KillStomach:          cp.Current += r.StomachKills; break;
-                case ChallengeType.SurviveTimeCumulative: cp.Current = (int)state.SurvivalTimeBank; break;
-                case ChallengeType.ExtractSuccessfully:  if (r.Survived) cp.Current += 1; break;
-                case ChallengeType.ExtractFromLocation:
-                    if (r.Survived && !string.IsNullOrEmpty(cp.Definition.TargetLocation)
-                        && LocationUtil.Matches(r.Location, cp.Definition.TargetLocation))
-                        cp.Current += 1;
-                    break;
+            if (cp.Definition is null) continue;
 
-                case ChallengeType.KillPMCsSingleRaid:   if (r.PmcKills  >= cp.Target) cp.Current = cp.Target; break;
-                case ChallengeType.KillScavsSingleRaid:  if (r.ScavKills >= cp.Target) cp.Current = cp.Target; break;
-
-                case ChallengeType.ScavExtract:   if (r.IsScavRaid && r.Survived) cp.Current += 1; break;
-                case ChallengeType.ScavRaidsDone: if (r.IsScavRaid)               cp.Current += 1; break;
-                case ChallengeType.ScavKills:     if (r.IsScavRaid)               cp.Current += totalKills; break;
-                case ChallengeType.ScavKillsSingleRaid:
-                    if (r.IsScavRaid && totalKills >= cp.Target) cp.Current = cp.Target;
-                    break;
-                case ChallengeType.RaidsDone:     if (!r.IsScavRaid)              cp.Current += 1; break;
-                case ChallengeType.ScavExtractFromLocation:
-                    if (r.IsScavRaid && r.Survived && !string.IsNullOrEmpty(cp.Definition.TargetLocation)
-                        && LocationUtil.Matches(r.Location, cp.Definition.TargetLocation))
-                        cp.Current += 1;
-                    break;
-
-                case ChallengeType.ExtractWithLootValue: if (r.Survived && r.LootValue >= cp.Target) cp.Current = cp.Target; break;
-                case ChallengeType.LootValueCumulative:  if (r.Survived) cp.Current += r.LootValue; break;
-
-                case ChallengeType.KillsAtDistance:
-                    cp.Current += r.KillDistances.Count(d => d >= cp.Definition.MinDistanceMeters);
-                    break;
-                case ChallengeType.KillsSuppressed:  cp.Current += r.SuppressedKills; break;
-                case ChallengeType.KillsWithOptic:   cp.Current += r.OpticKills;      break;
-                case ChallengeType.KillsIronSights:  cp.Current += r.IronSightKills;  break;
-            }
+            cp.Current = ChallengeProgression.Advance(
+                cp.Definition, cp.Current, cp.Target,
+                r, state.SurvivalTimeBank, totalKills);
         }
 
         int pointsAfter = CompletedDifficultyPoints(state);
@@ -793,7 +788,9 @@ public class WeekendChallengeService(
             Target = cp.Target,
             Completed = cp.Completed,
             Difficulty = cp.Definition?.Difficulty ?? 1,
-            MinDistanceMeters = cp.Definition?.MinDistanceMeters ?? 0
+            MinDistanceMeters = cp.Definition?.MinDistanceMeters ?? 0,
+            TargetWeaponClass = cp.Definition?.TargetWeaponClass ?? "",
+            TargetBoss        = cp.Definition?.TargetBoss ?? ""
         }).ToList();
 
         dto.RerollEnabled   = _config.EnableWeekendReroll;

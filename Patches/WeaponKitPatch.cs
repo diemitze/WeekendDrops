@@ -1,4 +1,4 @@
-using System.Reflection;
+﻿using System.Reflection;
 using HarmonyLib;
 using SPTarkov.Server.Core.Generators;
 using SPTarkov.Server.Core.Helpers;
@@ -58,6 +58,8 @@ public static class WeaponKitPatch
 
         if (!WdCrateRegistry.IsOurs(__0)) return;
 
+        var modTier = WdCrateRegistry.RecipeFor(__0)?.ModTier ?? "";
+
         foreach (var group in __result)
         {
             if (group.Count == 0) continue;
@@ -65,22 +67,22 @@ public static class WeaponKitPatch
 
             if (!_itemHelper.IsOfBaseclass(root.Template, BaseClasses.WEAPON)) continue;
 
-            KitWeapon(group);
+            KitWeapon(group, modTier);
         }
     }
 
-    private static void KitWeapon(List<Item> group)
+    private static void KitWeapon(List<Item> group, string modTier)
     {
         var hosts = group.ToList();
 
         foreach (var (prefix, chance) in TargetSlots)
         {
             if (Rng.NextDouble() > chance) continue;
-            TryFillSlotType(group, hosts, prefix);
+            TryFillSlotType(group, hosts, prefix, modTier);
         }
     }
 
-    private static void TryFillSlotType(List<Item> group, List<Item> hosts, string prefix)
+    private static void TryFillSlotType(List<Item> group, List<Item> hosts, string prefix, string modTier)
     {
         foreach (var host in hosts)
         {
@@ -98,7 +100,7 @@ public static class WeaponKitPatch
                 if (group.Any(i => i.ParentId == hostId && i.SlotId == slotName))
                     continue;
 
-                var modTpl = PickModForSlot(slot, prefix);
+                var modTpl = PickModForSlot(slot, prefix, modTier);
                 if (modTpl is null) continue;
 
                 group.Add(new Item
@@ -113,13 +115,23 @@ public static class WeaponKitPatch
         }
     }
 
-    private static MongoId? PickModForSlot(Slot slot, string prefix)
+    /// Slice of the price-sorted candidate list a tier is allowed to fit, so an Epic
+    /// rifle stops turning up wearing the cheapest grip in the game.
+    private static (double Lo, double Hi) Band(string modTier) => modTier switch
+    {
+        "common" => (0.00, 0.45),
+        "rare"   => (0.35, 0.85),
+        "epic"   => (0.55, 1.00),
+        _        => (0.00, 1.00),
+    };
+
+    private static MongoId? PickModForSlot(Slot slot, string prefix, string modTier)
     {
         var filter = slot.Properties?.Filters?.FirstOrDefault()?.Filter;
         if (filter is null || filter.Count == 0) return null;
 
-        var candidates = new List<MongoId>();
-        var suppressors = new List<MongoId>();
+        var candidates = new List<(MongoId Tpl, double Price)>();
+        var suppressors = new List<(MongoId Tpl, double Price)>();
 
         foreach (var tpl in filter)
         {
@@ -129,13 +141,29 @@ public static class WeaponKitPatch
             var needsChildren = db.Properties.Slots?.Any(s => s.Required == true) ?? false;
             if (needsChildren) continue;
 
-            candidates.Add(tpl);
-            if (db.Parent == BaseClasses.SILENCER) suppressors.Add(tpl);
+            var entry = (tpl, db.Properties.CreditsPrice ?? 0);
+            candidates.Add(entry);
+            if (db.Parent == BaseClasses.SILENCER) suppressors.Add(entry);
         }
 
         if (candidates.Count == 0) return null;
 
         var pickFrom = prefix == "mod_muzzle" && suppressors.Count > 0 ? suppressors : candidates;
-        return pickFrom[Rng.Next(pickFrom.Count)];
+        return PickInBand(pickFrom, modTier);
+    }
+
+    private static MongoId PickInBand(List<(MongoId Tpl, double Price)> candidates, string modTier)
+    {
+        if (candidates.Count == 1) return candidates[0].Tpl;
+
+        var (lo, hi) = Band(modTier);
+        var sorted = candidates.OrderBy(c => c.Price).ToList();
+
+        var from = (int)Math.Floor(lo * sorted.Count);
+        var to   = (int)Math.Ceiling(hi * sorted.Count);
+        from = Math.Clamp(from, 0, sorted.Count - 1);
+        to   = Math.Clamp(to, from + 1, sorted.Count);
+
+        return sorted[Rng.Next(from, to)].Tpl;
     }
 }

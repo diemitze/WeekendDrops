@@ -218,11 +218,28 @@ public class ContractService(
                     .Value;
                 if (pool is { Count: > 0 })
                 {
-                    var hideout = pool[Random.Shared.Next(pool.Count)];
-                    if (hideout?.Posts is { Count: > 0 })
+                    var usable = pool
+                        .Where(h => h?.Posts is { Count: > 0 } && !string.IsNullOrWhiteSpace(h.Zone))
+                        .ToList();
+
+                    // The hideout has to sit in the zone the crew is assigned to. Picked
+                    // independently they can be a kilometre apart, and the crew then spawns
+                    // nowhere.
+                    var inZone = usable
+                        .Where(h => string.Equals(h.Zone, state.ChosenBossZone, StringComparison.OrdinalIgnoreCase))
+                        .ToList();
+
+                    var hideout = inZone.Count > 0
+                        ? inZone[Random.Shared.Next(inZone.Count)]
+                        : usable.Count > 0 ? usable[Random.Shared.Next(usable.Count)] : null;
+
+                    if (hideout is not null)
                     {
+                        // No hideout in the rolled zone, so move the crew to a zone that has one.
+                        if (inZone.Count == 0) state.ChosenBossZone = hideout.Zone;
+
                         state.ChosenHideoutPosts = hideout.Posts;
-                        state.ChosenHideoutZone = string.IsNullOrWhiteSpace(hideout.Zone) ? null : hideout.Zone;
+                        state.ChosenHideoutZone = hideout.Zone;
                     }
                 }
             }
@@ -398,9 +415,6 @@ public class ContractService(
         return LocationUtil.Matches(location, resolved.Map) ? resolved : null;
     }
 
-    public ContractDefinition? GetAnyActiveContractForMap(string location)
-        => GetAllActiveContractsForMap(location).FirstOrDefault();
-
     public List<ContractDefinition> GetAllActiveContractsForMap(string location)
     {
         var found = new List<ContractDefinition>();
@@ -444,10 +458,12 @@ public class ContractService(
             result = ApplyChosenZone(result, state.ChosenBossZone!);
 
         if (ReferenceEquals(result, def)) result = CloneWithGroups(def, def.Groups);
-        result.ResolvedPosts = SupplyPostsNeedRepair(def, state)
+        bool repaired = SupplyPostsNeedRepair(def, state);
+        result.ResolvedPosts = repaired
             ? RingPosts(state.ChosenAirdropX ?? 0f, state.ChosenAirdropY ?? 0f, state.ChosenAirdropZ ?? 0f,
                         CrewSize(result), _config.SupplyRingRadius, Seed(def.Id, state))
             : state.ChosenHideoutPosts ?? [];
+        result.ResolvedPostsZone = repaired ? state.ChosenAirdropZone : state.ChosenHideoutZone;
         return result;
     }
 

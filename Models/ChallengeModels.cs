@@ -1,4 +1,4 @@
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 using SPTarkov.Server.Core.Models.Eft.Common;
 using SPTarkov.Server.Core.Models.Spt.Repeatable;
 
@@ -42,6 +42,9 @@ public enum ChallengeType
     LootValueCumulative,
 
     KillsAtDistance,
+    KillsAtDistanceSingleRaid,
+
+    KillsWithWeaponClass,
 
     KillsSuppressed,
     KillsWithOptic,
@@ -85,6 +88,8 @@ public static class ChallengeMetrics
         ChallengeType.ExtractWithLootValue or ChallengeType.LootValueCumulative => "loot",
 
         ChallengeType.KillsAtDistance                                      => "distance",
+        ChallengeType.KillsAtDistanceSingleRaid                            => "distance_spike",
+        ChallengeType.KillsWithWeaponClass                                 => "weapclass",
         ChallengeType.KillsSuppressed                                      => "suppressed",
         ChallengeType.KillsWithOptic or ChallengeType.KillsIronSights      => "sight",
 
@@ -100,7 +105,17 @@ public static class ChallengeMetrics
     };
 }
 
-public class ChallengeDefinition
+/// The fields ChallengeProgression needs, so weekly and daily definitions can share it.
+public interface IChallengeDefinition
+{
+    ChallengeType Type { get; }
+    string? TargetLocation { get; }
+    string? TargetBoss { get; }
+    string? TargetWeaponClass { get; }
+    int MinDistanceMeters { get; }
+}
+
+public class ChallengeDefinition : IChallengeDefinition
 {
     [JsonPropertyName("id")]
     public string Id { get; set; } = "";
@@ -119,6 +134,9 @@ public class ChallengeDefinition
 
     [JsonPropertyName("targetBoss")]
     public string? TargetBoss { get; set; }
+
+    [JsonPropertyName("targetWeaponClass")]
+    public string? TargetWeaponClass { get; set; }
 
     [JsonPropertyName("minDistanceMeters")]
     public int MinDistanceMeters { get; set; }

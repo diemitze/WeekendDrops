@@ -1,5 +1,5 @@
 ﻿{
-  "_comment": "Contracts: accept one in the menu, its groups are force-spawned on your next raid of the target map, and killing the objective count pays GP (plus an optional crate). One group = a boss + guards; several groups = a roaming clean-out event. bossName / escortType use EFT WildSpawnType names (e.g. bossBully, cursedAssault). The Cleanup Crew rides on the vanilla 'cursedAssault' type, whose bot definition we override in db/bots/types/cursedassault.json (no MoreBotsAPI / custom enum). objectiveRoles are the roles whose deaths count (match the WildSpawnType name, case-insensitive). map is matched via LocationUtil (bigmap = customs).",
+  "_comment": "Contracts: accept one in the menu, its groups are force-spawned on your next raid of the target map, and killing the objective count pays GP (plus an optional crate). One group = a boss + guards; several groups = a roaming clean-out event. bossName / escortType use EFT WildSpawnType names (e.g. bossBully, cursedAssault). The whole crew rides on the vanilla 'followerTest' type, whose bot definition we override in db/bots/types/followertest.json (no MoreBotsAPI / custom enum). Five identical bots, none of them a boss. followerTest is follower-classed, which is what exempts the crew from the client's per-player spawn limit, its lock-spawn delay and its non-boss profile-pool trim; no map spawns them natively. objectiveRoles are the roles whose deaths count (match the WildSpawnType name, case-insensitive). map is matched via LocationUtil (bigmap = customs).",
   "_boardComment": "Boards are NOT daily. After a contract is completed or abandoned, the next board of sealed offers appears a random whole number of UTC days later, in [boardMinDays, boardMaxDays]. Set both equal for a fixed gap. A dry stretch of a couple days is intended, not a bug.",
   "boardMinDays": 2,
   "boardMaxDays": 4,
@@ -49,9 +49,9 @@
       "map": "customs",
       "groups": [
         {
-          "bossName": "cursedAssault",
+          "bossName": "followerTest",
           "bossDifficulty": "normal",
-          "escortType": "cursedAssault",
+          "escortType": "followerTest",
           "escortAmount": "4",
           "escortDifficulty": "normal",
           "bossZone": "ZoneDormitory,ZoneTankSquare,ZoneFactoryCenter",
@@ -59,7 +59,7 @@
         }
       ],
       "objectiveRoles": [
-        "cursedAssault"
+        "followerTest"
       ],
       "objectiveCount": 5,
       "objectiveText": "Wipe out the Cleanup Crew",
@@ -79,9 +79,9 @@
       "map": "woods",
       "groups": [
         {
-          "bossName": "cursedAssault",
+          "bossName": "followerTest",
           "bossDifficulty": "normal",
-          "escortType": "cursedAssault",
+          "escortType": "followerTest",
           "escortAmount": "4",
           "escortDifficulty": "normal",
           "bossZone": "ZoneBrokenVill,ZoneUsecBase,ZoneClearVill,ZoneRedHouse",
@@ -89,7 +89,7 @@
         }
       ],
       "objectiveRoles": [
-        "cursedAssault"
+        "followerTest"
       ],
       "objectiveCount": 5,
       "objectiveText": "Wipe out the Cleanup Crew",
@@ -210,9 +210,9 @@
       "map": "woods",
       "groups": [
         {
-          "bossName": "cursedAssault",
+          "bossName": "followerTest",
           "bossDifficulty": "normal",
-          "escortType": "cursedAssault",
+          "escortType": "followerTest",
           "escortAmount": "4",
           "escortDifficulty": "normal",
           "bossZone": "ZoneBrokenVill",
@@ -220,7 +220,7 @@
         }
       ],
       "objectiveRoles": [
-        "cursedAssault"
+        "followerTest"
       ],
       "objectiveCount": 5,
       "objectiveText": "Clear the crew and secure the drop",
@@ -265,9 +265,9 @@
       "map": "shoreline",
       "groups": [
         {
-          "bossName": "cursedAssault",
+          "bossName": "followerTest",
           "bossDifficulty": "normal",
-          "escortType": "cursedAssault",
+          "escortType": "followerTest",
           "escortAmount": "4",
           "escortDifficulty": "normal",
           "bossZone": "ZoneGreenHouses",
@@ -275,7 +275,7 @@
         }
       ],
       "objectiveRoles": [
-        "cursedAssault"
+        "followerTest"
       ],
       "objectiveCount": 5,
       "objectiveText": "Clear the crew and secure the drop",
@@ -326,9 +326,9 @@
       "map": "lighthouse",
       "groups": [
         {
-          "bossName": "cursedAssault",
+          "bossName": "followerTest",
           "bossDifficulty": "normal",
-          "escortType": "cursedAssault",
+          "escortType": "followerTest",
           "escortAmount": "4",
           "escortDifficulty": "normal",
           "bossZone": "Zone_Chalet",
@@ -336,7 +336,7 @@
         }
       ],
       "objectiveRoles": [
-        "cursedAssault"
+        "followerTest"
       ],
       "objectiveCount": 5,
       "objectiveText": "Clear the crew and secure the drop",

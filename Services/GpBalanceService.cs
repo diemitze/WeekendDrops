@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using SysPath = System.IO.Path;
 using SPTarkov.DI.Annotations;
+using SPTarkov.Common.Models.Logging;
 using SPTarkov.Server.Core.Models.Eft.Common.Tables;
 using SPTarkov.Server.Core.Models.Spt.Config;
 
@@ -9,6 +10,7 @@ namespace WeekendDrops.Services;
 [Injectable(InjectionType.Singleton)]
 public class GpBalanceService
 {
+    private readonly ISptLogger<GpBalanceService> logger;
     private readonly string _file = WdPaths.Data("gp_balances.json");
 
     private readonly string _weeklyFile = WdPaths.Data("gp_weekly_earned.json");
@@ -20,7 +22,12 @@ public class GpBalanceService
 
     private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
 
-    public GpBalanceService() { Load(); LoadWeekly(); }
+    public GpBalanceService(ISptLogger<GpBalanceService> log)
+    {
+        logger = log;
+        Load();
+        LoadWeekly();
+    }
 
     public int Get(string sessionId)
     {
@@ -92,7 +99,12 @@ public class GpBalanceService
                 _balances = JsonSerializer.Deserialize<Dictionary<string, int>>(
                     File.ReadAllText(_file)) ?? new();
         }
-        catch { _balances = new(); }
+        catch (Exception ex)
+        {
+            _balances = new();
+            logger.Error($"[WeekendDrops] gp_balances.json could not be read - every GP balance reads as 0 " +
+                         $"until it is restored: {ex.Message}", null);
+        }
     }
 
     private void Save()
@@ -102,7 +114,10 @@ public class GpBalanceService
             Directory.CreateDirectory(SysPath.GetDirectoryName(_file)!);
             File.WriteAllText(_file, JsonSerializer.Serialize(_balances, JsonOptions));
         }
-        catch {  }
+        catch (Exception ex)
+        {
+            logger.Error($"[WeekendDrops] gp_balances.json could not be written - GP earned now is lost: {ex.Message}", null);
+        }
     }
 
     private void LoadWeekly()
@@ -126,7 +141,10 @@ public class GpBalanceService
             File.WriteAllText(_weeklyFile, JsonSerializer.Serialize(
                 new WeeklyEarnedStore { Period = _weeklyPeriod, Earned = _weeklyEarned }, JsonOptions));
         }
-        catch {  }
+        catch (Exception ex)
+        {
+            logger.Warning($"[WeekendDrops] gp_weekly_earned.json could not be written: {ex.Message}");
+        }
     }
 
     private class WeeklyEarnedStore

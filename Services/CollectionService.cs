@@ -202,13 +202,6 @@ public class CollectionService(
         return tpl;
     }
 
-    public bool IsDonatable(string sessionId, string templateId)
-    {
-        if (!Enabled || string.IsNullOrEmpty(templateId)) return false;
-        if (!_config.Sets.Any(s => s.ItemIds.Contains(templateId))) return false;
-        return !Load(sessionId).Donated.Contains(templateId);
-    }
-
     public string Donate(string sessionId, string templateId)
     {
         if (!Enabled) return "disabled";

@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using SysPath = System.IO.Path;
 using SPTarkov.DI.Annotations;
+using SPTarkov.Common.Models.Logging;
 using SPTarkov.Server.Core.Helpers;
 using SPTarkov.Server.Core.Models.Common;
 using WeekendDrops.Models;
@@ -24,10 +25,14 @@ public class GpGiftService
 
     private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
 
-    public GpGiftService(ProfileHelper profileHelper, GpBalanceService gpBalance)
+    private readonly ISptLogger<GpGiftService> _logger;
+
+    public GpGiftService(ProfileHelper profileHelper, GpBalanceService gpBalance,
+                         ISptLogger<GpGiftService> logger)
     {
         _profileHelper = profileHelper;
         _gpBalance = gpBalance;
+        _logger = logger;
         Load();
     }
 
@@ -125,7 +130,10 @@ public class GpGiftService
             Directory.CreateDirectory(SysPath.GetDirectoryName(_file)!);
             File.WriteAllText(_file, JsonSerializer.Serialize(_pending, JsonOptions));
         }
-        catch {  }
+        catch (Exception ex)
+        {
+            _logger.Error($"[WeekendDrops] gp_gifts.json could not be written - pending gifts are lost: {ex.Message}", null);
+        }
     }
 
     private class PendingGift

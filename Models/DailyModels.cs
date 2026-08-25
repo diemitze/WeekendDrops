@@ -3,7 +3,7 @@ using SPTarkov.Server.Core.Models.Spt.Repeatable;
 
 namespace WeekendDrops.Models;
 
-public class DailyChallengeDefinition
+public class DailyChallengeDefinition : IChallengeDefinition
 {
     [JsonPropertyName("id")]
     public string Id { get; set; } = "";
@@ -19,6 +19,12 @@ public class DailyChallengeDefinition
 
     [JsonPropertyName("targetLocation")]
     public string? TargetLocation { get; set; }
+
+    [JsonPropertyName("targetBoss")]
+    public string? TargetBoss { get; set; }
+
+    [JsonPropertyName("targetWeaponClass")]
+    public string? TargetWeaponClass { get; set; }
 
     [JsonPropertyName("minDistanceMeters")]
     public int MinDistanceMeters { get; set; }

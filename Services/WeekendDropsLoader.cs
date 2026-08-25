@@ -50,7 +50,7 @@ public class WeekendDropsLoader(
 
         LootContainerAmmoStackPatch.Apply(itemHelper, logger);
 
-        CrateCategoryCapPatch.Apply(itemHelper, logger);
+        CrateCompositionPatch.Apply(itemHelper, logger);
 
         ContractSpawnPatch.Apply(contractService, logger);
         WeekendXpPatch.Apply(modifierService, profileHelper, logger);

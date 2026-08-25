@@ -127,61 +127,13 @@ public class DailyChallengeService(
 
         foreach (var cp in state.Challenges.Where(c => !c.Completed))
         {
-            switch (cp.Definition?.Type)
-            {
-                case ChallengeType.KillScavs:            cp.Current += r.ScavKills; break;
-                case ChallengeType.KillPMCs:             cp.Current += r.PmcKills;  break;
-                case ChallengeType.KillBoss:             cp.Current += r.BossKills; break;
-                case ChallengeType.KillCultists:         cp.Current += r.CultistKills; break;
-                case ChallengeType.KillPriest:           cp.Current += r.PriestKills;  break;
-                case ChallengeType.KillRaiders:          cp.Current += r.RaiderKills;  break;
-                case ChallengeType.KillRogues:           cp.Current += r.RogueKills;   break;
-                case ChallengeType.MeleeKills:           cp.Current += r.MeleeKills;   break;
-                case ChallengeType.KillsSingleRaid:      if (totalKills >= cp.Target) cp.Current = cp.Target; break;
-                case ChallengeType.KillsCumulative:      cp.Current += totalKills; break;
-                case ChallengeType.SurviveTimeSingleRaid: if (r.Survived && r.SurvivedSeconds >= cp.Target) cp.Current = cp.Target; break;
-                case ChallengeType.KillHeadshots:        cp.Current += r.Headshots; break;
-                case ChallengeType.KillHeadshotsSingleRaid: if (r.Headshots >= cp.Target) cp.Current = cp.Target; break;
-                case ChallengeType.GrenadeKills:         cp.Current += r.GrenadeKills; break;
-                case ChallengeType.KillLegs:             cp.Current += r.LegKills; break;
-                case ChallengeType.KillArms:             cp.Current += r.ArmKills; break;
-                case ChallengeType.KillStomach:          cp.Current += r.StomachKills; break;
-                case ChallengeType.SurviveTimeCumulative: cp.Current = (int)state.SurvivalTimeBank; break;
-                case ChallengeType.ExtractSuccessfully:  if (r.Survived) cp.Current += 1; break;
-                case ChallengeType.ExtractFromLocation:
-                    if (r.Survived && !string.IsNullOrEmpty(cp.Definition.TargetLocation)
-                        && LocationUtil.Matches(r.Location, cp.Definition.TargetLocation))
-                        cp.Current += 1;
-                    break;
+            if (cp.Definition is null) continue;
 
-                case ChallengeType.KillPMCsSingleRaid:   if (r.PmcKills  >= cp.Target) cp.Current = cp.Target; break;
-                case ChallengeType.KillScavsSingleRaid:  if (r.ScavKills >= cp.Target) cp.Current = cp.Target; break;
+            cp.Current = ChallengeProgression.Advance(
+                cp.Definition, cp.Current, cp.Target,
+                r, state.SurvivalTimeBank, totalKills);
 
-                case ChallengeType.ScavExtract:   if (r.IsScavRaid && r.Survived) cp.Current += 1; break;
-                case ChallengeType.ScavRaidsDone: if (r.IsScavRaid)               cp.Current += 1; break;
-                case ChallengeType.ScavKills:     if (r.IsScavRaid)               cp.Current += totalKills; break;
-                case ChallengeType.ScavKillsSingleRaid:
-                    if (r.IsScavRaid && totalKills >= cp.Target) cp.Current = cp.Target;
-                    break;
-                case ChallengeType.RaidsDone:     if (!r.IsScavRaid)              cp.Current += 1; break;
-                case ChallengeType.ScavExtractFromLocation:
-                    if (r.IsScavRaid && r.Survived && !string.IsNullOrEmpty(cp.Definition.TargetLocation)
-                        && LocationUtil.Matches(r.Location, cp.Definition.TargetLocation))
-                        cp.Current += 1;
-                    break;
-
-                case ChallengeType.ExtractWithLootValue: if (r.Survived && r.LootValue >= cp.Target) cp.Current = cp.Target; break;
-                case ChallengeType.LootValueCumulative:  if (r.Survived) cp.Current += r.LootValue; break;
-
-                case ChallengeType.KillsAtDistance:
-                    cp.Current += r.KillDistances.Count(d => d >= cp.Definition.MinDistanceMeters);
-                    break;
-                case ChallengeType.KillsSuppressed:  cp.Current += r.SuppressedKills; break;
-                case ChallengeType.KillsWithOptic:   cp.Current += r.OpticKills;      break;
-                case ChallengeType.KillsIronSights:  cp.Current += r.IronSightKills;  break;
-            }
-
-            if (cp.Completed) gpEarned += cp.Definition?.GpReward ?? 0;
+            if (cp.Completed) gpEarned += cp.Definition.GpReward;
         }
 
         SaveDailyState(sessionId, state);
@@ -220,7 +172,9 @@ public class DailyChallengeService(
                 Completed     = cp.Completed,
                 GpReward      = cp.Definition?.GpReward ?? 0,
                 RewardClaimed = cp.RewardClaimed,
-                MinDistanceMeters = cp.Definition?.MinDistanceMeters ?? 0
+                MinDistanceMeters = cp.Definition?.MinDistanceMeters ?? 0,
+                TargetWeaponClass = cp.Definition?.TargetWeaponClass ?? "",
+                TargetBoss        = cp.Definition?.TargetBoss ?? ""
             }).ToList(),
             ShopItems = _shopItems.Select(s => new ShopItemDto
             {
